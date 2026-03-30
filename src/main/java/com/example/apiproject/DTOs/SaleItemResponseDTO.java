@@ -4,7 +4,7 @@ import com.example.apiproject.entities.general.entities.SalesItem;
 import com.example.apiproject.enums.Status;
 import org.jspecify.annotations.NonNull;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record SaleItemResponseDTO(
         Long id,
@@ -12,7 +12,7 @@ public record SaleItemResponseDTO(
         String productName,
         Integer quantity,
         Status status,
-        LocalDate date
+        LocalDateTime date
 ) {
     public static @NonNull SaleItemResponseDTO fromEntity(@NonNull SalesItem salesItem) {
         return new SaleItemResponseDTO(

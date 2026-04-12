@@ -34,6 +34,7 @@ public class Product {
     @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean active = true;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("displayOrder ASC") // brings it already ordered
     private List<ProductImage> images = new ArrayList<>();
 }

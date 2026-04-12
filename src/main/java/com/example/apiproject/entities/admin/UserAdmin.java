@@ -22,9 +22,6 @@ public class UserAdmin {
     @Column(nullable = false, name = "password")
     private String password;
 
-    @Column(name = "google_id")
-    private Long googleId;
-
     @Column(name = "phone")
     private Long phone;
 }

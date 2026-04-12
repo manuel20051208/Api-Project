@@ -1,8 +1,7 @@
 package com.example.apiproject.services.user.admin;
 
 import com.example.apiproject.entities.admin.ClientsSummaryView;
-import com.example.apiproject.entities.admin.SaleItemView;
-import com.example.apiproject.repositories.admin.user.repositories.ClientsSummaryViewRepository;
+import com.example.apiproject.repositories.admin.ClientsSummaryViewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

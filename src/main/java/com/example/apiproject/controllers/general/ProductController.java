@@ -2,6 +2,7 @@ package com.example.apiproject.controllers.general;
 
 import com.example.apiproject.entities.general.entities.Product;
 import com.example.apiproject.services.general.service.ProductService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,12 +53,7 @@ public class ProductController {
     }
 
     @GetMapping("/activeProducts")
-    public List<Product> getActiveProducts() {
-        return productService.findByActiveTrue();
-    }
-
-    @GetMapping("/all")
-    public List<Product> getAllProductsDashboard() {
-        return productService.findAll();
+    public Page<Product> getActiveProducts(@RequestParam int sizePage) {
+        return productService.findByActiveTrue(sizePage);
     }
 }

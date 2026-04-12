@@ -1,4 +1,4 @@
-package com.example.apiproject.repositories.general.repository;
+package com.example.apiproject.repositories.general;
 
 import com.example.apiproject.entities.general.entities.SalesItem;
 import org.springframework.data.jpa.repository.JpaRepository;

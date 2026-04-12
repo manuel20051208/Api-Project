@@ -1,4 +1,4 @@
-package com.example.apiproject.repositories.admin.user.repositories;
+package com.example.apiproject.repositories.admin;
 
 import com.example.apiproject.entities.admin.ClientsSummaryView;
 import org.springframework.data.jpa.repository.JpaRepository;

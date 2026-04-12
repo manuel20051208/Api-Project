@@ -1,9 +1,14 @@
 package com.example.apiproject.services.general.service;
 
+
+
 import com.example.apiproject.entities.general.entities.Product;
-import com.example.apiproject.repositories.general.repository.ProductRepository;
+import com.example.apiproject.repositories.general.ProductRepository;
+import io.micrometer.common.lang.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,10 +18,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductService {
     public final ProductRepository productRepository;
-
-    public List<Product> findAll() {
-        return productRepository.findAll();
-    }
 
     public List<Product> findAllByCategoryIgnoreCase(String category){
         return productRepository.findAllByCategoryIgnoreCase(category);
@@ -35,8 +36,9 @@ public class ProductService {
         productRepository.save(product);
     }
 
-    public List<Product> findByActiveTrue(){
-        return productRepository.findByActiveTrue();
+    public Page<Product> findByActiveTrue(int pageSize){
+        Pageable limitTen = PageRequest.of(0, pageSize);
+        return productRepository.findByActiveTrue(limitTen);
     }
 
     public Product findById(Long id){

@@ -1,4 +1,4 @@
-package com.example.apiproject.repositories.client.user.client.repository;
+package com.example.apiproject.repositories.client;
 
 import com.example.apiproject.entities.client.UserClient;
 import org.springframework.data.jpa.repository.JpaRepository;

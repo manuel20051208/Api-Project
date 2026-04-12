@@ -2,7 +2,7 @@ package com.example.apiproject.services.user.admin;
 
 import com.example.apiproject.entities.admin.ProductImage;
 import com.example.apiproject.entities.general.entities.Product;
-import com.example.apiproject.repositories.admin.user.repositories.ProductImageRepository;
+import com.example.apiproject.repositories.admin.ProductImageRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.example.apiproject.services.general.service.ProductService;

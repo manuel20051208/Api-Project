@@ -1,8 +1,11 @@
 package com.example.apiproject.services.user.admin;
 
 import com.example.apiproject.entities.admin.SaleItemView;
-import com.example.apiproject.repositories.admin.user.repositories.SaleItemViewRepository;
+import com.example.apiproject.repositories.admin.SaleItemViewRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,8 +15,14 @@ import java.util.List;
 public class SaleItemViewService {
     private final SaleItemViewRepository saleItemViewRepository;
 
-    public List<SaleItemView> showEverything(){
-        return saleItemViewRepository.findAll();
+    public Page<SaleItemView> showEverythingWithLimits(){
+        Pageable limitTen = PageRequest.of(0, 5);
+        return saleItemViewRepository.findAll(limitTen);
+    }
+
+    public Page<SaleItemView> showEverythingWithNoRestriction(int pageSize){
+        Pageable limitTen = PageRequest.of(0, pageSize);
+        return saleItemViewRepository.findAll(limitTen);
     }
 
     public List<SaleItemView> showClientByName(String clientName){

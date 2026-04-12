@@ -1,4 +1,4 @@
-package com.example.apiproject.repositories.admin.user.repositories;
+package com.example.apiproject.repositories.admin;
 
 import com.example.apiproject.entities.admin.UserAdmin;
 import jakarta.transaction.Transactional;
@@ -10,11 +10,4 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserAdmin, Long> {
-    UserAdmin findUserByGoogleId(Long googleId);
-
-    Optional<UserAdmin> findByUserName(String userName);
-
-    @Transactional
-    @Modifying
-    void deleteAllByGoogleId(Long googleId);
 }

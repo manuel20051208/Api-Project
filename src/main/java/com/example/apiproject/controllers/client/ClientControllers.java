@@ -1,4 +1,4 @@
-package com.example.apiproject.controllers.user.client;
+package com.example.apiproject.controllers.client;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

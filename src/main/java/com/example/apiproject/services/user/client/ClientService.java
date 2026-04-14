@@ -1,6 +1,6 @@
 package com.example.apiproject.services.user.client;
 
-import com.example.apiproject.DTOs.ClientResponseDTO;
+import com.example.apiproject.DTOs.Client.ClientResponseDTO;
 import com.example.apiproject.repositories.client.ClientRepository;
 import org.springframework.stereotype.Service;
 

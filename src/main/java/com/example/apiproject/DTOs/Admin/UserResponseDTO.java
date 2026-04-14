@@ -1,4 +1,4 @@
-package com.example.apiproject.DTOs;
+package com.example.apiproject.DTOs.Admin;
 
 import com.example.apiproject.entities.admin.UserAdmin;
 import org.jspecify.annotations.NonNull;

@@ -20,6 +20,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByActiveTrue(Pageable pageable);
 
+    Product saveAll(@NonNull Product product);
+
     @Transactional
     @Modifying
     void deleteById(@NonNull Long id);

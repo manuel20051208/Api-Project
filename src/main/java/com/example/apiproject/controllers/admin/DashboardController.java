@@ -1,4 +1,4 @@
-package com.example.apiproject.controllers.user.admin;
+package com.example.apiproject.controllers.admin;
 
 import com.example.apiproject.entities.admin.SaleItemView;
 import com.example.apiproject.services.user.admin.DashboardService;

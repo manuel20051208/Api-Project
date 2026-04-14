@@ -1,4 +1,4 @@
-package com.example.apiproject.DTOs;
+package com.example.apiproject.DTOs.Admin;
 
 import com.example.apiproject.entities.general.entities.SalesItem;
 import com.example.apiproject.enums.Status;

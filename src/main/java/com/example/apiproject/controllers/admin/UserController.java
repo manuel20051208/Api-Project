@@ -1,4 +1,4 @@
-package com.example.apiproject.controllers.user.admin;
+package com.example.apiproject.controllers.admin;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

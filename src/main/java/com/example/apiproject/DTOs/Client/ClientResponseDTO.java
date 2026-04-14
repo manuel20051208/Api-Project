@@ -1,4 +1,4 @@
-package com.example.apiproject.DTOs;
+package com.example.apiproject.DTOs.Client;
 
 import com.example.apiproject.entities.client.UserClient;
 

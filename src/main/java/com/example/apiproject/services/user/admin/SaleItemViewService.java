@@ -15,13 +15,13 @@ import java.util.List;
 public class SaleItemViewService {
     private final SaleItemViewRepository saleItemViewRepository;
 
-    public Page<SaleItemView> showEverythingWithLimits(){
-        Pageable limitTen = PageRequest.of(0, 5);
+    public Page<SaleItemView> showEverythingWithLimits(int pageSize){
+        Pageable limitTen = PageRequest.of(0, pageSize);
         return saleItemViewRepository.findAll(limitTen);
     }
 
-    public Page<SaleItemView> showEverythingWithNoRestriction(int pageSize){
-        Pageable limitTen = PageRequest.of(0, pageSize);
+    public Page<SaleItemView> showEverythingWithNoRestriction(){
+        Pageable limitTen = PageRequest.of(0, 200);
         return saleItemViewRepository.findAll(limitTen);
     }
 

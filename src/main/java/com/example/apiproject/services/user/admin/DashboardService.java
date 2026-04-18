@@ -41,7 +41,7 @@ public class DashboardService {
                 .collect(Collectors.toMap(Dashboard::getMonthNumber, Dashboard::getMonthlyTotal));
     }
 
-    public Page<SaleItemView> showLatestSales(){
-        return saleItemViewService.showEverythingWithLimits();
+    public Page<SaleItemView> showLatestSales(int pageSize){
+        return saleItemViewService.showEverythingWithLimits(pageSize);
     }
 }

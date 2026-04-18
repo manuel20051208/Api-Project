@@ -1,7 +1,6 @@
 package com.example.apiproject.services.general.service;
 
-
-
+import com.example.apiproject.DTOs.General.ProductResponseDTO;
 import com.example.apiproject.entities.general.entities.Product;
 import com.example.apiproject.repositories.general.ProductRepository;
 import io.micrometer.common.lang.NonNull;
@@ -19,35 +18,42 @@ import java.util.Optional;
 public class ProductService {
     public final ProductRepository productRepository;
 
-    public List<Product> findAllByCategoryIgnoreCase(String category){
-        return productRepository.findAllByCategoryIgnoreCase(category);
+    public List<ProductResponseDTO> findAllByCategoryIgnoreCase(String category) {
+        return productRepository.findAllByCategoryIgnoreCase(category).stream()
+                .map(ProductResponseDTO::fromEntity)
+                .toList();
     }
 
-    public List<Product> findAllById(Long id){
-        return productRepository.findAllById(id);
+    public List<ProductResponseDTO> findAllById(Long id) {
+        return productRepository.findAllById(id).stream()
+                .map(ProductResponseDTO::fromEntity)
+                .toList();
     }
 
-    public Product findByNameIgnoreCase(String name){
-        return productRepository.findByNameIgnoreCase(name)
-                .orElseThrow(()-> new RuntimeException("Didn't find the field: "));
+    public ProductResponseDTO findByNameIgnoreCase(String name) {
+        Product product = productRepository.findByNameIgnoreCase(name)
+                .orElseThrow(() -> new RuntimeException("Didn't find the field: "));
+        return ProductResponseDTO.fromEntity(product);
     }
 
-    public void save(Product product){
+    public void save(Product product) {
         productRepository.save(product);
     }
 
-    public Page<Product> findByActiveTrue(int pageSize){
+    public Page<ProductResponseDTO> findByActiveTrue(int pageSize) {
         Pageable limitTen = PageRequest.of(0, pageSize);
-        return productRepository.findByActiveTrue(limitTen);
+        Page<Product> page = productRepository.findByActiveTrue(limitTen);
+        return page.map(ProductResponseDTO::fromEntity);
     }
 
-    public Product findById(Long id){
+    public Product findUser(Long id){
         return productRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("Didn't find the field: "));
+                .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 
-    public Product updateProduct(Long id, @NonNull Product product){
-        Product existing = findById(id);
+    public ProductResponseDTO updateProduct(Long id, @NonNull Product product) {
+        Product existing = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
         Optional.ofNullable(product.getId()).ifPresent(existing::setId);
         Optional.ofNullable(product.getName()).ifPresent(existing::setName);
@@ -55,7 +61,7 @@ public class ProductService {
         Optional.ofNullable(product.getStock()).ifPresent(existing::setStock);
         Optional.ofNullable(product.getCategory()).ifPresent(existing::setCategory);
 
-        return productRepository.save(existing);
+        return ProductResponseDTO.fromEntity(productRepository.save(existing));
     }
 
     public void deleteProductSafe(Long id) {

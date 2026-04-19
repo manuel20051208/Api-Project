@@ -5,11 +5,17 @@ import org.jspecify.annotations.NonNull;
 
 public record UserResponseDTO(
         Long id,
-        String userName) {
+        String userName,
+        String fullName,
+        String email,
+        Long phone) {
 
     public static UserResponseDTO fromEntity(@NonNull UserAdmin userAdmin) {
         return new UserResponseDTO(
                 userAdmin.getId(),
-                userAdmin.getUserName());
+                userAdmin.getUserName(),
+                userAdmin.getFullName(),
+                userAdmin.getEmail(),
+                userAdmin.getPhone());
     }
 }

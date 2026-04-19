@@ -24,4 +24,10 @@ public class UserAdmin {
 
     @Column(name = "phone")
     private Long phone;
+
+    @Column(name = "full_name")
+    private String fullName;
+
+    @Column(name = "email")
+    private String email;
 }

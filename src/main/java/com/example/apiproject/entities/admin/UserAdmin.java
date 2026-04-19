@@ -25,9 +25,12 @@ public class UserAdmin {
     @Column(name = "phone")
     private Long phone;
 
-    @Column(name = "full_name")
+    @Column(name = "full_name", length = 60)
     private String fullName;
 
-    @Column(name = "email")
+    @Column(name = "email", length = 60)
     private String email;
+
+    @Column(name = "business_name", length = 100)
+    private String businessName;
 }

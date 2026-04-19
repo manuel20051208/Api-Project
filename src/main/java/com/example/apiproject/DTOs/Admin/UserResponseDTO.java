@@ -8,7 +8,8 @@ public record UserResponseDTO(
         String userName,
         String fullName,
         String email,
-        Long phone) {
+        Long phone,
+        String businessName) {
 
     public static UserResponseDTO fromEntity(@NonNull UserAdmin userAdmin) {
         return new UserResponseDTO(
@@ -16,6 +17,7 @@ public record UserResponseDTO(
                 userAdmin.getUserName(),
                 userAdmin.getFullName(),
                 userAdmin.getEmail(),
-                userAdmin.getPhone());
+                userAdmin.getPhone(),
+                userAdmin.getBusinessName());
     }
 }

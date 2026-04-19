@@ -21,7 +21,7 @@ public class UserClient {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "username")
+    @Column(name = "username", length = 60)
     private String userName;
 
     @Column(name = "password")

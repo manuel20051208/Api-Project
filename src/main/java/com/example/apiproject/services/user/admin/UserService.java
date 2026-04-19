@@ -39,6 +39,7 @@ public class UserService {
         userAdmin.setFullName(registerRequestDTO.fullName());
         userAdmin.setEmail(registerRequestDTO.email());
         userAdmin.setPhone(registerRequestDTO.phone());
+        userAdmin.setBusinessName(registerRequestDTO.businessName());
 
         UserAdmin savedUser = userRepository.save(userAdmin);
         return LoginResponseDTO.fromAdmin(savedUser);

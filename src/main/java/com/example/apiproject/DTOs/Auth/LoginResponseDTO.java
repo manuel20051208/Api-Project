@@ -8,7 +8,8 @@ public record LoginResponseDTO(
         String username,
         String fullName,
         String email,
-        Long phone,
+        Number phone,
+        String businessName,
         String accountType,
         String message) {
 
@@ -19,6 +20,7 @@ public record LoginResponseDTO(
                 userAdmin.getFullName(),
                 userAdmin.getEmail(),
                 userAdmin.getPhone(),
+                userAdmin.getBusinessName(),
                 "USER",
                 "Inicio de sesion exitoso");
     }
@@ -30,6 +32,7 @@ public record LoginResponseDTO(
                 userClient.getFullName(),
                 userClient.getEmail(),
                 userClient.getPhone(),
+                null,
                 "CLIENT",
                 "Inicio de sesion exitoso");
     }

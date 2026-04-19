@@ -5,5 +5,6 @@ public record RegisterRequestDTO(
         String password,
         String fullName,
         String email,
-        Long phone) {
+        Long phone,
+        String businessName) {
 }

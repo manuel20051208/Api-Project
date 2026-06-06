@@ -1,0 +1,183 @@
+package com.example.apiproject.services.general;
+
+import com.example.apiproject.DTOs.General.*;
+import com.example.apiproject.entities.client.UserClient;
+import com.example.apiproject.entities.general.Product;
+import com.example.apiproject.entities.general.Sale;
+import com.example.apiproject.entities.general.SalesItem;
+import com.example.apiproject.enums.Status;
+import com.example.apiproject.exceptions.ResourceNotFoundException;
+import com.example.apiproject.repositories.client.ClientRepository;
+import com.example.apiproject.repositories.client.PaymentCardRepository;
+import com.example.apiproject.repositories.general.ProductRepository;
+import com.example.apiproject.repositories.general.SaleItemRepository;
+import com.example.apiproject.repositories.general.SaleRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.PAYMENT_REQUIRED;
+
+@Service
+@RequiredArgsConstructor
+public class SaleService {
+    private final SaleRepository saleRepository;
+    private final SaleItemRepository saleItemRepository;
+    private final ProductRepository productRepository;
+    private final ClientRepository clientRepository;
+    private final PaymentCardRepository paymentCardRepository;
+
+    @Transactional
+    public PurchaseResponseDTO purchase(PurchaseRequestDTO requestDTO, Long authenticatedClientId) {
+        validatePurchaseRequest(requestDTO);
+        if (!requestDTO.clientId().equals(authenticatedClientId)) {
+            throw new ResponseStatusException(FORBIDDEN, "No puedes comprar usando otro cliente");
+        }
+
+        if (!clientRepository.existsById(requestDTO.clientId())) {
+            throw new ResourceNotFoundException("Client not found: " + requestDTO.clientId());
+        }
+        UserClient client = clientRepository.getReferenceById(requestDTO.clientId());
+
+        if (!paymentCardRepository.existsByUserClientIdAndActiveTrue(requestDTO.clientId())) {
+            throw new ResponseStatusException(PAYMENT_REQUIRED, "El cliente no tiene una tarjeta activa");
+        }
+
+        Map<Long, Integer> requestedQuantities = groupRequestedQuantities(requestDTO.items());
+        Map<Long, Product> productsById = productRepository.findAllByIdInForUpdate(requestedQuantities.keySet().stream().toList())
+                .stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+
+        if (productsById.size() != requestedQuantities.size()) {
+            throw new ResourceNotFoundException("One or more products were not found");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        Long saleOwnerId = null;
+
+        Sale sale = new Sale();
+        sale.setUserClient(client);
+        sale.setHora(now);
+
+        for (Map.Entry<Long, Integer> entry : requestedQuantities.entrySet()) {
+            Product product = productsById.get(entry.getKey());
+            int quantity = entry.getValue();
+
+            if (!product.isActive()) {
+                throw new ResponseStatusException(CONFLICT, "Product is not active: " + product.getId());
+            }
+            if (product.getStock() == null || product.getStock() < quantity) {
+                throw new ResponseStatusException(CONFLICT, "Insufficient stock for product: " + product.getName());
+            }
+
+            product.setStock(product.getStock() - quantity);
+            totalAmount = totalAmount.add(unitPrice(product).multiply(BigDecimal.valueOf(quantity)));
+
+            if (product.getUserAdmin() != null && saleOwnerId == null) {
+                saleOwnerId = product.getUserAdmin().getId();
+                sale.setUserAdmin(product.getUserAdmin());
+            } else if (product.getUserAdmin() != null && !saleOwnerId.equals(product.getUserAdmin().getId())) {
+                throw new ResponseStatusException(CONFLICT, "All products in one purchase must belong to the same user");
+            }
+        }
+
+        sale.setTotalAmount(totalAmount);
+        Sale savedSale = saleRepository.save(sale);
+
+        List<SalesItem> saleItems = requestedQuantities.entrySet().stream()
+                .map(entry -> buildSaleItem(savedSale, client, productsById.get(entry.getKey()), entry.getValue(), now))
+                .toList();
+
+        saleItemRepository.saveAll(saleItems);
+
+        List<PurchaseItemResponseDTO> responseItems = saleItems.stream()
+                .map(this::toPurchaseItemResponse)
+                .toList();
+
+        return new PurchaseResponseDTO(savedSale.getId(), requestDTO.clientId(), totalAmount, now, responseItems);
+    }
+
+    private void validatePurchaseRequest(PurchaseRequestDTO requestDTO) {
+        if (requestDTO == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "El cuerpo de la solicitud es obligatorio");
+        }
+        if (requestDTO.clientId() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "clientId es obligatorio");
+        }
+        if (requestDTO.items() == null || requestDTO.items().isEmpty()) {
+            throw new ResponseStatusException(BAD_REQUEST, "La compra debe tener al menos un producto");
+        }
+    }
+
+    private Map<Long, Integer> groupRequestedQuantities(List<PurchaseItemRequestDTO> items) {
+        Map<Long, Integer> quantities = new LinkedHashMap<>();
+
+        for (PurchaseItemRequestDTO item : items) {
+            if (item == null || item.productId() == null) {
+                throw new ResponseStatusException(BAD_REQUEST, "Cada item debe tener productId");
+            }
+            if (item.quantity() == null || item.quantity() <= 0) {
+                throw new ResponseStatusException(BAD_REQUEST, "La cantidad debe ser mayor a cero");
+            }
+            quantities.merge(item.productId(), item.quantity(), Integer::sum);
+        }
+
+        return quantities;
+    }
+
+    private SalesItem buildSaleItem(Sale sale, UserClient client, Product product, Integer quantity, LocalDateTime date) {
+        SalesItem salesItem = new SalesItem();
+        salesItem.setSales(sale);
+        salesItem.setUserClient(client);
+        salesItem.setProduct(product);
+        salesItem.setQuantity(quantity);
+        salesItem.setState(Status.COMPLETED);
+        salesItem.setDate(date);
+        return salesItem;
+    }
+
+    private PurchaseItemResponseDTO toPurchaseItemResponse(SalesItem salesItem) {
+        BigDecimal unitPrice = unitPrice(salesItem.getProduct());
+        BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(salesItem.getQuantity()));
+
+        return new PurchaseItemResponseDTO(
+                salesItem.getProduct().getId(),
+                salesItem.getProduct().getName(),
+                salesItem.getQuantity(),
+                unitPrice,
+                subtotal
+        );
+    }
+
+    private BigDecimal unitPrice(Product product) {
+        return BigDecimal.valueOf(product.getPrice());
+    }
+
+    @Transactional
+    public ProductResponseDTO makeSale(Product productRequest, UserClient userClient, Integer amount) {
+        Product product = productRepository.findById(productRequest.getId())
+                .orElseThrow(() -> new ResponseStatusException(BAD_REQUEST, "Product not found"));
+
+        if (amount > product.getStock()) {
+            throw new ResponseStatusException(CONFLICT, "There is no enough stock");
+        }
+
+        product.setStock(product.getStock() - amount);
+        productRepository.save(product);
+
+        return ProductResponseDTO.fromEntity(product);
+    }
+}

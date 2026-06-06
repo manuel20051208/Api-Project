@@ -1,0 +1,233 @@
+API Frontend Consumption
+=========================
+
+Base path
+---------
+/api
+
+
+1) Login
+--------
+POST /client/login
+POST /user/login
+
+Request body:
+{
+  "username": "juan123",
+  "password": "123456"
+}
+
+Response body:
+{
+  "id": 1,
+  "username": "juan123",
+  "fullName": "Juan Perez",
+  "email": "juan@mail.com",
+  "phone": 3001234567,
+  "businessName": null,
+  "accountType": "CLIENT",
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "message": "Inicio de sesion exitoso"
+}
+
+Use this token on protected endpoints:
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
+
+
+2) Register
+-----------
+POST /client/register
+POST /user/register
+
+Request body:
+{
+  "username": "juan123",
+  "password": "123456",
+  "fullName": "Juan Perez",
+  "email": "juan@mail.com",
+  "phone": 3001234567,
+  "businessName": "Mi Negocio"
+}
+
+Response body:
+Same as LoginResponseDTO
+
+Protected endpoints
+-------------------
+The following operations require a valid Bearer token:
+- Client token: payment cards, client user-data, purchase.
+- Admin token: admin profile, dashboard, sales history, client summaries, product create/update/delete, product image upload/delete.
+
+Public catalog endpoints remain open:
+GET /product/search/active-with-images
+GET /product/search/id/{id}
+GET /product/search/category/{category}
+GET /product/search/name/{name}
+GET /product/activeProducts?sizePage=10
+GET /product-images/{productId}
+GET /uploads/**
+
+
+3) Create payment card
+----------------------
+POST /client/{clientId}/payment-cards
+
+Request body:
+{
+  "cardHolderName": "Juan Perez",
+  "brand": "Visa",
+  "lastFour": "4242",
+  "active": true
+}
+
+Response body:
+{
+  "id": 1,
+  "clientId": 1,
+  "cardHolderName": "Juan Perez",
+  "brand": "Visa",
+  "lastFour": "4242",
+  "active": true,
+  "createdAt": "2026-05-25T01:10:00"
+}
+
+
+4) List payment cards
+---------------------
+GET /client/{clientId}/payment-cards
+
+Response body:
+[
+  {
+    "id": 1,
+    "clientId": 1,
+    "cardHolderName": "Juan Perez",
+    "brand": "Visa",
+    "lastFour": "4242",
+    "active": true,
+    "createdAt": "2026-05-25T01:10:00"
+  }
+]
+
+
+5) Activate or deactivate a card
+--------------------------------
+PATCH /client/payment-cards/{cardId}/status?active=true
+
+No request body.
+
+Response body:
+{
+  "id": 1,
+  "clientId": 1,
+  "cardHolderName": "Juan Perez",
+  "brand": "Visa",
+  "lastFour": "4242",
+  "active": true,
+  "createdAt": "2026-05-25T01:10:00"
+}
+
+
+6) Purchase
+-----------
+POST /sale/purchase
+
+Request body:
+{
+  "clientId": 1,
+  "items": [
+    {
+      "productId": 10,
+      "quantity": 2
+    },
+    {
+      "productId": 15,
+      "quantity": 1
+    }
+  ]
+}
+
+Response body:
+{
+  "saleId": 100,
+  "clientId": 1,
+  "totalAmount": 85000.0,
+  "createdAt": "2026-05-25T01:10:00",
+  "items": [
+    {
+      "productId": 10,
+      "productName": "Mouse Gamer",
+      "quantity": 2,
+      "unitPrice": 25000.0,
+      "subtotal": 50000.0
+    },
+    {
+      "productId": 15,
+      "productName": "Teclado Mecanico",
+      "quantity": 1,
+      "unitPrice": 35000.0,
+      "subtotal": 35000.0
+    }
+  ]
+}
+
+Possible error:
+402 Payment Required -> client has no active payment card
+
+
+7) Product responses
+--------------------
+GET /product/search
+GET /product/search/with-images
+GET /product/search/active-with-images
+GET /product/search/id/{id}
+GET /product/search/category/{category}
+GET /product/search/name/{name}
+GET /product/activeProducts?sizePage=10
+
+Response body example:
+{
+  "id": 10,
+  "name": "Mouse Gamer",
+  "price": 25000.0,
+  "stock": 18,
+  "category": "Perifericos",
+  "description": "Mouse RGB",
+  "active": true,
+  "images": [
+    {
+      "id": 7,
+      "fileName": "mouse.png",
+      "filePath": "c756e8fc-e54a-4152-bc1d-419ee4a34b96.png",
+      "displayOrder": 1,
+      "url": "/uploads/products/c756e8fc-e54a-4152-bc1d-419ee4a34b96.png"
+    }
+  ]
+}
+
+
+SQL to add payment cards
+------------------------
+If the database already exists, run:
+src/main/resources/db/add-payment-cards.sql
+
+Relevant SQL:
+CREATE TABLE IF NOT EXISTS payment_cards (
+    id BIGSERIAL PRIMARY KEY,
+    client_id BIGINT NOT NULL,
+    card_holder_name VARCHAR(100),
+    brand VARCHAR(40),
+    last_four VARCHAR(4) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_payment_cards_last_four
+        CHECK (last_four ~ '^[0-9]{4}$'),
+    CONSTRAINT fk_payment_cards_clients
+        FOREIGN KEY (client_id)
+        REFERENCES clients (id)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_payment_cards_client_active
+    ON payment_cards (client_id, active);
+

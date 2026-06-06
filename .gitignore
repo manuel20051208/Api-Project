@@ -35,7 +35,8 @@ build/
 ### Local profiles ###
 /src/main/resources/application-dev.properties
 /src/main/resources/db
-uploads/
+uploads/products
+uploads/perfiles
 
 ### repositories ###
 /src/main/java/com/example/apiproject/repositories

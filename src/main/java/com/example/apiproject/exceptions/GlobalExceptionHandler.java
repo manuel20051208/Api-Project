@@ -3,11 +3,13 @@ package com.example.apiproject.exceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
+@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -41,7 +44,6 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException.class,
             MultipartException.class
     })
-
     public ResponseEntity<ApiError> handleBadRequest(Exception ex, HttpServletRequest request) {
         return buildResponse(HttpStatus.BAD_REQUEST, resolveBadRequestMessage(ex), request);
     }
@@ -90,10 +92,15 @@ public class GlobalExceptionHandler {
                 message,
                 request.getRequestURI()
         );
-        return ResponseEntity.status(status).body(error);
+        return ResponseEntity.status(status)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(error);
     }
 
     private String resolveBadRequestMessage(Exception ex) {
+        if(ex instanceof IllegalArgumentException) {
+            return "Bad Request";
+        }
         if (ex instanceof MissingServletRequestParameterException missingParam) {
             return "Missing required parameter: " + missingParam.getParameterName();
         }

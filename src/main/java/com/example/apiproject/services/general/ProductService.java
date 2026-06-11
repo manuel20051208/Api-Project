@@ -139,4 +139,11 @@ public class ProductService {
                     "No puedes modificar productos de otro usuario admin");
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponseDTO> findAllWithImages(Long adminId) {
+        return productRepository.findAllWithImagesByUserAdminId(adminId).stream()
+                .map(ProductResponseDTO::fromEntity)
+                .toList();
+    }
 }

@@ -65,7 +65,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/product-images/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/product-images/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/sale/purchase").hasRole("CLIENT")
-                        .requestMatchers("/api/client/**").hasRole("CLIENT")
+                        .requestMatchers("/api/client/**")
+                        .hasRole("CLIENT")
                         .requestMatchers(
                                 "/api/user/**",
                                 "/dashboard-controller/**",
@@ -74,10 +75,13 @@ public class SecurityConfig {
                         ).hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET,
                                 "/api/product/search",
+                                "/api/product/search/with-images",
                                 "/api/product/search/with-images"
                         ).hasRole("ADMIN")
                         .requestMatchers("/api/product/**").hasRole("ADMIN")
                         .requestMatchers("/api/sale/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/notification/stream")
+                        .hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -97,6 +101,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin"));
         configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

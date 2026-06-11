@@ -99,4 +99,10 @@ public class ProductController {
     public Page<ProductResponseDTO> getActiveProducts(@RequestParam(required = false) int sizePage) {
         return productService.findByActiveTrue(sizePage);
     }
+
+    @Operation(summary = "Get all products with images by authenticated admin")
+    @GetMapping("/search/with-images")
+    public List<ProductResponseDTO> getAllWithImages(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        return productService.findAllWithImages(authenticatedUser.id());
+    }
 }

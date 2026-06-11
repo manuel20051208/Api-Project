@@ -1,5 +1,6 @@
 package com.example.apiproject.services.general;
 
+import com.example.apiproject.DTOs.Admin.NotificationEvent;
 import com.example.apiproject.DTOs.General.*;
 import com.example.apiproject.entities.client.UserClient;
 import com.example.apiproject.entities.general.Product;
@@ -12,6 +13,7 @@ import com.example.apiproject.repositories.client.PaymentCardRepository;
 import com.example.apiproject.repositories.general.ProductRepository;
 import com.example.apiproject.repositories.general.SaleItemRepository;
 import com.example.apiproject.repositories.general.SaleRepository;
+import com.example.apiproject.services.user.admin.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,15 +27,13 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.PAYMENT_REQUIRED;
+import static org.springframework.http.HttpStatus.*;
 
 @Service
 @RequiredArgsConstructor
 public class SaleService {
     private final SaleRepository saleRepository;
+    private final NotificationService notificationService;
     private final SaleItemRepository saleItemRepository;
     private final ProductRepository productRepository;
     private final ClientRepository clientRepository;
@@ -106,6 +106,23 @@ public class SaleService {
         List<PurchaseItemResponseDTO> responseItems = saleItems.stream()
                 .map(this::toPurchaseItemResponse)
                 .toList();
+
+        notificationService.push(saleOwnerId, new NotificationEvent(
+                "VENTA_NUEVA",
+                "Nueva venta por $" + totalAmount,
+                saleOwnerId
+        ));
+
+        for (Map.Entry<Long, Integer> entry : requestedQuantities.entrySet()) {
+            Product product = productsById.get(entry.getKey());
+            if (product.getStock() <= 5) {
+                notificationService.push(saleOwnerId, new NotificationEvent(
+                        "STOCK_BAJO",
+                        "Stock bajo: " + product.getName() + " (" + product.getStock() + " restantes)",
+                        saleOwnerId
+                ));
+            }
+        }
 
         return new PurchaseResponseDTO(savedSale.getId(), requestDTO.clientId(), totalAmount, now, responseItems);
     }

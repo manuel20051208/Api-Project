@@ -2,6 +2,7 @@ package com.example.apiproject.entities.general;
 
 import com.example.apiproject.entities.admin.ProductImage;
 import com.example.apiproject.entities.admin.UserAdmin;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -44,9 +45,11 @@ public class Product {
     @BatchSize(size = 50)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("displayOrder ASC")
+    @JsonIgnore
     private List<ProductImage> images = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_users")
+    @JsonIgnore
     private UserAdmin userAdmin;
 }

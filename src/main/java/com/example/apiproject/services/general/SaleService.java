@@ -2,6 +2,7 @@ package com.example.apiproject.services.general;
 
 import com.example.apiproject.DTOs.Admin.NotificationEvent;
 import com.example.apiproject.DTOs.General.*;
+import com.example.apiproject.config.CacheConstants;
 import com.example.apiproject.entities.client.UserClient;
 import com.example.apiproject.entities.general.Product;
 import com.example.apiproject.entities.general.Sale;
@@ -15,6 +16,7 @@ import com.example.apiproject.repositories.general.SaleItemRepository;
 import com.example.apiproject.repositories.general.SaleRepository;
 import com.example.apiproject.services.user.admin.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -40,6 +42,7 @@ public class SaleService {
     private final PaymentCardRepository paymentCardRepository;
 
     @Transactional
+    @CacheEvict(value = CacheConstants.SALES, key = "#authenticatedClientId")
     public PurchaseResponseDTO purchase(PurchaseRequestDTO requestDTO, Long authenticatedClientId) {
         validatePurchaseRequest(requestDTO);
         if (!requestDTO.clientId().equals(authenticatedClientId)) {

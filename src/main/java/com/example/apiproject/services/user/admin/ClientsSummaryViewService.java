@@ -1,8 +1,10 @@
 package com.example.apiproject.services.user.admin;
 
+import com.example.apiproject.config.CacheConstants;
 import com.example.apiproject.repositories.admin.ClientsSummaryViewRepository;
 import com.example.apiproject.repositories.projection.ClientSummaryProjection;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,12 +30,14 @@ public class ClientsSummaryViewService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstants.SALES, key = "#userId")
     public Page<ClientSummaryProjection> showAllForSales(Long userId) {
         Pageable pageable = PageRequest.of(0, 100, latestClientsSort());
         return clientsSummaryViewRepository.findAllByAdmin(userId, pageable);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstants.SALES, key = "#userId")
     public Page<ClientSummaryProjection> showAllForDashBoard(Long userId) {
         Pageable pageable = PageRequest.of(0, 5, latestClientsSort());
         return clientsSummaryViewRepository.findAllByAdmin(userId, pageable);

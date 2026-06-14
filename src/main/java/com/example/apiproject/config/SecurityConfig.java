@@ -1,5 +1,6 @@
-package com.example.apiproject.security;
+package com.example.apiproject.config;
 
+import com.example.apiproject.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

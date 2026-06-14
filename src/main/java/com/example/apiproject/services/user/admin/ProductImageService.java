@@ -31,7 +31,7 @@ public class ProductImageService {
 
     public ProductImageDTO uploadImage(Long productId, MultipartFile file, Long adminId) throws IOException {
         if (file.isEmpty()) {
-            throw new IllegalArgumentException("Cannot upload an empty file, bro.");
+            throw new IllegalArgumentException("Cannot upload an empty file.");
         }
 
         if (!Files.exists(rootLocation)) {

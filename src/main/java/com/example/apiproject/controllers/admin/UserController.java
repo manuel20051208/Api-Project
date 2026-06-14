@@ -8,13 +8,19 @@ import com.example.apiproject.entities.admin.UserAdmin;
 import com.example.apiproject.security.AuthenticatedUser;
 import com.example.apiproject.services.user.admin.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.io.IOException;
 
 @Tag(name = "User", description = "Endpoints for managing users")
 @DynamicUpdate
@@ -47,12 +53,22 @@ public class UserController {
     }
 
     @Operation(summary = "modify data")
-    @PatchMapping("/{adminId}/modify")
+    @PatchMapping(value = "/{adminId}/modify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public UserResponseDTO modify(@PathVariable Long adminId,
                                   @RequestBody UserAdmin userAdmin,
                                   @AuthenticationPrincipal AuthenticatedUser authenticatedUser){
         validateSelf(adminId, authenticatedUser);
         return userService.modifyData(adminId, userAdmin);
+    }
+
+    @Operation(summary = "Upload a profile photo")
+    @PatchMapping(value = "/{userId}/upload-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Resource> uploadPhoto(
+            @PathVariable("userId") Long userId,
+            @RequestPart("profilePhoto") MultipartFile profilePhoto,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws IOException {
+        validateSelf(userId, authenticatedUser);
+        return userService.subirFotoPerfil(userId, profilePhoto);
     }
 
     private void validateSelf(Long adminId, AuthenticatedUser authenticatedUser) {

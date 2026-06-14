@@ -38,6 +38,9 @@ public class UserAdmin {
     @Column(name = "business_name", length = 100)
     private String businessName;
 
+    @Column(name = "profile_photo")
+    private String profilePhoto;
+
     @OneToMany(mappedBy = "userAdmin", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();
 }

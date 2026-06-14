@@ -64,6 +64,7 @@ public class SecurityConfig {
                                 "/api/product/*/admin"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/product-images/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/user/*/profile-photo").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/product-images/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/product-images/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/sale/purchase").hasRole("CLIENT")

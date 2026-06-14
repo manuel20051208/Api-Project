@@ -7,9 +7,13 @@ import com.example.apiproject.entities.admin.UserAdmin;
 import com.example.apiproject.exceptions.ResourceNotFoundException;
 import com.example.apiproject.repositories.admin.UserRepository;
 import com.example.apiproject.security.JwtService;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -17,11 +21,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.HttpStatus.*;
 
 @Service
 public class UserService {
@@ -41,9 +45,40 @@ public class UserService {
         }
     }
 
-    public void subirFotoPerfil (Long id, MultipartFile file){
-        UserAdmin userAdmin = userRepository.findById(id)
+    public ResponseEntity<Resource> subirFotoPerfil(Long userId, MultipartFile file) throws IOException {
+        UserAdmin userAdmin = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        if (file.isEmpty()) {
+            throw new IOException("No se puede cargar el archivo.");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IOException("Solo se permiten archivos de imagen.");
+        }
+
+        String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
+        String fileName = "perfil_" + userId + "_" + UUID.randomUUID() + "." + extension;
+
+        Path uploadPath = Paths.get("uploads/perfiles");
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        if (userAdmin.getProfilePhoto() != null) {
+            Path oldFile = uploadPath.resolve(userAdmin.getProfilePhoto());
+            Files.deleteIfExists(oldFile);
+        }
+
+        userAdmin.setProfilePhoto(fileName);
+        userRepository.save(userAdmin);
+
+        Resource resource = new UrlResource(filePath.toUri());
+        String mediaType = Files.probeContentType(filePath);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(mediaType != null ? mediaType : "image/jpeg"))
+                .body(resource);
     }
 
     public UserResponseDTO modifyData(Long id, UserAdmin userAdmin){

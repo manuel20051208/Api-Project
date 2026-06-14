@@ -21,7 +21,7 @@ public class ClientsSummaryViewController {
     public Page<ClientSummaryProjection> showAll(
             @PathVariable("userId") Long userId
     ){
-        return clientsSummaryViewService.showAll(userId);
+        return clientsSummaryViewService.showAllForSales(userId);
     }
 
     @Operation(summary = "Search client summaries by exact name")

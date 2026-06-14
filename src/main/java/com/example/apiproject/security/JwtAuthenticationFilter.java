@@ -14,18 +14,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * Filtro de autenticación JWT que se ejecuta UNA SOLA VEZ por cada petición HTTP.
- *
- * Su responsabilidad es interceptar el token Bearer del header Authorization,
- * validarlo y, si es válido, establecer el usuario autenticado en el SecurityContext
- * para que el resto de la cadena de filtros (y Spring Security) lo reconozca.
- *
- * Al anotarlo con @Component, Spring lo detecta automáticamente y lo registra
- * en el ApplicationContext. Luego debes añadirlo explícitamente a la
- * SecurityFilterChain con:
- *   http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
- */
 @Component
 @RequiredArgsConstructor // Lombok genera el constructor con los campos 'final' — equivale a @Autowired en constructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

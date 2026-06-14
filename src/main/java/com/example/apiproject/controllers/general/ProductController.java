@@ -1,5 +1,6 @@
 package com.example.apiproject.controllers.general;
 
+import com.example.apiproject.DTOs.Admin.UserAdminDTO;
 import com.example.apiproject.DTOs.General.ProductResponseDTO;
 import com.example.apiproject.entities.general.Product;
 import com.example.apiproject.security.AuthenticatedUser;
@@ -104,5 +105,12 @@ public class ProductController {
     @GetMapping("/search/with-images")
     public List<ProductResponseDTO> getAllWithImages(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         return productService.findAllWithImages(authenticatedUser.id());
+    }
+
+    @GetMapping("/{productId}/admin")
+    public UserAdminDTO getAdminByProduct(
+            @PathVariable Long productId
+    ) {
+        return productService.showUserAdmin(productId);
     }
 }

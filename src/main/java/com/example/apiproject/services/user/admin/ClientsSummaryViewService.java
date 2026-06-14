@@ -28,8 +28,14 @@ public class ClientsSummaryViewService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ClientSummaryProjection> showAll(Long userId) {
+    public Page<ClientSummaryProjection> showAllForSales(Long userId) {
         Pageable pageable = PageRequest.of(0, 100, latestClientsSort());
+        return clientsSummaryViewRepository.findAllByAdmin(userId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ClientSummaryProjection> showAllForDashBoard(Long userId) {
+        Pageable pageable = PageRequest.of(0, 5, latestClientsSort());
         return clientsSummaryViewRepository.findAllByAdmin(userId, pageable);
     }
 

@@ -12,19 +12,14 @@ import java.util.List;
 public interface DashboardRepository extends Repository<Sale, Integer> {
 
     @Query(value = """
-        SELECT user_id, month_number, sales_year, month_name,
-               monthly_total, number_of_products, count_clients
+        SELECT
+            user_id, month_number, sales_year, month_name,
+            monthly_total, number_of_products, count_clients,
+            SUM(monthly_total)      OVER (PARTITION BY user_id) AS total_sales,
+            SUM(number_of_products) OVER (PARTITION BY user_id) AS total_products,
+            SUM(count_clients)      OVER (PARTITION BY user_id) AS total_clients
         FROM view_of_dashboard
         WHERE user_id = :userId
         """, nativeQuery = true)
     List<DashboardProjection> findByUserId(@Param("userId") Long userId);
-
-    @Query(value = "SELECT SUM(count_clients) FROM view_of_dashboard WHERE user_id = :userId", nativeQuery = true)
-    Long countClients(@Param("userId") Long userId);
-
-    @Query(value = "SELECT SUM(monthly_total) FROM view_of_dashboard WHERE user_id = :userId", nativeQuery = true)
-    Double getMonthlyTotal(@Param("userId") Long userId);
-
-    @Query(value = "SELECT SUM(number_of_products) FROM view_of_dashboard WHERE user_id = :userId", nativeQuery = true)
-    Long getNumberOfProducts(@Param("userId") Long userId);
 }

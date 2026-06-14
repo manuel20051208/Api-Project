@@ -13,16 +13,16 @@ public class NotificationService {
 
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-        public SseEmitter subscribe(Long adminId) {
-            SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+    public SseEmitter subscribe(Long adminId) {
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
-            emitter.onCompletion(() -> emitters.remove(adminId));
-            emitter.onTimeout(() -> emitters.remove(adminId));
-            emitter.onError(e -> emitters.remove(adminId));
+        emitter.onCompletion(() -> emitters.remove(adminId));
+        emitter.onTimeout(() -> emitters.remove(adminId));
+        emitter.onError(e -> emitters.remove(adminId));
 
-            emitters.put(adminId, emitter);
-            return emitter;
-        }
+        emitters.put(adminId, emitter);
+        return emitter;
+    }
 
     public void push(Long adminId, NotificationEvent event) {
         SseEmitter emitter = emitters.get(adminId);

@@ -1,7 +1,6 @@
 package com.example.apiproject.entities.admin;
 
 import com.example.apiproject.entities.general.Product;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

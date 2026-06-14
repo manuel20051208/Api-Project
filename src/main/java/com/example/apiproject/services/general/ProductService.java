@@ -1,5 +1,6 @@
 package com.example.apiproject.services.general;
 
+import com.example.apiproject.DTOs.Admin.UserAdminDTO;
 import com.example.apiproject.DTOs.General.ProductResponseDTO;
 import com.example.apiproject.entities.admin.UserAdmin;
 import com.example.apiproject.entities.general.Product;
@@ -8,11 +9,7 @@ import com.example.apiproject.repositories.admin.UserRepository;
 import com.example.apiproject.repositories.general.ProductRepository;
 import io.micrometer.common.lang.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -145,5 +142,19 @@ public class ProductService {
         return productRepository.findAllWithImagesByUserAdminId(adminId).stream()
                 .map(ProductResponseDTO::fromEntity)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public UserAdminDTO showUserAdmin(Long productId) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Product not found"));
+
+        if (!product.isActive()) {
+            throw new IllegalArgumentException("Product is not active");
+        }
+
+        return UserAdminDTO.fromEntity(product.getUserAdmin());
     }
 }

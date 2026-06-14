@@ -8,4 +8,7 @@ public interface DashboardProjection {
     Double getMonthlyTotal();
     Long getNumberOfProducts();
     Long getCountClients();
+    Double getTotalSales();
+    Long getTotalProducts();
+    Long getTotalClients();
 }

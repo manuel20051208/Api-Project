@@ -59,7 +59,8 @@ public class SecurityConfig {
                                 "/api/product/search/id/**",
                                 "/api/product/search/category/**",
                                 "/api/product/search/name/**",
-                                "/api/product/activeProducts"
+                                "/api/product/activeProducts",
+                                "/api/product/*/admin"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/product-images/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/product-images/**").hasRole("ADMIN")

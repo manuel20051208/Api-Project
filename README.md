@@ -31,23 +31,6 @@ Organización de paquetes dentro de `com.example.apiproject`:
   <img src="./images/EstructuraDePaquetes.png" width="600">
 </p>
  
-```
-src/main/java/com/example/apiproject/
-├── ApiProjectApplication.java     # Entry point
-├── config/                        # Seguridad, Swagger, CORS, caché
-├── controllers/
-│   ├── admin/                     # Dashboard, usuarios admin, ventas, notificaciones
-│   ├── client/                    # Registro/login y datos de clientes
-│   └── general/                   # Productos y ventas (uso compartido)
-├── DTOs/                          # Objetos de transferencia (Admin, Auth, Client, General)
-├── entities/                      # Entidades JPA (admin, client, general)
-├── enums/                         # Enumeraciones (Status, etc.)
-├── exceptions/                    # Manejo global de errores
-├── repositories/                  # Repositorios JPA + projections
-├── security/                      # JWT filter, JwtService, AuthenticatedUser
-└── services/                      # Lógica de negocio
-```
- 
 ## Requisitos previos
  
 - Java 21

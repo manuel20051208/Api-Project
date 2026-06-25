@@ -19,13 +19,17 @@ API REST para gestión de inventario, ventas y clientes, con autenticación JWT 
  
 Flujo de una petición: el cliente entra por el filtro JWT, pasa al controller correspondiente, este delega en la capa de servicios (lógica de negocio) y de ahí a los repositorios JPA contra PostgreSQL.
  
-![Arquitectura por capas](./images/ArquitecturaPorCapas.png)
+<p align="center">
+  <img src="./images/ArquitecturaPorCapas.png" width="500">
+</p>
  
 ## Estructura del proyecto
  
 Organización de paquetes dentro de `com.example.apiproject`:
  
-![Estructura de paquetes](./images/EstructuraDePaquetes.png)
+<p align="center">
+  <img src="./images/EstructuraDePaquetes.png" width="600">
+</p>
  
 ```
 src/main/java/com/example/apiproject/
@@ -156,7 +160,9 @@ Hay dos tipos de cuenta con roles distintos: `ADMIN` y `CLIENT`. Los endpoints e
  
 ## Modelo de datos
  
-![Modelo de datos](./images/ModeloDeDatos.png)
+<p align="center">
+  <img src="./images/ModeloDeDatos.png" width="700">
+</p>
  
 - **UserAdmin** — cuenta administradora del negocio; posee productos y sube imágenes
 - **UserClient** — cliente que compra productos; posee tarjetas de pago y realiza ventas
@@ -176,4 +182,3 @@ Hay dos tipos de cuenta con roles distintos: `ADMIN` y `CLIENT`. Los endpoints e
 ```
  
 Incluye pruebas para `JwtService` y carga del contexto de la aplicación.
- 

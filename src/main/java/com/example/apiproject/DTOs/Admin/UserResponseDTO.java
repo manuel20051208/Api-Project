@@ -8,6 +8,7 @@ public record UserResponseDTO(
         String fullName,
         String email,
         Long phone,
+        String photo,
         String businessName) {
 
     public static UserResponseDTO fromEntity(UserAdmin userAdmin) {
@@ -17,6 +18,7 @@ public record UserResponseDTO(
                 userAdmin.getFullName(),
                 userAdmin.getEmail(),
                 userAdmin.getPhone(),
+                userAdmin.getProfilePhoto(),
                 userAdmin.getBusinessName());
     }
 }

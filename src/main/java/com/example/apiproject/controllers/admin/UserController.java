@@ -71,6 +71,12 @@ public class UserController {
         return userService.subirFotoPerfil(userId, profilePhoto);
     }
 
+    @Operation(summary = "Get profile photo")
+    @GetMapping("/{userId}/profile-photo")
+    public ResponseEntity<Resource> getProfilePhoto(@PathVariable Long userId) throws IOException {
+        return userService.obtenerFotoPerfil(userId);
+    }
+
     private void validateSelf(Long adminId, AuthenticatedUser authenticatedUser) {
         if (!adminId.equals(authenticatedUser.id())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes acceder a datos de otro usuario admin");

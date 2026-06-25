@@ -45,6 +45,28 @@ public class UserService {
         }
     }
 
+    public ResponseEntity<Resource> obtenerFotoPerfil(Long userId) throws IOException {
+        UserAdmin userAdmin = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        if (userAdmin.getProfilePhoto() == null) {
+            throw new ResponseStatusException(NOT_FOUND, "El usuario no tiene foto de perfil");
+        }
+
+        Path filePath = Paths.get("uploads/perfiles").resolve(userAdmin.getProfilePhoto());
+
+        if (!Files.exists(filePath)) {
+            throw new ResponseStatusException(NOT_FOUND, "El archivo de la foto no existe");
+        }
+
+        Resource resource = new UrlResource(filePath.toUri());
+        String mediaType = Files.probeContentType(filePath);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(mediaType != null ? mediaType : "image/jpeg"))
+                .body(resource);
+    }
+
     public ResponseEntity<Resource> subirFotoPerfil(Long userId, MultipartFile file) throws IOException {
         UserAdmin userAdmin = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
@@ -170,6 +192,7 @@ public class UserService {
                 userAdmin.getFullName(),
                 userAdmin.getEmail(),
                 userAdmin.getPhone(),
+                userAdmin.getProfilePhoto(),
                 userAdmin.getBusinessName());
     }
 

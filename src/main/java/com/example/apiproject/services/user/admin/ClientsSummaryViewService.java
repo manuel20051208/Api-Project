@@ -30,10 +30,10 @@ public class ClientsSummaryViewService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConstants.SALES, key = "#userId")
-    public Page<ClientSummaryProjection> showAllForSales(Long userId) {
+    @Cacheable(value = CacheConstants.SALES, key = "#userIdAll")
+    public Page<ClientSummaryProjection> showAllForSales(Long userIdAll) {
         Pageable pageable = PageRequest.of(0, 100, latestClientsSort());
-        return clientsSummaryViewRepository.findAllByAdmin(userId, pageable);
+        return clientsSummaryViewRepository.findAllByAdmin(userIdAll, pageable);
     }
 
     @Transactional(readOnly = true)

@@ -16,6 +16,7 @@ import com.example.apiproject.repositories.general.SaleItemRepository;
 import com.example.apiproject.repositories.general.SaleRepository;
 import com.example.apiproject.services.user.admin.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +41,9 @@ public class SaleService {
     private final ProductRepository productRepository;
     private final ClientRepository clientRepository;
     private final PaymentCardRepository paymentCardRepository;
+    private final CacheManager cacheManager;
 
     @Transactional
-    @CacheEvict(value = CacheConstants.SALES, key = "#authenticatedClientId")
     public PurchaseResponseDTO purchase(PurchaseRequestDTO requestDTO, Long authenticatedClientId) {
         validatePurchaseRequest(requestDTO);
         if (!requestDTO.clientId().equals(authenticatedClientId)) {
@@ -126,8 +127,23 @@ public class SaleService {
                 ));
             }
         }
+        evictAdminCaches(saleOwnerId);
 
         return new PurchaseResponseDTO(savedSale.getId(), requestDTO.clientId(), totalAmount, now, responseItems);
+    }
+
+    private void evictAdminCaches(Long adminId) {
+        if (adminId == null) return;
+        evictIfPresent(CacheConstants.DASHBOARD, adminId);
+        evictIfPresent(CacheConstants.DASHBOARD_CLIENTS, adminId);
+        evictIfPresent(CacheConstants.CLIENTS, adminId);
+    }
+
+    private void evictIfPresent(String cacheName, Long key) {
+        var cache = cacheManager.getCache(cacheName);
+        if (cache != null) {
+            cache.evict(key);
+        }
     }
 
     private void validatePurchaseRequest(PurchaseRequestDTO requestDTO) {

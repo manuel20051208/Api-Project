@@ -10,6 +10,8 @@ import com.example.apiproject.entities.client.UserClient;
 import com.example.apiproject.exceptions.ResourceNotFoundException;
 import com.example.apiproject.repositories.client.ClientRepository;
 import com.example.apiproject.repositories.client.PaymentCardRepository;
+import com.example.apiproject.repositories.projection.ClientHistoryProjection;
+import com.example.apiproject.repositories.projection.PaymentCardOwnerProjection;
 import com.example.apiproject.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,6 +41,10 @@ public class ClientService {
         return clientRepository.findSummaryByEmailContainingIgnoreCase(email).stream()
                 .map(this::toClientResponse)
                 .toList();
+    }
+
+    public List<ClientHistoryProjection> showBuys(Long userId) {
+        return clientRepository.showClientBuy(userId);
     }
 
     public ClientResponseDTO searForClientId(Long id) {
@@ -88,8 +94,8 @@ public class ClientService {
     }
 
     @Transactional
-    public PaymentCardResponseDTO addPaymentCard(Long clientId, PaymentCardRequestDTO requestDTO, Long authenticatedClientId) {
-        validateAuthenticatedClient(clientId, authenticatedClientId);
+    public PaymentCardResponseDTO addPaymentCard(PaymentCardRequestDTO requestDTO, Long authenticatedClientId) {
+        validateAuthenticatedClient(authenticatedClientId);
 
         if (requestDTO == null) {
             throw new ResponseStatusException(BAD_REQUEST, "El cuerpo de la solicitud es obligatorio");
@@ -98,10 +104,10 @@ public class ClientService {
             throw new ResponseStatusException(BAD_REQUEST, "lastFour debe tener exactamente 4 digitos");
         }
 
-        if (!clientRepository.existsById(clientId)) {
-            throw new ResponseStatusException(BAD_REQUEST, "Cliente no encontrado: " + clientId);
+        if (!clientRepository.existsById(authenticatedClientId)) {
+            throw new ResponseStatusException(BAD_REQUEST, "Cliente no encontrado: " + authenticatedClientId);
         }
-        UserClient userClient = clientRepository.getReferenceById(clientId);
+        UserClient userClient = clientRepository.getReferenceById(authenticatedClientId);
 
         PaymentCard paymentCard = new PaymentCard();
         paymentCard.setUserClient(userClient);
@@ -114,10 +120,10 @@ public class ClientService {
     }
 
     @Transactional(readOnly = true)
-    public List<PaymentCardResponseDTO> getPaymentCards(Long clientId, Long authenticatedClientId) {
-        validateAuthenticatedClient(clientId, authenticatedClientId);
+    public List<PaymentCardResponseDTO> getPaymentCards(Long authenticatedClientId) {
+        validateAuthenticatedClient(authenticatedClientId);
 
-        return paymentCardRepository.findDetailsByUserClientIdOrderByCreatedAtDesc(clientId).stream()
+        return paymentCardRepository.findDetailsByUserClientIdOrderByCreatedAtDesc(authenticatedClientId).stream()
                 .map(PaymentCardResponseDTO::fromProjection)
                 .toList();
     }
@@ -125,10 +131,10 @@ public class ClientService {
     @Transactional
     public PaymentCardResponseDTO updatePaymentCardStatus(Long cardId, boolean active, Long authenticatedClientId) {
         Long cardClientId = paymentCardRepository.findOwnerById(cardId)
-                .map(owner -> owner.getClientId())
+                .map(PaymentCardOwnerProjection::getClientId)
                 .orElseThrow(() -> new ResponseStatusException(BAD_REQUEST, "Tarjeta no encontrada: " + cardId));
 
-        validateAuthenticatedClient(cardClientId, authenticatedClientId);
+        validateAuthenticatedClient(authenticatedClientId);
         paymentCardRepository.updateActiveById(cardId, active);
 
         return paymentCardRepository.findDetailsById(cardId)
@@ -163,8 +169,8 @@ public class ClientService {
                 userClient.getPhone());
     }
 
-    private void validateAuthenticatedClient(Long requestedClientId, Long authenticatedClientId) {
-        if (requestedClientId == null || !requestedClientId.equals(authenticatedClientId)) {
+    private void validateAuthenticatedClient(Long authenticatedClientId) {
+        if (authenticatedClientId == null) {
             throw new ResponseStatusException(FORBIDDEN, "No puedes acceder a datos de otro cliente");
         }
     }

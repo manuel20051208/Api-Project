@@ -1,6 +1,7 @@
 package com.example.apiproject.repositories.client;
 
 import com.example.apiproject.entities.client.UserClient;
+import com.example.apiproject.repositories.projection.ClientHistoryProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -33,4 +34,8 @@ public interface ClientRepository extends JpaRepository<UserClient, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update UserClient c set c.password = :password where c.id = :id")
     void updatePasswordById(@Param("id") Long id, @Param("password") String password);
+
+    @Query(value = "SELECT * FROM view_of_client_history WHERE client_id = :clientId",nativeQuery = true)
+    List<ClientHistoryProjection> showClientBuy(@Param("clientId") Long clientId);
+
 }

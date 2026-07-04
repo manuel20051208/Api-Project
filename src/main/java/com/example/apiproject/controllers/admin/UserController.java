@@ -9,6 +9,7 @@ import com.example.apiproject.security.AuthenticatedUser;
 import com.example.apiproject.services.user.admin.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.core.io.Resource;
@@ -53,9 +54,9 @@ public class UserController {
     }
 
     @Operation(summary = "modify data")
-    @PatchMapping(value = "/{adminId}/modify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{adminId}/modify")
     public UserResponseDTO modify(@PathVariable Long adminId,
-                                  @RequestBody UserAdmin userAdmin,
+                                  @RequestBody @Valid UserAdmin userAdmin,
                                   @AuthenticationPrincipal AuthenticatedUser authenticatedUser){
         validateSelf(adminId, authenticatedUser);
         return userService.modifyData(adminId, userAdmin);
@@ -64,7 +65,7 @@ public class UserController {
     @Operation(summary = "Upload a profile photo")
     @PatchMapping(value = "/{userId}/upload-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Resource> uploadPhoto(
-            @PathVariable("userId") Long userId,
+            @PathVariable Long userId,
             @RequestPart("profilePhoto") MultipartFile profilePhoto,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws IOException {
         validateSelf(userId, authenticatedUser);

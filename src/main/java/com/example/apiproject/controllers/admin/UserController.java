@@ -13,13 +13,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 
@@ -44,43 +42,33 @@ public class UserController {
     }
 
     @Operation(summary = "user data (admin)")
-    @GetMapping("/{adminId}/admin")
-    public UserResponseDTO gerAdminData(
-            @PathVariable Long adminId,
+    @GetMapping("/admin")
+    public UserResponseDTO gerAdminDataForProfile(
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
-        validateSelf(adminId, authenticatedUser);
-        return userService.getUserAdmin(adminId);
+        return userService.getUserAdmin(authenticatedUser.id());
     }
 
     @Operation(summary = "modify data")
-    @PatchMapping(value = "/{adminId}/modify")
-    public UserResponseDTO modify(@PathVariable Long adminId,
-                                  @RequestBody @Valid UserAdmin userAdmin,
-                                  @AuthenticationPrincipal AuthenticatedUser authenticatedUser){
-        validateSelf(adminId, authenticatedUser);
-        return userService.modifyData(adminId, userAdmin);
+    @PatchMapping(value = "/modify")
+    public UserResponseDTO modify(
+            @RequestBody @Valid UserAdmin userAdmin,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser){
+        return userService.modifyData(authenticatedUser.id(), userAdmin);
     }
 
     @Operation(summary = "Upload a profile photo")
-    @PatchMapping(value = "/{userId}/upload-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/upload-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Resource> uploadPhoto(
-            @PathVariable Long userId,
             @RequestPart("profilePhoto") MultipartFile profilePhoto,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws IOException {
-        validateSelf(userId, authenticatedUser);
-        return userService.subirFotoPerfil(userId, profilePhoto);
+        return userService.subirFotoPerfil(authenticatedUser.id(), profilePhoto);
     }
 
     @Operation(summary = "Get profile photo")
-    @GetMapping("/{userId}/profile-photo")
-    public ResponseEntity<Resource> getProfilePhoto(@PathVariable Long userId) throws IOException {
-        return userService.obtenerFotoPerfil(userId);
-    }
-
-    private void validateSelf(Long adminId, AuthenticatedUser authenticatedUser) {
-        if (!adminId.equals(authenticatedUser.id())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes acceder a datos de otro usuario admin");
-        }
+    @GetMapping("/profile-photo")
+    public ResponseEntity<Resource> getProfilePhoto(
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws IOException {
+        return userService.obtenerFotoPerfil(authenticatedUser.id());
     }
 }

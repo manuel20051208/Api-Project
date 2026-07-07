@@ -55,13 +55,15 @@ public class SecurityConfig {
                                 "/api/client/login",
                                 "/api/client/register"
                         ).permitAll()
+                        // Productos e información pública del administrador por ID
                         .requestMatchers(HttpMethod.GET,
                                 "/api/product/search/active-with-images",
                                 "/api/product/search/id/**",
                                 "/api/product/search/category/**",
                                 "/api/product/search/name/**",
                                 "/api/product/activeProducts",
-                                "/api/product/*/admin"
+                                "/api/product/*/admin",
+                                "/api/user/*/admin"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/product-images/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/user/*/profile-photo").hasRole("ADMIN")

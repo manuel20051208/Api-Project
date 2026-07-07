@@ -14,6 +14,8 @@ import com.example.apiproject.repositories.projection.ClientHistoryProjection;
 import com.example.apiproject.repositories.projection.PaymentCardOwnerProjection;
 import com.example.apiproject.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,10 +45,13 @@ public class ClientService {
                 .toList();
     }
 
+    @Cacheable(value = "ClientHistory", key = "#userId")
     public List<ClientHistoryProjection> showBuys(Long userId) {
         return clientRepository.showClientBuy(userId);
     }
 
+    @Transactional(readOnly = true)
+    @Cacheable(value = "clientResponse", key = "#id")
     public ClientResponseDTO searForClientId(Long id) {
         return clientRepository.findSummaryById(id)
                 .map(this::toClientResponse)
@@ -94,6 +99,7 @@ public class ClientService {
     }
 
     @Transactional
+    @CacheEvict(value = "Payment", key = "#authenticatedClientId")
     public PaymentCardResponseDTO addPaymentCard(PaymentCardRequestDTO requestDTO, Long authenticatedClientId) {
         validateAuthenticatedClient(authenticatedClientId);
 
@@ -120,6 +126,7 @@ public class ClientService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "Payment", key = "#authenticatedClientId")
     public List<PaymentCardResponseDTO> getPaymentCards(Long authenticatedClientId) {
         validateAuthenticatedClient(authenticatedClientId);
 
@@ -129,12 +136,18 @@ public class ClientService {
     }
 
     @Transactional
+    @CacheEvict(value = "Payment", key = "#authenticatedClientId")
     public PaymentCardResponseDTO updatePaymentCardStatus(Long cardId, boolean active, Long authenticatedClientId) {
         Long cardClientId = paymentCardRepository.findOwnerById(cardId)
                 .map(PaymentCardOwnerProjection::getClientId)
                 .orElseThrow(() -> new ResponseStatusException(BAD_REQUEST, "Tarjeta no encontrada: " + cardId));
 
         validateAuthenticatedClient(authenticatedClientId);
+
+        if (!cardClientId.equals(authenticatedClientId)) {
+            throw new ResponseStatusException(FORBIDDEN, "No tienes permiso sobre esta tarjeta");
+        }
+
         paymentCardRepository.updateActiveById(cardId, active);
 
         return paymentCardRepository.findDetailsById(cardId)

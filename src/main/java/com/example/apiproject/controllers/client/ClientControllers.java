@@ -1,5 +1,6 @@
 package com.example.apiproject.controllers.client;
 
+import com.example.apiproject.DTOs.Admin.ClientDescriptionAboutUsersDTO;
 import com.example.apiproject.DTOs.Auth.LoginRequestDTO;
 import com.example.apiproject.DTOs.Auth.LoginResponseDTO;
 import com.example.apiproject.DTOs.Auth.RegisterRequestDTO;
@@ -8,6 +9,7 @@ import com.example.apiproject.DTOs.Client.PaymentCardRequestDTO;
 import com.example.apiproject.DTOs.Client.PaymentCardResponseDTO;
 import com.example.apiproject.repositories.projection.ClientHistoryProjection;
 import com.example.apiproject.security.AuthenticatedUser;
+import com.example.apiproject.services.user.admin.UserService;
 import com.example.apiproject.services.user.client.ClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,18 +25,31 @@ import java.util.List;
 @RequestMapping("/api/client")
 public class ClientControllers {
     private final ClientService clientService;
+    private final UserService userService;
 
     @Operation(summary = "Basic login for clients")
     @PostMapping("/login")
-    public LoginResponseDTO login(@RequestBody LoginRequestDTO loginRequestDTO) {
+    public LoginResponseDTO login(
+            @RequestBody LoginRequestDTO loginRequestDTO
+    ) {
         return clientService.login(
                 loginRequestDTO.username(),
                 loginRequestDTO.password());
     }
 
+    @Operation(summary = "user data (admin)")
+    @GetMapping("/{adminId}/admin")
+    public ClientDescriptionAboutUsersDTO gerAdminDataForStore(
+            @PathVariable Long adminId
+    ) {
+        return userService.getUserAdminForStore(adminId);
+    }
+
     @Operation(summary = "Basic register for clients")
     @PostMapping("/register")
-    public LoginResponseDTO register(@RequestBody RegisterRequestDTO registerRequestDTO) {
+    public LoginResponseDTO register(
+            @RequestBody RegisterRequestDTO registerRequestDTO
+    ) {
         return clientService.register(registerRequestDTO);
     }
 

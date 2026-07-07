@@ -35,4 +35,5 @@ public class UserClient {
 
     @OneToMany(mappedBy = "userClient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PaymentCard> paymentCards = new ArrayList<>();
+
 }

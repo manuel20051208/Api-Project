@@ -1,5 +1,6 @@
 package com.example.apiproject.services.user.admin;
 
+import com.example.apiproject.DTOs.Admin.ClientDescriptionAboutUsersDTO;
 import com.example.apiproject.DTOs.Admin.UserResponseDTO;
 import com.example.apiproject.DTOs.Auth.LoginResponseDTO;
 import com.example.apiproject.DTOs.Auth.RegisterRequestDTO;
@@ -7,6 +8,8 @@ import com.example.apiproject.entities.admin.UserAdmin;
 import com.example.apiproject.exceptions.ResourceNotFoundException;
 import com.example.apiproject.repositories.admin.UserRepository;
 import com.example.apiproject.security.JwtService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
@@ -33,11 +36,15 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
-            try {
+        try {
                 Path rootFolder = Paths.get("uploads/perfiles");
                 Files.createDirectories(rootFolder);
             } catch (IOException e) {
@@ -45,6 +52,7 @@ public class UserService {
         }
     }
 
+    @Cacheable(value = "resource", key = "#userId")
     public ResponseEntity<Resource> obtenerFotoPerfil(Long userId) throws IOException {
         UserAdmin userAdmin = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
@@ -67,6 +75,7 @@ public class UserService {
                 .body(resource);
     }
 
+    @CacheEvict(value = "resource", key = "#userId")
     public ResponseEntity<Resource> subirFotoPerfil(Long userId, MultipartFile file) throws IOException {
         UserAdmin userAdmin = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
@@ -103,6 +112,7 @@ public class UserService {
                 .body(resource);
     }
 
+    @CacheEvict(value = "users", key = "#id")
     public UserResponseDTO modifyData(Long id, UserAdmin userAdmin){
         UserAdmin existing = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
@@ -121,9 +131,17 @@ public class UserService {
         return UserResponseDTO.fromEntity(existing);
     }
 
+    @Cacheable(value = "users", key = "#id")
     public UserResponseDTO getUserAdmin (Long id){
         return userRepository.findProfileById(id)
                 .map(this::toUserResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+    }
+
+    @Cacheable(value = "clientDescriptions", key = "#id")
+    public ClientDescriptionAboutUsersDTO getUserAdminForStore (Long id){
+        return userRepository.findProfileById(id)
+                .map(this::toStoreResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
 
@@ -194,6 +212,13 @@ public class UserService {
                 userAdmin.getPhone(),
                 userAdmin.getProfilePhoto(),
                 userAdmin.getBusinessName());
+    }
+
+    private ClientDescriptionAboutUsersDTO toStoreResponse(UserAdmin userAdmin) {
+        return new ClientDescriptionAboutUsersDTO(
+                userAdmin.getId(),
+                userAdmin.getBusinessName(),
+                userAdmin.getProfilePhoto());
     }
 
     private void validateCredentials(String username, String password) {

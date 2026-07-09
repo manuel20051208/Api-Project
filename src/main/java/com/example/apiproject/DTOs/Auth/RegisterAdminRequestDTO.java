@@ -1,6 +1,6 @@
 package com.example.apiproject.DTOs.Auth;
 
-public record RegisterRequestDTO(
+public record RegisterAdminRequestDTO(
         String username,
         String password,
         String fullName,

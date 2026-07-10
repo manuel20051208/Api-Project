@@ -18,7 +18,7 @@ public record UserResponseDTO(
                 userAdmin.getFullName(),
                 userAdmin.getEmail(),
                 userAdmin.getPhone(),
-                userAdmin.getProfilePhoto(),
+                userAdmin.getProfilePhotoUrl(),
                 userAdmin.getBusinessName());
     }
 }

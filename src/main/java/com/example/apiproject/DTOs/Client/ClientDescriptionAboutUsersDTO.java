@@ -1,4 +1,4 @@
-package com.example.apiproject.DTOs.Admin;
+package com.example.apiproject.DTOs.Client;
 
 import com.example.apiproject.entities.admin.UserAdmin;
 

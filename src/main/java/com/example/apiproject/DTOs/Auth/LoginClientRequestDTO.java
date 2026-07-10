@@ -1,4 +1,6 @@
 package com.example.apiproject.DTOs.Auth;
 
-public class LoginClientRequestDTO {
+public record LoginClientRequestDTO(
+        String email,
+        String password) {
 }

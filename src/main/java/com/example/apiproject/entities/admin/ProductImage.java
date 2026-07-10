@@ -33,6 +33,8 @@ public class ProductImage {
     @JsonIgnore
     private UserAdmin userAdmin;
 
+    private String url;
+
     public Long getOwnerId() {
         if (userAdmin == null) return null;
         return userAdmin.getId();

@@ -1,6 +1,6 @@
 package com.example.apiproject.DTOs.Auth;
 
-public record LoginRequestDTO(
+public record LoginAdminRequestDTO(
         String username,
         String password) {
 }

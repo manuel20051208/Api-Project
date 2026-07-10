@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,9 +25,6 @@ public class UserClient {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "username", length = 60)
-    private String userName;
-
     @Column(name = "password")
     private String password;
 
@@ -36,4 +34,12 @@ public class UserClient {
     @OneToMany(mappedBy = "userClient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PaymentCard> paymentCards = new ArrayList<>();
 
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "photo")
+    private String photo;
 }

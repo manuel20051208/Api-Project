@@ -1,82 +1,39 @@
 package com.example.apiproject.services.user.admin;
 
-import com.example.apiproject.DTOs.Admin.ClientDescriptionAboutUsersDTO;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.example.apiproject.DTOs.Admin.UserResponseDTO;
-import com.example.apiproject.DTOs.Auth.LoginResponseDTO;
-import com.example.apiproject.DTOs.Auth.RegisterRequestDTO;
+import com.example.apiproject.DTOs.Auth.LoginAdminResponseDTO;
+import com.example.apiproject.DTOs.Auth.RegisterAdminRequestDTO;
+import com.example.apiproject.DTOs.Client.ClientDescriptionAboutUsersDTO;
 import com.example.apiproject.entities.admin.UserAdmin;
 import com.example.apiproject.exceptions.ResourceNotFoundException;
 import com.example.apiproject.repositories.admin.UserRepository;
 import com.example.apiproject.security.JwtService;
+import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
 
 @Service
+@AllArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final Cloudinary cloudinary;
 
-    public UserService(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            JwtService jwtService
-    ) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        try {
-                Path rootFolder = Paths.get("uploads/perfiles");
-                Files.createDirectories(rootFolder);
-            } catch (IOException e) {
-                throw new RuntimeException("No se pudo crear la carpeta de perfiles");
-        }
-    }
-
-    @Cacheable(value = "resource", key = "#userId")
-    public ResponseEntity<Resource> obtenerFotoPerfil(Long userId) throws IOException {
-        UserAdmin userAdmin = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
-
-        if (userAdmin.getProfilePhoto() == null) {
-            throw new ResponseStatusException(NOT_FOUND, "El usuario no tiene foto de perfil");
-        }
-
-        Path filePath = Paths.get("uploads/perfiles").resolve(userAdmin.getProfilePhoto());
-
-        if (!Files.exists(filePath)) {
-            throw new ResponseStatusException(NOT_FOUND, "El archivo de la foto no existe");
-        }
-
-        Resource resource = new UrlResource(filePath.toUri());
-        String mediaType = Files.probeContentType(filePath);
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(mediaType != null ? mediaType : "image/jpeg"))
-                .body(resource);
-    }
-
-    @CacheEvict(value = "resource", key = "#userId")
-    public ResponseEntity<Resource> subirFotoPerfil(Long userId, MultipartFile file) throws IOException {
+    @CacheEvict(value = "users", key = "#userId")
+    public UserResponseDTO subirFotoPerfil(Long userId, MultipartFile file) throws IOException {
         UserAdmin userAdmin = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
@@ -89,27 +46,20 @@ public class UserService {
             throw new IOException("Solo se permiten archivos de imagen.");
         }
 
-        String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
-        String fileName = "perfil_" + userId + "_" + UUID.randomUUID() + "." + extension;
-
-        Path uploadPath = Paths.get("uploads/perfiles");
-        Path filePath = uploadPath.resolve(fileName);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
         if (userAdmin.getProfilePhoto() != null) {
-            Path oldFile = uploadPath.resolve(userAdmin.getProfilePhoto());
-            Files.deleteIfExists(oldFile);
+            cloudinary.uploader().destroy(userAdmin.getProfilePhoto(), ObjectUtils.emptyMap());
         }
 
-        userAdmin.setProfilePhoto(fileName);
+        Map<String, Object> uploadResult = cloudinary.uploader().upload(
+                file.getBytes(),
+                ObjectUtils.asMap("folder", "perfiles")
+        );
+
+        userAdmin.setProfilePhoto((String) uploadResult.get("public_id"));
+        userAdmin.setProfilePhotoUrl((String) uploadResult.get("secure_url"));
         userRepository.save(userAdmin);
 
-        Resource resource = new UrlResource(filePath.toUri());
-        String mediaType = Files.probeContentType(filePath);
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(mediaType != null ? mediaType : "image/jpeg"))
-                .body(resource);
+        return toUserResponse(userAdmin);
     }
 
     @CacheEvict(value = "users", key = "#id")
@@ -145,7 +95,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
 
-    public LoginResponseDTO login(String username, String password) {
+    public LoginAdminResponseDTO login(String username, String password) {
         validateCredentials(username, password);
 
         UserAdmin userAdmin = userRepository.findUserAdminByUserName(username)
@@ -155,8 +105,8 @@ public class UserService {
             throw new ResponseStatusException(UNAUTHORIZED, "Usuario o contrasena incorrectos");
         }
 
-        String token = jwtService.generateToken(userAdmin.getId(), userAdmin.getUserName(), "ADMIN");
-        return new LoginResponseDTO(
+        String token = jwtService.generateAdminToken(userAdmin.getId(), userAdmin.getUserName(), "ADMIN");
+        return new LoginAdminResponseDTO(
                 userAdmin.getId(),
                 userAdmin.getUserName(),
                 userAdmin.getFullName(),
@@ -168,21 +118,21 @@ public class UserService {
                 "Inicio de sesion exitoso");
     }
 
-    public LoginResponseDTO register(RegisterRequestDTO registerRequestDTO) {
-        validateRegisterRequest(registerRequestDTO);
-        validateUniqueFields(registerRequestDTO.username(), registerRequestDTO.email());
+    public LoginAdminResponseDTO register(RegisterAdminRequestDTO registerAdminRequestDTO) {
+        validateRegisterRequest(registerAdminRequestDTO);
+        validateUniqueFields(registerAdminRequestDTO.username(), registerAdminRequestDTO.email());
 
         UserAdmin userAdmin = new UserAdmin();
-        userAdmin.setUserName(registerRequestDTO.username());
-        userAdmin.setPassword(passwordEncoder.encode(registerRequestDTO.password()));
-        userAdmin.setFullName(registerRequestDTO.fullName());
-        userAdmin.setEmail(registerRequestDTO.email());
-        userAdmin.setPhone(registerRequestDTO.phone());
-        userAdmin.setBusinessName(registerRequestDTO.businessName());
+        userAdmin.setUserName(registerAdminRequestDTO.username());
+        userAdmin.setPassword(passwordEncoder.encode(registerAdminRequestDTO.password()));
+        userAdmin.setFullName(registerAdminRequestDTO.fullName());
+        userAdmin.setEmail(registerAdminRequestDTO.email());
+        userAdmin.setPhone(registerAdminRequestDTO.phone());
+        userAdmin.setBusinessName(registerAdminRequestDTO.businessName());
 
         UserAdmin savedUser = userRepository.save(userAdmin);
-        String token = jwtService.generateToken(savedUser.getId(), savedUser.getUserName(), "ADMIN");
-        return LoginResponseDTO.fromAdmin(savedUser, token);
+        String token = jwtService.generateAdminToken(savedUser.getId(), savedUser.getUserName(), "ADMIN");
+        return LoginAdminResponseDTO.fromAdmin(savedUser, token);
     }
 
     private boolean passwordMatches(String rawPassword, UserAdmin userAdmin) {
@@ -210,7 +160,7 @@ public class UserService {
                 userAdmin.getFullName(),
                 userAdmin.getEmail(),
                 userAdmin.getPhone(),
-                userAdmin.getProfilePhoto(),
+                userAdmin.getProfilePhotoUrl(),
                 userAdmin.getBusinessName());
     }
 
@@ -218,7 +168,7 @@ public class UserService {
         return new ClientDescriptionAboutUsersDTO(
                 userAdmin.getId(),
                 userAdmin.getBusinessName(),
-                userAdmin.getProfilePhoto());
+                userAdmin.getProfilePhotoUrl());
     }
 
     private void validateCredentials(String username, String password) {
@@ -227,20 +177,20 @@ public class UserService {
         }
     }
 
-    private void validateRegisterRequest(RegisterRequestDTO registerRequestDTO) {
-        if (registerRequestDTO == null) {
+    private void validateRegisterRequest(RegisterAdminRequestDTO registerAdminRequestDTO) {
+        if (registerAdminRequestDTO == null) {
             throw new ResponseStatusException(BAD_REQUEST, "El cuerpo de la solicitud es obligatorio");
         }
-        if (registerRequestDTO.username() == null || registerRequestDTO.username().isBlank()) {
+        if (registerAdminRequestDTO.username() == null || registerAdminRequestDTO.username().isBlank()) {
             throw new ResponseStatusException(BAD_REQUEST, "El username es obligatorio");
         }
-        if (registerRequestDTO.password() == null || registerRequestDTO.password().isBlank()) {
+        if (registerAdminRequestDTO.password() == null || registerAdminRequestDTO.password().isBlank()) {
             throw new ResponseStatusException(BAD_REQUEST, "El password es obligatorio");
         }
-        if (registerRequestDTO.fullName() == null || registerRequestDTO.fullName().isBlank()) {
+        if (registerAdminRequestDTO.fullName() == null || registerAdminRequestDTO.fullName().isBlank()) {
             throw new ResponseStatusException(BAD_REQUEST, "El fullName es obligatorio");
         }
-        if (registerRequestDTO.email() == null || registerRequestDTO.email().isBlank()) {
+        if (registerAdminRequestDTO.email() == null || registerAdminRequestDTO.email().isBlank()) {
             throw new ResponseStatusException(BAD_REQUEST, "El email es obligatorio");
         }
     }

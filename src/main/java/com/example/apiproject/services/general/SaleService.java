@@ -1,6 +1,6 @@
 package com.example.apiproject.services.general;
 
-import com.example.apiproject.DTOs.Admin.NotificationEvent;
+import com.example.apiproject.DTOs.Admin.NotificationEventDTO;
 import com.example.apiproject.DTOs.General.*;
 import com.example.apiproject.config.CacheConstants;
 import com.example.apiproject.entities.client.UserClient;
@@ -44,6 +44,7 @@ public class SaleService {
     private final CacheManager cacheManager;
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#authenticatedClientId")
     public PurchaseResponseDTO purchase(PurchaseRequestDTO requestDTO, Long authenticatedClientId) {
         validatePurchaseRequest(requestDTO);
         if (!requestDTO.clientId().equals(authenticatedClientId)) {
@@ -111,7 +112,7 @@ public class SaleService {
                 .map(this::toPurchaseItemResponse)
                 .toList();
 
-        notificationService.push(saleOwnerId, new NotificationEvent(
+        notificationService.push(saleOwnerId, new NotificationEventDTO(
                 "VENTA_NUEVA",
                 "Nueva venta por $" + totalAmount,
                 saleOwnerId
@@ -120,7 +121,7 @@ public class SaleService {
         for (Map.Entry<Long, Integer> entry : requestedQuantities.entrySet()) {
             Product product = productsById.get(entry.getKey());
             if (product.getStock() <= 5) {
-                notificationService.push(saleOwnerId, new NotificationEvent(
+                notificationService.push(saleOwnerId, new NotificationEventDTO(
                         "STOCK_BAJO",
                         "Stock bajo: " + product.getName() + " (" + product.getStock() + " restantes)",
                         saleOwnerId

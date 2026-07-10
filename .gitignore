@@ -37,9 +37,3 @@ build/
 /src/main/resources/db
 uploads/products
 uploads/perfiles
-
-### security ###
-/src/main/java/com/example/apiproject/config/SecurityConfig.java
-
-### repositories ###
-/src/main/java/com/example/apiproject/repositories

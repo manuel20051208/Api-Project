@@ -43,6 +43,9 @@ public class UserAdmin {
     @Column(name = "profile_photo")
     private String profilePhoto;
 
+    @Column(name = "profile_photo_url")
+    private String profilePhotoUrl;
+
     @OneToMany(mappedBy = "userAdmin", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();
 }

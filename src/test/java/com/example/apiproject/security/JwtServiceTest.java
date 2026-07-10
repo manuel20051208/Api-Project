@@ -26,15 +26,15 @@ class JwtServiceTest {
     }
 
     @Test
-    void generateToken_debeRetornarTokenValido() {
-        String token = jwtService.generateToken(1L, "manuel", "ADMIN");
+    void generateToken_debeRetornarAdminTokenValido() {
+        String token = jwtService.generateAdminToken(1L, "manuel", "ADMIN");
         assertNotNull(token);
         assertFalse(token.isBlank());
     }
 
     @Test
     void parseAuthenticatedUser_tokenValido_debeRetornarUsuario() {
-        String token = jwtService.generateToken(1L, "manuel", "ADMIN");
+        String token = jwtService.generateAdminToken(1L, "manuel", "ADMIN");
         Optional<AuthenticatedUser> result = jwtService.parseAuthenticatedUser(token);
         assertTrue(result.isPresent());
         assertEquals("manuel", result.get().getUsername());
@@ -49,7 +49,7 @@ class JwtServiceTest {
     @Test
     void parseAuthenticatedUser_tokenExpirado_debeRetornarEmpty() {
         ReflectionTestUtils.setField(jwtService, "expirationMs", -1000L);
-        String token = jwtService.generateToken(1L, "manuel", "ADMIN");
+        String token = jwtService.generateAdminToken(1L, "manuel", "ADMIN");
         Optional<AuthenticatedUser> result = jwtService.parseAuthenticatedUser(token);
         assertTrue(result.isEmpty());
     }

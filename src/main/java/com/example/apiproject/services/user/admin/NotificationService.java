@@ -1,6 +1,6 @@
 package com.example.apiproject.services.user.admin;
 
-import com.example.apiproject.DTOs.Admin.NotificationEvent;
+import com.example.apiproject.DTOs.Admin.NotificationEventDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -24,7 +24,7 @@ public class NotificationService {
         return emitter;
     }
 
-    public void push(Long adminId, NotificationEvent event) {
+    public void push(Long adminId, NotificationEventDTO event) {
         SseEmitter emitter = emitters.get(adminId);
         if (emitter == null) return;
 

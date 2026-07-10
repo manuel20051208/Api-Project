@@ -31,7 +31,7 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(Long userId, String username, String accountType) {
+    public String generateAdminToken(Long userId, String username, String accountType) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationMs);
 
@@ -39,6 +39,20 @@ public class JwtService {
                 .setSubject(username)
                 .claim("id", userId)
                 .claim("accountType", accountType)
+                .setIssuedAt(now)
+                .setExpiration(expiration)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateClientToken(Long userId, String email, String accountType) {
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + expirationMs);
+
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("id", userId)
+                    .claim("accountType", accountType)
                 .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)

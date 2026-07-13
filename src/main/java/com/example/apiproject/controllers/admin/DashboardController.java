@@ -2,7 +2,7 @@ package com.example.apiproject.controllers.admin;
 
 import com.example.apiproject.DTOs.Admin.DashboardDTO;
 import com.example.apiproject.security.AuthenticatedUser;
-import com.example.apiproject.services.user.admin.DashboardService;
+import com.example.apiproject.services.admin.DashboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

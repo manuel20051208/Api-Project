@@ -1,6 +1,8 @@
 package com.example.apiproject.controllers.client;
 
-import com.example.apiproject.DTOs.Auth.*;
+import com.example.apiproject.DTOs.Auth.LoginClientRequestDTO;
+import com.example.apiproject.DTOs.Auth.LoginClientResponseDTO;
+import com.example.apiproject.DTOs.Auth.RegisterClientRequestDTO;
 import com.example.apiproject.DTOs.Client.ClientDescriptionAboutUsersDTO;
 import com.example.apiproject.DTOs.Client.ClientResponseDTO;
 import com.example.apiproject.DTOs.Client.PaymentCardRequestDTO;
@@ -8,7 +10,7 @@ import com.example.apiproject.DTOs.Client.PaymentCardResponseDTO;
 import com.example.apiproject.entities.client.UserClient;
 import com.example.apiproject.repositories.projection.ClientHistoryProjection;
 import com.example.apiproject.security.AuthenticatedUser;
-import com.example.apiproject.services.user.admin.UserService;
+import com.example.apiproject.services.admin.UserService;
 import com.example.apiproject.services.user.client.ClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,4 +1,4 @@
-package com.example.apiproject.services.user.admin;
+package com.example.apiproject.services.admin;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;

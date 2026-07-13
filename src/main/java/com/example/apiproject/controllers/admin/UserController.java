@@ -6,7 +6,7 @@ import com.example.apiproject.DTOs.Auth.LoginAdminResponseDTO;
 import com.example.apiproject.DTOs.Auth.RegisterAdminRequestDTO;
 import com.example.apiproject.entities.admin.UserAdmin;
 import com.example.apiproject.security.AuthenticatedUser;
-import com.example.apiproject.services.user.admin.UserService;
+import com.example.apiproject.services.admin.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

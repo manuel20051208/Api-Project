@@ -2,7 +2,7 @@ package com.example.apiproject.controllers.admin;
 
 
 import com.example.apiproject.repositories.projection.ClientSummaryProjection;
-import com.example.apiproject.services.user.admin.ClientsSummaryViewService;
+import com.example.apiproject.services.admin.ClientsSummaryViewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class ClientsSummaryViewController {
     @Operation(summary = "Get all clients summaries")
     @GetMapping("/getNames/{userId}")
     public Page<ClientSummaryProjection> showAll(
-            @PathVariable("userId") Long userId
+            @PathVariable Long userId
     ){
         return clientsSummaryViewService.showAllForSales(userId);
     }
@@ -36,7 +36,7 @@ public class ClientsSummaryViewController {
     @Operation(summary = "Search client summaries by exact email")
     @GetMapping("/email/{userId}")
     public Page<ClientSummaryProjection> showByEmail(
-            @PathVariable("userId") Long userId,
+            @PathVariable Long userId,
             @RequestParam(required = false) String email,
             @RequestParam(defaultValue = "10") int page){
         return clientsSummaryViewService.showClientsSummaryByEmail(userId,email, page);

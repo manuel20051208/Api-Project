@@ -19,8 +19,11 @@ public class ProductImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "file_name")
     private String fileName;
+    @Column(name = "file_path")
     private String filePath;
+    @Column(name = "display_order")
     private Long displayOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)

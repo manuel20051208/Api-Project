@@ -1,4 +1,4 @@
-package com.example.apiproject.services.user.admin;
+package com.example.apiproject.services.admin;
 
 import com.example.apiproject.DTOs.Admin.DashboardDTO;
 import com.example.apiproject.exceptions.ResourceNotFoundException;

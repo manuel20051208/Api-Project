@@ -52,7 +52,7 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("id", userId)
-                    .claim("accountType", accountType)
+                .claim("accountType", accountType)
                 .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)

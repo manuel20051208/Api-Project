@@ -1,4 +1,4 @@
-package com.example.apiproject.services.user.client;
+package com.example.apiproject.services.client;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;

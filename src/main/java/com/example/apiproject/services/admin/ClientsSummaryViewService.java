@@ -45,6 +45,7 @@ public class ClientsSummaryViewService {
 
     private Sort latestClientsSort() {
         return Sort.by(Sort.Direction.DESC, "latest_sale")
+                .and(Sort.by(Sort.Direction.ASC, "full_name"))
                 .and(Sort.by(Sort.Direction.DESC, "id"));
     }
 }

@@ -14,7 +14,7 @@ import org.springframework.data.repository.query.Param;
 public interface ClientsSummaryViewRepository
         extends Repository<UserClient, Long> {
 
-    @Query(value = "SELECT * FROM clients_summary WHERE user_id = :userId ORDER BY latest_sale DESC, full_name",
+    @Query(value = "SELECT * FROM clients_summary WHERE user_id = :userId",
             countQuery = "SELECT count(*) FROM clients_summary WHERE user_id = :userId",
             nativeQuery = true)
     Page<ClientSummaryProjection> findAllByAdmin(
@@ -22,7 +22,7 @@ public interface ClientsSummaryViewRepository
             Pageable pageable
     );
 
-    @Query(value = "SELECT * FROM clients_summary WHERE user_id = :userId AND full_name ILIKE :clientName ORDER BY latest_sale DESC",
+    @Query(value = "SELECT * FROM clients_summary WHERE user_id = :userId AND full_name ILIKE :clientName",
             countQuery = "SELECT count(*) FROM clients_summary WHERE user_id = :userId AND full_name ILIKE :clientName",
             nativeQuery = true)
     Page<ClientSummaryProjection> findByAdminAndName(
@@ -31,7 +31,7 @@ public interface ClientsSummaryViewRepository
             Pageable pageable
     );
 
-    @Query(value = "SELECT * FROM clients_summary WHERE user_id = :userId AND email ILIKE :clientEmail ORDER BY latest_sale DESC",
+    @Query(value = "SELECT * FROM clients_summary WHERE user_id = :userId AND email ILIKE :clientEmail",
             countQuery = "SELECT count(*) FROM clients_summary WHERE user_id = :userId AND email ILIKE :clientEmail",
             nativeQuery = true)
     Page<ClientSummaryProjection> findByAdminAndEmail(

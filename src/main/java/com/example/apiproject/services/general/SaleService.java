@@ -17,7 +17,8 @@ import com.example.apiproject.repositories.general.SaleRepository;
 import com.example.apiproject.services.user.admin.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -44,24 +45,38 @@ public class SaleService {
     private final CacheManager cacheManager;
 
     @Transactional
-    @CacheEvict(value = "dashboard", key = "#authenticatedClientId")
+    @Caching(
+            put = {
+                    @CachePut(value = "dashboard", key = "#authenticatedClientId"),
+                    @CachePut(value = "ClientHistory", key = "#authenticatedClientId")
+            }
+    )
     public PurchaseResponseDTO purchase(PurchaseRequestDTO requestDTO, Long authenticatedClientId) {
+        // Validamos el cuerpo del request de la venta
         validatePurchaseRequest(requestDTO);
+
+        // Validamos si hay clientes por ID en la base de datos
+        if (!clientRepository.existsById(requestDTO.clientId())) {
+            throw new ResourceNotFoundException("Client not found: " + requestDTO.clientId());
+        }
+
+        // Validamos que el cliente que hará la compra es igual al ID del cliente actual autenticado
         if (!requestDTO.clientId().equals(authenticatedClientId)) {
             throw new ResponseStatusException(FORBIDDEN, "No puedes comprar usando otro cliente");
         }
 
-        if (!clientRepository.existsById(requestDTO.clientId())) {
-            throw new ResourceNotFoundException("Client not found: " + requestDTO.clientId());
-        }
-        UserClient client = clientRepository.getReferenceById(requestDTO.clientId());
-
+        // Validamos que al menos haya una tarjeta activa para realizar compra (tarjeta simulada)
         if (!paymentCardRepository.existsByUserClientIdAndActiveTrue(requestDTO.clientId())) {
             throw new ResponseStatusException(PAYMENT_REQUIRED, "El cliente no tiene una tarjeta activa");
         }
 
+        // Luego de las validaciones anteriores buscamos el cliente
+        UserClient client = clientRepository.findById(authenticatedClientId).get();
+
+
         Map<Long, Integer> requestedQuantities = groupRequestedQuantities(requestDTO.items());
-        Map<Long, Product> productsById = productRepository.findAllByIdInForUpdate(requestedQuantities.keySet().stream().toList())
+        Map<Long, Product> productsById = productRepository.findAllByIdInForUpdate(
+                requestedQuantities.keySet().stream().toList())
                 .stream()
                 .collect(Collectors.toMap(Product::getId, Function.identity()));
 
@@ -77,6 +92,9 @@ public class SaleService {
         sale.setUserClient(client);
         sale.setHora(now);
 
+        // Los admins dueños de los productos
+        List<Long> adminsId = requestDTO.userId();
+
         for (Map.Entry<Long, Integer> entry : requestedQuantities.entrySet()) {
             Product product = productsById.get(entry.getKey());
             int quantity = entry.getValue();
@@ -91,12 +109,8 @@ public class SaleService {
             product.setStock(product.getStock() - quantity);
             totalAmount = totalAmount.add(unitPrice(product).multiply(BigDecimal.valueOf(quantity)));
 
-            if (product.getUserAdmin() != null && saleOwnerId == null) {
-                saleOwnerId = product.getUserAdmin().getId();
-                sale.setUserAdmin(product.getUserAdmin());
-            } else if (product.getUserAdmin() != null && !saleOwnerId.equals(product.getUserAdmin().getId())) {
-                throw new ResponseStatusException(CONFLICT, "All products in one purchase must belong to the same user");
-            }
+            sale.setUserAdmin(product.getUserAdmin());
+            saleOwnerId = product.getUserAdmin().getId();
         }
 
         sale.setTotalAmount(totalAmount);
@@ -156,6 +170,10 @@ public class SaleService {
         }
         if (requestDTO.items() == null || requestDTO.items().isEmpty()) {
             throw new ResponseStatusException(BAD_REQUEST, "La compra debe tener al menos un producto");
+        }
+        if (requestDTO.userId().size() > requestDTO.items().size()) {
+            throw new ResponseStatusException(BAD_REQUEST, "¡UPS!, La cantidad de productos agregados a la venta" +
+                    " deben de ser igual a la cantidad de dueños del producto");
         }
     }
 

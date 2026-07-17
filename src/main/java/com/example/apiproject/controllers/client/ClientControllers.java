@@ -11,7 +11,7 @@ import com.example.apiproject.entities.client.UserClient;
 import com.example.apiproject.repositories.projection.ClientHistoryProjection;
 import com.example.apiproject.security.AuthenticatedUser;
 import com.example.apiproject.services.admin.UserService;
-import com.example.apiproject.services.user.client.ClientService;
+import com.example.apiproject.services.client.ClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

@@ -19,6 +19,7 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -48,7 +49,10 @@ public class SaleService {
     private final EntityManager entityManager;
 
     @Transactional
-    @CacheEvict(value = "ClientHistory", key = "#authenticatedClientId")
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CLIENT_HISTORY, key = "#authenticatedClientId"),
+            @CacheEvict(value = CacheConstants.DASHBOARD, allEntries = true)
+    })
     public PurchaseResponseDTO purchase(PurchaseRequestDTO requestDTO, Long authenticatedClientId) {
         // Validamos el cuerpo del request de la venta
         validatePurchaseRequest(requestDTO);
@@ -203,7 +207,6 @@ public class SaleService {
                     .append("?").append(parameterIndex++).append(", ")
                     .append("?").append(parameterIndex++).append(")");
         }
-
         // Finalmente, retornamos el id de cada venta de la sale
         sql.append(" RETURNING id");
 

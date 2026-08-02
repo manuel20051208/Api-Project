@@ -44,8 +44,6 @@ public class UserController {
     public UserResponseDTO gerAdminDataForProfile(
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
-        System.out.println(authenticatedUser.id());
-        System.out.println(authenticatedUser.getAuthorities());
         return userService.getUserAdmin(authenticatedUser.id());
     }
 

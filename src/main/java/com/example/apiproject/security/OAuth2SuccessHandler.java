@@ -117,8 +117,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             changed = true;
         }
 
-        System.out.println(admin.getFullName());
-
         if (StringUtils.hasText(picture) && !picture.equals(admin.getProfilePhotoUrl())
         || admin.getProfilePhotoUrl() == null) {
             admin.setProfilePhotoUrl(picture);

@@ -13,9 +13,8 @@ import com.example.apiproject.repositories.client.ClientRepository;
 import com.example.apiproject.repositories.client.PaymentCardRepository;
 import com.example.apiproject.repositories.general.ProductRepository;
 import com.example.apiproject.repositories.general.SaleItemRepository;
+import com.example.apiproject.repositories.general.SaleRepository;
 import com.example.apiproject.services.user.admin.NotificationService;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
@@ -46,7 +45,7 @@ public class SaleService {
     private final ClientRepository clientRepository;
     private final PaymentCardRepository paymentCardRepository;
     private final CacheManager cacheManager;
-    private final EntityManager entityManager;
+    private final SaleRepository saleRepository;
 
     @Transactional
     @Caching(evict = {
@@ -115,8 +114,8 @@ public class SaleService {
             totalAmount = totalAmount.add(subtotal);
         }
 
-        // Inserta todas las ventas en un solo INSERT y asigna los ids generados a cada venta.
-        List<Sale> savedSales = insertSales(saleDrafts, client.getId(), now);
+        // Inserta todas las ventas en un solo batch y asigna los ids generados a cada venta.
+        List<Sale> savedSales = saleRepository.saveAll(sales);
 
         // Crea los items de venta enlazados a las ventas insertadas.
         List<SalesItem> saleItems = saleDrafts.stream()
@@ -185,68 +184,6 @@ public class SaleService {
             cache.evict(key);
         }
     }
-
-    private List<Sale> insertSales(List<SaleDraft> saleDrafts, Long clientId, LocalDateTime createdAt) {
-        // Construye un INSERT multi-fila porque GenerationType.IDENTITY no permite batch real con saveAll.
-        StringBuilder sql = new StringBuilder(
-                "INSERT INTO sales (client_id, user_id, total_amount, created_at) VALUES "
-        );
-
-        // Creamos una variable para enumerar los parametros y tenerlos identificados
-        int parameterIndex = 1;
-
-        // Generamos un for para crear el QUERY (Insert) con las N cantidades de ventas
-        for (int i = 0; i < saleDrafts.size(); i++) {
-            if (i > 0) {
-                sql.append(", ");
-            }
-
-            // Vamos concatenando los valores de los value (4 incrementos 4 parámetros o sea: 1, 2, 3, 4)
-            sql.append("(?").append(parameterIndex++).append(", ")
-                    .append("?").append(parameterIndex++).append(", ")
-                    .append("?").append(parameterIndex++).append(", ")
-                    .append("?").append(parameterIndex++).append(")");
-        }
-        // Finalmente, retornamos el id de cada venta de la sale
-        sql.append(" RETURNING id");
-
-        // Usamos la lógica de EntityManager createNativeQuery para retornar un object tipo Query
-        Query query = entityManager.createNativeQuery(sql.toString());
-
-        // Reiniciamos el parámetro a índice 1 nuevamente para poder indicar donde iran los valores
-        // de ciertos parametros indicados en el segundo parametro
-        parameterIndex = 1;
-
-        // For para armar el Insert con sus respectos valores de cada sale
-        for (SaleDraft draft : saleDrafts) {
-            query.setParameter(parameterIndex++, clientId);
-            query.setParameter(parameterIndex++, draft.adminId());
-            query.setParameter(parameterIndex++, draft.subtotal());
-            query.setParameter(parameterIndex++, createdAt);
-        }
-
-        // Creamos una lista para guardar los ID de las sales generadas por postgresSQL
-        List<Number> generatedIds = query.getResultList();
-        if (generatedIds.size() != saleDrafts.size()) {
-            throw new ResponseStatusException(INTERNAL_SERVER_ERROR, "No se pudieron registrar todas las ventas");
-        }
-
-        // Creamos una lista tipo ArrayList para acceso a indice directo, luego guardamos los productos
-        // ya guardados en base de dato
-        List<Sale> savedSales = new ArrayList<>(saleDrafts.size());
-
-        // Creamos un for para luego recorrer los productos guardados (la lista saleDrafts)
-        // y para traer los id creados por la BD a esas ventas
-        for (int i = 0; i < saleDrafts.size(); i++) {
-            Sale sale = saleDrafts.get(i).sale();
-            sale.setId((generatedIds.get(i)).longValue());
-            savedSales.add(sale);
-        }
-
-        // Finalmente retornamos la lista de los productos guardados pero ahora con sus respectivos ID
-        return savedSales;
-    }
-
 
     // Validamos lo que se trajo del request al front end
     private void validatePurchaseRequest(PurchaseRequestDTO requestDTO) {

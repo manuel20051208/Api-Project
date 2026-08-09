@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow",
+      "*.key": "deny",
+      "*.pem": "deny"
+    },
+    "bash": {
+      "*": "ask",
+      "cat *.env*": "deny",
+      "type *.env*": "deny",
+      "rm -rf *": "deny"
+    }
+  }
+}

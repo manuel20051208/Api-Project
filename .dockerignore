@@ -1,0 +1,12 @@
+target/
+.git/
+.idea/
+graphify-out/
+uploads/
+images/
+.env
+.mvn/
+mvnw
+mvnw.cmd
+HELP.md
+*.iml

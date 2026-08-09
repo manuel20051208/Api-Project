@@ -1,0 +1,477 @@
+{
+  ".opencode/opencode.json": {
+    "mtime": 1785639605.390377,
+    "ast_hash": "1efe24ecf938911d4f23e4b1c6ec91f7",
+    "semantic_hash": "1efe24ecf938911d4f23e4b1c6ec91f7"
+  },
+  ".opencode/plugins/graphify.js": {
+    "mtime": 1785639416.1821258,
+    "ast_hash": "b33d000860642c6f4907a877e0387a21",
+    "semantic_hash": "b33d000860642c6f4907a877e0387a21"
+  },
+  "mvnw": {
+    "mtime": 1774102923.403029,
+    "ast_hash": "ab50dd89da7da2346b28003352eeeeeb",
+    "semantic_hash": "ab50dd89da7da2346b28003352eeeeeb"
+  },
+  "pom.xml": {
+    "mtime": 1785349565.0710618,
+    "ast_hash": "0ab63996bec574db3adf2788d253ef9b",
+    "semantic_hash": "0ab63996bec574db3adf2788d253ef9b"
+  },
+  "src/main/java/com/example/apiproject/ApiProjectApplication.java": {
+    "mtime": 1781482349.3099833,
+    "ast_hash": "20e4a600c3a364e52747c0080566bc03",
+    "semantic_hash": "20e4a600c3a364e52747c0080566bc03"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Admin/DashboardDTO.java": {
+    "mtime": 1781482349.3109832,
+    "ast_hash": "71096dc7a8cb3238fe4dfcc11dd9c704",
+    "semantic_hash": "71096dc7a8cb3238fe4dfcc11dd9c704"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Admin/NotificationEventDTO.java": {
+    "mtime": 1784267141.6698012,
+    "ast_hash": "2d4a8f49151ccd6da9b93d55face7821",
+    "semantic_hash": "2d4a8f49151ccd6da9b93d55face7821"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Admin/ProductImageDTO.java": {
+    "mtime": 1784267141.670866,
+    "ast_hash": "867513f98e37d302f9b2005e7f47fce7",
+    "semantic_hash": "867513f98e37d302f9b2005e7f47fce7"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Admin/SaleItemResponseDTO.java": {
+    "mtime": 1780438393.4349258,
+    "ast_hash": "db9949854b038aa5abef89cd39eacdd4",
+    "semantic_hash": "db9949854b038aa5abef89cd39eacdd4"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Admin/SaleResponseDato.java": {
+    "mtime": 1776633276.21586,
+    "ast_hash": "14f9f499f9e2504afd2d95867925be57",
+    "semantic_hash": "14f9f499f9e2504afd2d95867925be57"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Admin/UserAdminDTO.java": {
+    "mtime": 1781482349.3119779,
+    "ast_hash": "3326a417c5cca0b1bce4dbb4b24e7c11",
+    "semantic_hash": "3326a417c5cca0b1bce4dbb4b24e7c11"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Admin/UserResponseDTO.java": {
+    "mtime": 1785119298.6915767,
+    "ast_hash": "e4f6ccf3115da723da0d970bde411c33",
+    "semantic_hash": "e4f6ccf3115da723da0d970bde411c33"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Auth/LoginAdminRequestDTO.java": {
+    "mtime": 1785119298.694585,
+    "ast_hash": "17ef745364ba4bd014f23d87403bf0d0",
+    "semantic_hash": "17ef745364ba4bd014f23d87403bf0d0"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Auth/LoginAdminResponseDTO.java": {
+    "mtime": 1785119298.6978464,
+    "ast_hash": "5855932ab06c13a03e56d2ac34c7568c",
+    "semantic_hash": "5855932ab06c13a03e56d2ac34c7568c"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Auth/LoginClientRequestDTO.java": {
+    "mtime": 1784267141.6766374,
+    "ast_hash": "ad65ab7d1438e7fd233bd25df1bc5e18",
+    "semantic_hash": "ad65ab7d1438e7fd233bd25df1bc5e18"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Auth/LoginClientResponseDTO.java": {
+    "mtime": 1785119298.700904,
+    "ast_hash": "c9731b8748d4aee4229e0ecdf95c78b0",
+    "semantic_hash": "c9731b8748d4aee4229e0ecdf95c78b0"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Auth/RegisterAdminRequestDTO.java": {
+    "mtime": 1785119298.7029297,
+    "ast_hash": "0784d6733363fd9e412c47f33f186480",
+    "semantic_hash": "0784d6733363fd9e412c47f33f186480"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Auth/RegisterClientRequestDTO.java": {
+    "mtime": 1784267141.6786382,
+    "ast_hash": "859d55d55ec96b87fc36df6736f00725",
+    "semantic_hash": "859d55d55ec96b87fc36df6736f00725"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Client/ClientDescriptionAboutUsersDTO.java": {
+    "mtime": 1784267141.679639,
+    "ast_hash": "aae2bbb9c7b1d708931f16e242ff4e93",
+    "semantic_hash": "aae2bbb9c7b1d708931f16e242ff4e93"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Client/ClientResponseDTO.java": {
+    "mtime": 1784267141.6806371,
+    "ast_hash": "b37cb2d903f7bbc11c9b9c0a86b03e74",
+    "semantic_hash": "b37cb2d903f7bbc11c9b9c0a86b03e74"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Client/PaymentCardRequestDTO.java": {
+    "mtime": 1780438393.440791,
+    "ast_hash": "6f1570b4b0572381c1c50769c153f3e2",
+    "semantic_hash": "6f1570b4b0572381c1c50769c153f3e2"
+  },
+  "src/main/java/com/example/apiproject/DTOs/Client/PaymentCardResponseDTO.java": {
+    "mtime": 1780773239.4212685,
+    "ast_hash": "5e82682c8edea6af346ce0e987497832",
+    "semantic_hash": "5e82682c8edea6af346ce0e987497832"
+  },
+  "src/main/java/com/example/apiproject/DTOs/General/ProductResponseDTO.java": {
+    "mtime": 1780438393.4469202,
+    "ast_hash": "9d11bbda2b27dc93943388e918648bfc",
+    "semantic_hash": "9d11bbda2b27dc93943388e918648bfc"
+  },
+  "src/main/java/com/example/apiproject/DTOs/General/PurchaseItemRequestDTO.java": {
+    "mtime": 1780438393.4494617,
+    "ast_hash": "1b056028ed3c920b3a2c9b40797868de",
+    "semantic_hash": "1b056028ed3c920b3a2c9b40797868de"
+  },
+  "src/main/java/com/example/apiproject/DTOs/General/PurchaseItemResponseDTO.java": {
+    "mtime": 1780438393.4504602,
+    "ast_hash": "cabe091178c16fd9d9c22ea978478cd5",
+    "semantic_hash": "cabe091178c16fd9d9c22ea978478cd5"
+  },
+  "src/main/java/com/example/apiproject/DTOs/General/PurchaseRequestDTO.java": {
+    "mtime": 1784267336.2151442,
+    "ast_hash": "96b07bba1eae49d250220621894ea97b",
+    "semantic_hash": "96b07bba1eae49d250220621894ea97b"
+  },
+  "src/main/java/com/example/apiproject/DTOs/General/PurchaseResponseDTO.java": {
+    "mtime": 1785119298.7049317,
+    "ast_hash": "92b596d1c03e7a99af1f37e342c92cf2",
+    "semantic_hash": "92b596d1c03e7a99af1f37e342c92cf2"
+  },
+  "src/main/java/com/example/apiproject/config/CacheConstants.java": {
+    "mtime": 1785119298.7059233,
+    "ast_hash": "218ca8755d857e19174f2a1e26d048df",
+    "semantic_hash": "218ca8755d857e19174f2a1e26d048df"
+  },
+  "src/main/java/com/example/apiproject/config/CloudinaryConfig.java": {
+    "mtime": 1784267141.6816394,
+    "ast_hash": "5a0ef420d97ac78a37a49155a04a0710",
+    "semantic_hash": "5a0ef420d97ac78a37a49155a04a0710"
+  },
+  "src/main/java/com/example/apiproject/config/SecurityConfig.java": {
+    "mtime": 1785119298.7090275,
+    "ast_hash": "e29303c82b4e12b60a1350f8bb5a1dc6",
+    "semantic_hash": "e29303c82b4e12b60a1350f8bb5a1dc6"
+  },
+  "src/main/java/com/example/apiproject/config/SwaggerConfig.java": {
+    "mtime": 1781482349.314984,
+    "ast_hash": "4cb5176807c64eddcd6aac222994672a",
+    "semantic_hash": "4cb5176807c64eddcd6aac222994672a"
+  },
+  "src/main/java/com/example/apiproject/controllers/admin/ClientsSummaryViewController.java": {
+    "mtime": 1784267141.683638,
+    "ast_hash": "58d4337e8b36c2387c4bc0d7a3b62ecf",
+    "semantic_hash": "58d4337e8b36c2387c4bc0d7a3b62ecf"
+  },
+  "src/main/java/com/example/apiproject/controllers/admin/DashboardController.java": {
+    "mtime": 1785508769.8333867,
+    "ast_hash": "64a95486ab88b778f5ddad5a5b6bbfc7",
+    "semantic_hash": "64a95486ab88b778f5ddad5a5b6bbfc7"
+  },
+  "src/main/java/com/example/apiproject/controllers/admin/NotificationController.java": {
+    "mtime": 1781482349.3179777,
+    "ast_hash": "cc2819eec3dcf2dd2bbfc79f68e2eae9",
+    "semantic_hash": "cc2819eec3dcf2dd2bbfc79f68e2eae9"
+  },
+  "src/main/java/com/example/apiproject/controllers/admin/ProductImageController.java": {
+    "mtime": 1780773239.428265,
+    "ast_hash": "8c67de556015aded4286d24bda820e87",
+    "semantic_hash": "8c67de556015aded4286d24bda820e87"
+  },
+  "src/main/java/com/example/apiproject/controllers/admin/SalesItemViewController.java": {
+    "mtime": 1785119298.711028,
+    "ast_hash": "4f805cd55eb00b31968101917fe39e03",
+    "semantic_hash": "4f805cd55eb00b31968101917fe39e03"
+  },
+  "src/main/java/com/example/apiproject/controllers/admin/UserController.java": {
+    "mtime": 1785124358.767535,
+    "ast_hash": "73c001592f34492e914c7860ad16c76b",
+    "semantic_hash": "73c001592f34492e914c7860ad16c76b"
+  },
+  "src/main/java/com/example/apiproject/controllers/client/ClientControllers.java": {
+    "mtime": 1784267336.2176635,
+    "ast_hash": "70e199e0cd21fc442bf165833bc528e0",
+    "semantic_hash": "70e199e0cd21fc442bf165833bc528e0"
+  },
+  "src/main/java/com/example/apiproject/controllers/general/ProductController.java": {
+    "mtime": 1785119298.7150147,
+    "ast_hash": "b6e883f2b96ccf558d149eff165aa41c",
+    "semantic_hash": "b6e883f2b96ccf558d149eff165aa41c"
+  },
+  "src/main/java/com/example/apiproject/controllers/general/SaleController.java": {
+    "mtime": 1780773239.4392745,
+    "ast_hash": "82b8389208f0071e092041e843c1741f",
+    "semantic_hash": "82b8389208f0071e092041e843c1741f"
+  },
+  "src/main/java/com/example/apiproject/entities/admin/ProductImage.java": {
+    "mtime": 1784267141.6886404,
+    "ast_hash": "7964aa5b0bc65698037eddaa1371ade1",
+    "semantic_hash": "7964aa5b0bc65698037eddaa1371ade1"
+  },
+  "src/main/java/com/example/apiproject/entities/admin/ReportDashboard.java": {
+    "mtime": 1785510875.6503737,
+    "ast_hash": "914060bfbe617a877438ed1a0a0f0a9f",
+    "semantic_hash": "914060bfbe617a877438ed1a0a0f0a9f"
+  },
+  "src/main/java/com/example/apiproject/entities/admin/UserAdmin.java": {
+    "mtime": 1785119298.716013,
+    "ast_hash": "37bc509d3d4496fa138bb2a63d4eae4e",
+    "semantic_hash": "37bc509d3d4496fa138bb2a63d4eae4e"
+  },
+  "src/main/java/com/example/apiproject/entities/client/PaymentCard.java": {
+    "mtime": 1784267141.6901488,
+    "ast_hash": "a07e72f7ce93568c20408ca446932b5a",
+    "semantic_hash": "a07e72f7ce93568c20408ca446932b5a"
+  },
+  "src/main/java/com/example/apiproject/entities/client/UserClient.java": {
+    "mtime": 1784267141.6911578,
+    "ast_hash": "5a0f80c7246e0c21316578aa5b069225",
+    "semantic_hash": "5a0f80c7246e0c21316578aa5b069225"
+  },
+  "src/main/java/com/example/apiproject/entities/general/Product.java": {
+    "mtime": 1781482349.321977,
+    "ast_hash": "1601b698b8e43f4944ac2f6fe9c6f621",
+    "semantic_hash": "1601b698b8e43f4944ac2f6fe9c6f621"
+  },
+  "src/main/java/com/example/apiproject/entities/general/Sale.java": {
+    "mtime": 1780438393.4928458,
+    "ast_hash": "9af47ee26f515a2235cd1cb9d6cf5e18",
+    "semantic_hash": "9af47ee26f515a2235cd1cb9d6cf5e18"
+  },
+  "src/main/java/com/example/apiproject/entities/general/SalesItem.java": {
+    "mtime": 1780438393.4952385,
+    "ast_hash": "34be23c877cdfb19798988a0947a539d",
+    "semantic_hash": "34be23c877cdfb19798988a0947a539d"
+  },
+  "src/main/java/com/example/apiproject/enums/Status.java": {
+    "mtime": 1774724385.7116554,
+    "ast_hash": "b25d8b3d12b61b9d51ae08c1738bfe44",
+    "semantic_hash": "b25d8b3d12b61b9d51ae08c1738bfe44"
+  },
+  "src/main/java/com/example/apiproject/exceptions/ApiError.java": {
+    "mtime": 1781482349.32298,
+    "ast_hash": "fef6290b7efb57afbd4bc314bab918fb",
+    "semantic_hash": "fef6290b7efb57afbd4bc314bab918fb"
+  },
+  "src/main/java/com/example/apiproject/exceptions/GlobalExceptionHandler.java": {
+    "mtime": 1781482349.3239837,
+    "ast_hash": "8b9ea0c46f4edccabdb8fa66dd12c3d4",
+    "semantic_hash": "8b9ea0c46f4edccabdb8fa66dd12c3d4"
+  },
+  "src/main/java/com/example/apiproject/exceptions/ResourceNotFoundException.java": {
+    "mtime": 1780438393.5018127,
+    "ast_hash": "ace3ad28ed06a3a7c80e306fbecf46c3",
+    "semantic_hash": "ace3ad28ed06a3a7c80e306fbecf46c3"
+  },
+  "src/main/java/com/example/apiproject/repositories/admin/ClientsSummaryViewRepository.java": {
+    "mtime": 1784267336.219165,
+    "ast_hash": "56c910b72f82fffe4c29650bb61e7234",
+    "semantic_hash": "56c910b72f82fffe4c29650bb61e7234"
+  },
+  "src/main/java/com/example/apiproject/repositories/admin/DashboardRepository.java": {
+    "mtime": 1785504212.70942,
+    "ast_hash": "9dfae9dd648e09247da02d46ff74f92c",
+    "semantic_hash": "9dfae9dd648e09247da02d46ff74f92c"
+  },
+  "src/main/java/com/example/apiproject/repositories/admin/ProductImageRepository.java": {
+    "mtime": 1780773239.4462664,
+    "ast_hash": "e269c4f326677be6cdb728429a7619a1",
+    "semantic_hash": "e269c4f326677be6cdb728429a7619a1"
+  },
+  "src/main/java/com/example/apiproject/repositories/admin/ReportDashboardRepository.java": {
+    "mtime": 1785510875.6335702,
+    "ast_hash": "3282454b8475c806bd7242edab3c5adf",
+    "semantic_hash": "3282454b8475c806bd7242edab3c5adf"
+  },
+  "src/main/java/com/example/apiproject/repositories/admin/ReportExporter.java": {
+    "mtime": 1785504685.2558863,
+    "ast_hash": "6583f1ab088d80915c8e78772dbb2838",
+    "semantic_hash": "6583f1ab088d80915c8e78772dbb2838"
+  },
+  "src/main/java/com/example/apiproject/repositories/admin/ReportService.java": {
+    "mtime": 1785504009.6196818,
+    "ast_hash": "6aeadb159e44f9061b45796a3a348f90",
+    "semantic_hash": "6aeadb159e44f9061b45796a3a348f90"
+  },
+  "src/main/java/com/example/apiproject/repositories/admin/SaleItemViewRepository.java": {
+    "mtime": 1780773239.4482656,
+    "ast_hash": "1ba9fa47ca63f45998982894eac068b0",
+    "semantic_hash": "1ba9fa47ca63f45998982894eac068b0"
+  },
+  "src/main/java/com/example/apiproject/repositories/admin/UserRepository.java": {
+    "mtime": 1785119298.7170174,
+    "ast_hash": "b1d9a2fc3bc7befbda073c51ad91521a",
+    "semantic_hash": "b1d9a2fc3bc7befbda073c51ad91521a"
+  },
+  "src/main/java/com/example/apiproject/repositories/client/ClientRepository.java": {
+    "mtime": 1785119298.7190263,
+    "ast_hash": "00f6ef6de79a475da9ed325cfc91466e",
+    "semantic_hash": "00f6ef6de79a475da9ed325cfc91466e"
+  },
+  "src/main/java/com/example/apiproject/repositories/client/PaymentCardRepository.java": {
+    "mtime": 1785119298.7200265,
+    "ast_hash": "2c8d5697ebfca53a5dd6f451bb5aad83",
+    "semantic_hash": "2c8d5697ebfca53a5dd6f451bb5aad83"
+  },
+  "src/main/java/com/example/apiproject/repositories/general/ProductRepository.java": {
+    "mtime": 1785119298.7210197,
+    "ast_hash": "27a0827d8603536e129a7ae73acd9682",
+    "semantic_hash": "27a0827d8603536e129a7ae73acd9682"
+  },
+  "src/main/java/com/example/apiproject/repositories/general/SaleItemRepository.java": {
+    "mtime": 1780438393.5298028,
+    "ast_hash": "24ecacaaa41b0086bc30bd5852426955",
+    "semantic_hash": "24ecacaaa41b0086bc30bd5852426955"
+  },
+  "src/main/java/com/example/apiproject/repositories/general/SaleRepository.java": {
+    "mtime": 1780438393.532853,
+    "ast_hash": "6e197dd02c3b6c241120560626600870",
+    "semantic_hash": "6e197dd02c3b6c241120560626600870"
+  },
+  "src/main/java/com/example/apiproject/repositories/projection/ClientHistoryProjection.java": {
+    "mtime": 1784267141.6941576,
+    "ast_hash": "9ded82f75f876986a0b132299c14ba9f",
+    "semantic_hash": "9ded82f75f876986a0b132299c14ba9f"
+  },
+  "src/main/java/com/example/apiproject/repositories/projection/ClientLoginProjection.java": {
+    "mtime": 1780773239.4564917,
+    "ast_hash": "e297f3538f2de78c8fa51dc36d98e59d",
+    "semantic_hash": "e297f3538f2de78c8fa51dc36d98e59d"
+  },
+  "src/main/java/com/example/apiproject/repositories/projection/ClientSummaryProjection.java": {
+    "mtime": 1783394138.0953727,
+    "ast_hash": "60de93eac6e6102653d21bc7f2ffe594",
+    "semantic_hash": "60de93eac6e6102653d21bc7f2ffe594"
+  },
+  "src/main/java/com/example/apiproject/repositories/projection/DashboardProjection.java": {
+    "mtime": 1781482349.3279788,
+    "ast_hash": "263767aba88a1f065fb2f0cd5aa8ebd2",
+    "semantic_hash": "263767aba88a1f065fb2f0cd5aa8ebd2"
+  },
+  "src/main/java/com/example/apiproject/repositories/projection/PaymentCardDetailsProjection.java": {
+    "mtime": 1780773239.4604897,
+    "ast_hash": "bbda4e17f5fcd9fb6f78eb410afd2b35",
+    "semantic_hash": "bbda4e17f5fcd9fb6f78eb410afd2b35"
+  },
+  "src/main/java/com/example/apiproject/repositories/projection/ReportDashboardProjection.java": {
+    "mtime": 1785437612.511793,
+    "ast_hash": "5ebf1665c1520ec7f37056c329eb2353",
+    "semantic_hash": "5ebf1665c1520ec7f37056c329eb2353"
+  },
+  "src/main/java/com/example/apiproject/repositories/projection/SaleItemViewProjection.java": {
+    "mtime": 1783907033.1671991,
+    "ast_hash": "e28d3210232fe67f44473995f8cddf24",
+    "semantic_hash": "e28d3210232fe67f44473995f8cddf24"
+  },
+  "src/main/java/com/example/apiproject/security/AuthenticatedUser.java": {
+    "mtime": 1785119298.7220244,
+    "ast_hash": "b549fdd9b98017e5e743cd02333a5029",
+    "semantic_hash": "b549fdd9b98017e5e743cd02333a5029"
+  },
+  "src/main/java/com/example/apiproject/security/JwtAuthenticationFilter.java": {
+    "mtime": 1785119298.72403,
+    "ast_hash": "c9b78daaff516b9513cfbbda57fd69d0",
+    "semantic_hash": "c9b78daaff516b9513cfbbda57fd69d0"
+  },
+  "src/main/java/com/example/apiproject/security/JwtService.java": {
+    "mtime": 1785119298.7260194,
+    "ast_hash": "71055de0e3de555f24898326867fdacb",
+    "semantic_hash": "71055de0e3de555f24898326867fdacb"
+  },
+  "src/main/java/com/example/apiproject/security/OAuth2SuccessHandler.java": {
+    "mtime": 1785382183.880236,
+    "ast_hash": "5fc2c9af400e0e7c9f3555f20f5d1055",
+    "semantic_hash": "5fc2c9af400e0e7c9f3555f20f5d1055"
+  },
+  "src/main/java/com/example/apiproject/services/admin/ClientsSummaryViewService.java": {
+    "mtime": 1784267336.2223496,
+    "ast_hash": "70b57a642e7e2014e18ee1a69bf12e49",
+    "semantic_hash": "70b57a642e7e2014e18ee1a69bf12e49"
+  },
+  "src/main/java/com/example/apiproject/services/admin/DashboardService.java": {
+    "mtime": 1785509193.8594494,
+    "ast_hash": "94edc1a8c4ff8b1cf88a5b0953d5f5e8",
+    "semantic_hash": "94edc1a8c4ff8b1cf88a5b0953d5f5e8"
+  },
+  "src/main/java/com/example/apiproject/services/admin/NotificationService.java": {
+    "mtime": 1784267141.697158,
+    "ast_hash": "9e2f597621c1b8ae633df83050b28f74",
+    "semantic_hash": "9e2f597621c1b8ae633df83050b28f74"
+  },
+  "src/main/java/com/example/apiproject/services/admin/ProductImageService.java": {
+    "mtime": 1784267141.6981604,
+    "ast_hash": "c003cef4bbe1904fd8e83708da26a26f",
+    "semantic_hash": "c003cef4bbe1904fd8e83708da26a26f"
+  },
+  "src/main/java/com/example/apiproject/services/admin/SaleItemViewService.java": {
+    "mtime": 1785119298.7283907,
+    "ast_hash": "a898c0cb6495898a4664b53f0fc43581",
+    "semantic_hash": "a898c0cb6495898a4664b53f0fc43581"
+  },
+  "src/main/java/com/example/apiproject/services/admin/UserService.java": {
+    "mtime": 1785119298.7293968,
+    "ast_hash": "6010451334c7a1ba8bd6e3e6485b20f6",
+    "semantic_hash": "6010451334c7a1ba8bd6e3e6485b20f6"
+  },
+  "src/main/java/com/example/apiproject/services/client/ClientService.java": {
+    "mtime": 1785119298.7303927,
+    "ast_hash": "6a03eb826506b241d6f8813507f76956",
+    "semantic_hash": "6a03eb826506b241d6f8813507f76956"
+  },
+  "src/main/java/com/example/apiproject/services/general/ProductService.java": {
+    "mtime": 1785119298.732391,
+    "ast_hash": "056be87b6e4237715713e57718fa697f",
+    "semantic_hash": "056be87b6e4237715713e57718fa697f"
+  },
+  "src/main/java/com/example/apiproject/services/general/SaleItemService.java": {
+    "mtime": 1780438393.5371878,
+    "ast_hash": "2a34ba80f3d8888b13526648f829ffa8",
+    "semantic_hash": "2a34ba80f3d8888b13526648f829ffa8"
+  },
+  "src/main/java/com/example/apiproject/services/general/SaleService.java": {
+    "mtime": 1785381185.6086013,
+    "ast_hash": "6585ecbcd91d09aa1ba10347c2f54738",
+    "semantic_hash": "6585ecbcd91d09aa1ba10347c2f54738"
+  },
+  "src/main/java/com/example/apiproject/services/reportGenerator/ExcelExporter.java": {
+    "mtime": 1785511441.2799625,
+    "ast_hash": "db0fb8790876f910b8cf5bc30e72bd6a",
+    "semantic_hash": "db0fb8790876f910b8cf5bc30e72bd6a"
+  },
+  "src/main/java/com/example/apiproject/services/reportGenerator/PdfExporter.java": {
+    "mtime": 1785511365.0832717,
+    "ast_hash": "ceefa08b6d63aae5d92a38eec83d8c09",
+    "semantic_hash": "ceefa08b6d63aae5d92a38eec83d8c09"
+  },
+  "src/test/java/com/example/apiproject/ApiProjectApplicationTests.java": {
+    "mtime": 1776026875.5068014,
+    "ast_hash": "d29cc9e7c2ee20473589ef4920e3d599",
+    "semantic_hash": "d29cc9e7c2ee20473589ef4920e3d599"
+  },
+  "src/test/java/com/example/apiproject/security/JwtServiceTest.java": {
+    "mtime": 1785119298.7353933,
+    "ast_hash": "5ee39297dd8600c80804f36a9a30dff9",
+    "semantic_hash": "5ee39297dd8600c80804f36a9a30dff9"
+  },
+  "AGENTS.md": {
+    "mtime": 1785639416.1800456,
+    "ast_hash": "21ceb6533048be51308e69e7b74a35cf",
+    "semantic_hash": "21ceb6533048be51308e69e7b74a35cf"
+  },
+  "API_FRONTEND_CONSUMPTION.txt": {
+    "mtime": 1785119298.684805,
+    "ast_hash": "261de9ebe7c4cc9c4204031c21f3cbff",
+    "semantic_hash": "261de9ebe7c4cc9c4204031c21f3cbff"
+  },
+  "images/ArquitecturaPorCapas.png": {
+    "mtime": 1782357417.7478807,
+    "ast_hash": "444e3787e027377a456deb42393ae84c",
+    "semantic_hash": "444e3787e027377a456deb42393ae84c"
+  },
+  "images/EstructuraDePaquetes.png": {
+    "mtime": 1782357417.7688966,
+    "ast_hash": "b5543d4a4e17e900f50e80d1979b88c7",
+    "semantic_hash": "b5543d4a4e17e900f50e80d1979b88c7"
+  },
+  "images/ModeloDeDatos.png": {
+    "mtime": 1782357417.800897,
+    "ast_hash": "5ed67bb8aa5e2ebbad08e6cbe7b12319",
+    "semantic_hash": "5ed67bb8aa5e2ebbad08e6cbe7b12319"
+  }
+}

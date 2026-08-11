@@ -10,7 +10,8 @@ public record UserAdminDTO(
         String email) {
 
     public static UserAdminDTO fromEntity(@NonNull UserAdmin userAdmin) {
-        return new UserAdminDTO(userAdmin.getBusinessName(),
+        return new UserAdminDTO(
+                userAdmin.getBusinessName(),
                 userAdmin.getFullName(),
                 userAdmin.getPhone(),
                 userAdmin.getEmail());

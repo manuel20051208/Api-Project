@@ -13,16 +13,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class DashboardService implements ReportService {
+public class DashboardService{
     private final UserRepository userRepository;
     private final DashboardRepository dashboardRepository;
     private final ClientsSummaryViewService clientsSummaryViewService;
-    private final ReportExporter reportExporter;
     private final ReportDashboardRepository reportDashboardRepository;
 
     @Transactional(readOnly = true)
@@ -52,19 +50,11 @@ public class DashboardService implements ReportService {
         return new DashboardDTO(totalSales, totalProducts, totalClients, list, showLatestSales);
     }
 
-    @Override
-    public byte[] generateReport(Long userId) throws IOException {
-        List<ReportDashboardProjection> data = reportDashboardRepository.findAllDashboard(userId);
-        return reportExporter.export(data);
-    }
-
-    @Override
-    public String getFileName() {
-        return "reporte_usuarios" + reportExporter.getFileExtension();
-    }
-
-    @Override
-    public String getContentType() {
-        return reportExporter.getContentType();
+    @Transactional(readOnly = true)
+    public List<ReportDashboardProjection> getReportData(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        return reportDashboardRepository.findAllDashboard(userId);
     }
 }

@@ -51,6 +51,12 @@ ReportServiceFactory.getService(type)
 
 Diagrama completo: [secuencia-reportes-factory.html](docs/diagrams/secuencia-reportes-factory.html)
 
+### Flujo de generación de reportes
+
+El diagrama generado con la skill de diseño se inserta directamente en GitHub como SVG:
+
+![Secuencia de generación de reportes con ReportServiceFactory](docs/diagrams/secuencia-reportes-factory.svg)
+
 ## Stack tecnológico
 
 | Área | Tecnología |

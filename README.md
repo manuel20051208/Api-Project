@@ -24,6 +24,7 @@ Construido con Java 21, Spring Boot 3.5 y PostgreSQL 16.
 El proyecto sigue una arquitectura por capas:
 
 ```mermaid
+%%{init: {"theme": "base", "themeVariables": {"background": "#ffffff", "primaryColor": "#ffffff", "secondaryColor": "#f5f5f5", "tertiaryColor": "#ffffff", "lineColor": "#2d3142", "textColor": "#2d3142"}}}%%
 flowchart LR
     Client[Frontend / Cliente] --> Security[JWT / OAuth2]
     Security --> Controller[Controllers]

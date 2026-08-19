@@ -29,7 +29,7 @@ public class DashboardService{
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("User not found");
         }
-
+w
         List<DashboardProjection> rows = dashboardRepository.findByUserId(userId);
         Page<ClientSummaryProjection> showLatestSales = clientsSummaryViewService.showAllForDashBoard(userId);
 

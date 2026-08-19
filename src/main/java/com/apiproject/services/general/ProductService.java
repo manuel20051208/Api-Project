@@ -81,6 +81,7 @@ public class ProductService {
             @CacheEvict(value = CacheConstants.PRODUCTS_BY_CATEGORY, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_PAGE, allEntries = true)
     })
+    @Transactional
     public void save(Product product, Long adminId) {
         UserAdmin userAdmin = userRepository.getReferenceById(adminId);
         product.setUserAdmin(userAdmin);
@@ -119,6 +120,7 @@ public class ProductService {
             @CacheEvict(value = CacheConstants.PRODUCTS_BY_CATEGORY, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_PAGE, allEntries = true)
     })
+    @Transactional
     public ProductResponseDTO updateProduct(Long id, @NonNull Product product, Long adminId) {
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
@@ -143,6 +145,7 @@ public class ProductService {
             @CacheEvict(value = CacheConstants.PRODUCTS_BY_CATEGORY, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_PAGE, allEntries = true)
     })
+    @Transactional
     public void deleteProductSafe(Long id, Long adminId) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));

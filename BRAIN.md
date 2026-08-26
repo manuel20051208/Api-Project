@@ -84,23 +84,23 @@ ApiProject/
 | `CacheConstants` | Constantes de caché |
 
 ### controllers/
-- **admin/**: `DashboardController` (métricas + excel/pdf), `UserController` (login/register/admin/modify/upload-profile), `ProductImageController` (upload/list/delete imágenes), `NotificationController` (SSE stream), `ClientsSummaryViewController`, `SalesItemViewController`.
+- **admin/**: `DashboardController` (métricas + excel/pdf), `UserController` (login/register/admin/modify/upload-profile), `ProductImageController` (upload/list/delete imágenes), `NotificationController` (SSE stream), `ClientsSummaryViewController`, `SalesItemViewController`, `CuponController` (CRUD + validate cupones), `SecondHandCuponController` (CRUD + validate cupones SH), `ServiceOfferedController` (CRUD servicios), `ServiceCuponController` (CRUD cupones de servicios), `SecondHandProductImageController` (imágenes segunda mano).
 - **client/**: `ClientControllers` (login/register/modify/fotos/tarjetas/user-data/history).
-- **general/**: `ProductController` (catálogo + CRUD), `SaleController` (purchase, refresh).
+- **general/**: `ProductController` (catálogo + CRUD), `SaleController` (purchase con `cuponCode` opcional, refresh), `ShProductController` (catálogo + CRUD segunda mano), `ShSaleController` (purchase segunda mano + historiales client/admin).
 
 ### services/
-- **admin/**: `UserService`, `DashboardService`, `ProductImageService`, `NotificationService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`.
+- **admin/**: `UserService`, `DashboardService`, `ProductImageService`, `NotificationService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`, `CuponService` (CRUD + `resolveForCart`/`redeem`/`registerUsage`), `SecondHandCuponService` (espejo SH), `ServiceOfferedService`, `ServiceCuponService`, `SecondHandProductImageService`.
 - **client/**: `ClientService`.
-- **general/**: `ProductService`, `SaleService`, `SaleItemService`.
+- **general/**: `ProductService`, `SaleService`, `SaleItemService`, `SecondHandProductService`, `ShSaleService`.
 - **reportGenerator/**: `ReportService` (interfaz), `ExcelService`, `PdfService`.
 
 ### entities/
-- **admin/**: `UserAdmin` → tabla `users`; `ProductImage` → `product_image`; `ReportDashboard` (vista `report_view_dashboard`).
+- **admin/**: `UserAdmin` → tabla `users`; `ProductImage` → `product_image`; `ReportDashboard` (vista `report_view_dashboard`); `Cupon` → `cupons`; `ProductCuponApplied` → `product_cupons_applied`; `CuponUsedByClients` → `cupons_used_by_clients`; `SecondHandCupon` → `secondhand_cupons`; `SecondHandProductCuponsApplied` → `secondhand_product_cupons_applied`; `ShCuponUsedByClients` → `sh_cupons_used_by_clients`; `SecondHandProductImage` → `secondhand_product_images`; `ServiceOffered` → `services_offered`; `ServiceCupon` → `services_cupon`.
 - **client/**: `UserClient` → `clients`; `PaymentCard` → `payment_cards`.
-- **general/**: `Product` → `products`; `Sale` → `sales`; `SalesItem` → `sale_items`.
+- **general/**: `Product` → `products`; `Sale` → `sales`; `SalesItem` → `sale_items`; `SecondHandProduct` → `secondhand_product`; `ShSale` → `sh_sales`; `ShSalesItem` → `sh_sales_item`.
 
 ### repositories/ · projection/
-Repos estándar JPA por entidad. Proyecciones para vistas: `ClientLoginProjection`, `ClientSummaryProjection`, `ClientHistoryProjection`, `DashboardProjection`, `ReportDashboardProjection`, `PaymentCardDetailsProjection`, `SaleItemViewProjection`.
+Repos estándar JPA por entidad. **Todas las consultas nuevas usan `nativeQuery = true`** (incluye `FOR UPDATE` para cupones y stock SH). Proyecciones para vistas: `ClientLoginProjection`, `ClientSummaryProjection`, `ClientHistoryProjection`, `DashboardProjection`, `ReportDashboardProjection`, `PaymentCardDetailsProjection`, `SaleItemViewProjection`. Proyecciones nuevas: `CuponAdminProjection` (cupón + productos aplicados agregados con `string_agg`), `CuponUsageProjection` (id+discount de cupón válido), `ShProductCardProjection` (tarjeta SH con owner y primera imagen vía `LATERAL`), `ShSaleHistoryProjection` (historial segunda mano client/admin).
 
 ### security/
 - `JwtService`: firma/valida JWT (clave `JWT_SECRET_KEY`, expiración `JWT_EXPIRATION_MS`).
@@ -145,6 +145,19 @@ Base `/api` (salvo dashboard). Auth: `Authorization: Bearer <token>`.
 | `GET /sales-items/show-with-no-restrinction` · `/show-with-limits` · `/client` · `/product/` | ADMIN | Historial ventas |
 | `GET /client-show-summary/getNames/{userId}` · `/name/{userId}` · `/email/{userId}` | ADMIN | Resumen clientes |
 | `GET /notification/stream` | ADMIN | SSE notificaciones |
+| `POST/GET/PUT/DELETE /cupons` + `/cupons/my` | ADMIN | CRUD cupones (request: `{cuponCode, cuponDateLimit, discount, quantity, productIds[]}`) |
+| `GET /cupons/validate?code=&productId=` | Auth | Validar cupón para un producto |
+| `POST/GET/PUT/DELETE /sh-cupons` + `validate?code=&productId=` | ADMIN/Auth | Ídem para segunda mano (`shCuponCode`, `shProductIds[]`) |
+| `POST /services` · `/services/my` · `PUT/DELETE /services/{id}` | ADMIN | CRUD servicios ofrecidos (`{nameOfService, valueOfService, descriptionOfService}`) |
+| `GET /services/catalog/{ownerId}?search=` | Auth | Catálogo público de servicios de una tienda |
+| `POST/GET/PUT/DELETE /services-cupons` + `GET /services-cupons/validate/{ownerId}?code=` | ADMIN/Auth | Cupones de servicio (`serviceCuponCode`) |
+| `GET /sh-product/search/active?category=&search=` | Público | Catálogo SH (tarjetas con ownerName + primera imagen) |
+| `GET /sh-product/my` · `GET /sh-product/{id}` | ADMIN | Productos SH propios |
+| `POST /sh-product/saveShProduct` · `/deleteSafe` · `PUT /update/{id}` | ADMIN | CRUD SH (body = entidad; response DTO) |
+| `POST /sh-product-images/upload/{productId}` · `GET /{productId}` · `DELETE /{imageId}` | ADMIN/Público | Imágenes SH (Cloudinary folder `secondhand`) |
+| `POST /sh-sale/purchase` | CLIENT | Compra SH (request `{clientId, items[{productId, quantity}], cuponCode?}`) |
+| `GET /sh-sale/client` | CLIENT | Historial compras SH |
+| `GET /sh-sale/admin?clientId=` | ADMIN | Historial ventas SH |
 
 ### Payloads clave (resumen)
 
@@ -162,7 +175,8 @@ response: `{ saleId, saleIds, clientId, totalAmount, createdAt, items:[{ product
 
 ### Reglas de seguridad (resumen)
 - Públicos: Swagger, `/actuator/health`, `/oauth2/**`, login/register, `GET /api/product-images/**`, `GET /api/user/{id}/admin`.
-- `/api/client/**` → CLIENT. `/api/user/**`, `/dashboard-controller/**`, `/api/sales-items/**`, `/api/client-show-summary/**` → ADMIN.
+- `/api/client/**` → CLIENT. `/api/user/**`, `/dashboard-controller/**`, `/api/sales-items/**`, `/api/client-show-summary/**`, `/api/cupons/**`, `/api/sh-cupons/**`, `/api/services/**`, `/api/services-cupons/**`, `/api/sh-product/**`, `/api/sh-sale/**` → ADMIN (salvo excepciones listadas antes).
+- Validaciones de cupones (`/cupons/validate`, `/sh-cupons/validate`, `/services/catalog/*`, `/sh-product/search/active`) → autenticado. `/sh-sale/purchase` y `/sh-sale/client` → CLIENT. `GET /sh-product-images/**` → público; POST/DELETE → ADMIN.
 - Catálogo de lectura → autenticado. Escritura de productos/imágenes → ADMIN.
 - `POST /api/sale/purchase` → CLIENT; resto `/api/sale/**` → ADMIN.
 - CORS: solo `http://localhost:3000`.
@@ -181,6 +195,17 @@ Esquema en `src/main/resources/db/schema-postgres.sql` (idempotente). Modelo vis
 | `product_image` | FK `products` CASCADE; `UNIQUE(product_id, display_order)` |
 | `sales` | FKs `clients`/`users` SET NULL; `total_amount NUMERIC(10,2)` |
 | `sale_items` | FKs `sales` CASCADE; `state IN ('COMPLETED','HANGING','CANCELLED')`, `quantity > 0` |
+| `cupons` | Cupón por % de descuento; FK `users`; `quantity NULL = ilimitado` |
+| `product_cupons_applied` | N:M `cupons`↔`products`, UNIQUE(cupons_id, product_id) |
+| `cupons_used_by_clients` | Uso real: FK `clients`, `sales`, `cupons`; se registra 1 fila por compra con cupón |
+| `secondhand_product` | Espejo de products + `time_of_use TIMESTAMP`, `level_of_secondhand_product BIGINT` |
+| `secondhand_product_images` | Como product_image + `url TEXT` y `user_id` (paridad con la tabla real) |
+| `secondhand_cupons` | Igual que cupons pero `sh_cupon_code`; aplica a productos SH |
+| `secondhand_product_cupons_applied` | N:M SH; UNIQUE(sh_cupons_id, sh_product_id) |
+| `sh_cupons_used_by_clients` | **FKs corregidas vs DBML**: apuntan a `sh_sales` y `secondhand_cupons` |
+| `sh_sales` / `sh_sales_item` | Espejo de sales/sale_items (una venta por producto, items COMPLETED) |
+| `services_offered` | Servicio de tienda: `name_of_service(40)`, `value_of_service`, `description_of_service(255)` |
+| `services_cupon` | Columna renombrada vs DBML (`sh_cupon_code` → `service_cupon_code`) |
 
 ### 7.2 Relaciones
 - `users` 1—N `products`; `products` 1—N `product_image` (cascade) y `sale_items`
@@ -218,7 +243,9 @@ Esquema en `src/main/resources/db/schema-postgres.sql` (idempotente). Modelo vis
 
 - **DTOs en responses**, pero `saveProduct`, `deleteSafe`, `modify` y `sale/refresh` aceptan **entidades** directamente (legado; `sale/refresh` es un body combinado `Product`+`UserClient`+`amount`).
 - `deleteSafe` es **borrado suave** (pone `active=false`).
-- `PurchaseRequestDTO` tiene `clientId`, `userId` (lista, sin uso actual) e `items`.
+- `PurchaseRequestDTO` tiene `clientId`, `userId` (lista, sin uso actual), `items` y `cuponCode` (opcional).
+- **Regla de cupones en compra** (normal y SH): si se envía `cuponCode`, el cupón debe cubrir **TODOS** los productos del carrito, pertenecer al mismo admin dueño, estar vigente (`cupon_date_limit`) y tener usos disponibles (`quantity`, `NULL` = ilimitado); se bloquea con `FOR UPDATE`, se descuenta 1 uso por compra (`redeem`) y se registra la fila en `*_used_by_clients`. El descuento es un porcentaje sobre cada subtotal.
+- **Consultas nuevas siempre native query**; respuestas con DTO o projection. Bloqueos de stock/cupones SH con `FOR UPDATE`.
 - Puertos: DB host `5433` (mapeado a `5432` en el contenedor), API `8080`.
 - CORS solo para localhost:3000.
 - Mantén el grafo actualizado tras cambios de código: `graphify update .`

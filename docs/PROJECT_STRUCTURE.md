@@ -2,7 +2,7 @@
 
 > Nota central (MOC). Toda la documentación vive en esta carpeta `docs/`, conectada con enlaces `[[]]` para que Obsidian genere el grafo.
 
-API de inventario y ventas (`ApiJuegoInventario`) construida con Spring Boot 3.5 y Java 21. Base de datos PostgreSQL.
+API de inventario y ventas (`ApiJuegoInventario`) construida con Spring Boot 3.5 y Java 21. Base de datos PostgreSQL. Incluye módulos de **cupones**, **productos de segunda mano** (con imágenes Cloudinary y compras) y **servicios ofrecidos** → [[Endpoints API]] · [[Esquema de Base de Datos]].
 
 ## Mapa de notas
 

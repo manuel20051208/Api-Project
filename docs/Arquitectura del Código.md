@@ -19,18 +19,18 @@ Paquete base: `src/main/java/com/apiproject`. La API expuesta se documenta en [[
 ## controllers/
 | Paquete | Controladores |
 |---|---|
-| `admin/` | `DashboardController`, `UserController`, `ProductImageController`, `NotificationController` (SSE), `ClientsSummaryViewController`, `SalesItemViewController` |
+| `admin/` | `DashboardController`, `UserController`, `ProductImageController`, `NotificationController` (SSE), `ClientsSummaryViewController`, `SalesItemViewController`, `CuponController`, `SecondHandCuponController`, `ServiceOfferedController`, `ServiceCuponController`, `SecondHandProductImageController` |
 | `client/` | `ClientControllers` |
-| `general/` | `ProductController`, `SaleController` |
+| `general/` | `ProductController`, `SaleController`, `ShProductController`, `ShSaleController` |
 
 Los endpoints de cada controlador están documentados en [[Endpoints API]].
 
 ## entities/
 | Paquete | Entidades |
 |---|---|
-| `admin/` | `UserAdmin`, `ProductImage`, `ReportDashboard` |
+| `admin/` | `UserAdmin`, `ProductImage`, `ReportDashboard`, `Cupon`, `ProductCuponApplied`, `CuponUsedByClients`, `SecondHandCupon`, `SecondHandProductCuponsApplied`, `ShCuponUsedByClients`, `SecondHandProductImage`, `ServiceOffered`, `ServiceCupon` |
 | `client/` | `UserClient`, `PaymentCard` |
-| `general/` | `Product`, `Sale`, `SalesItem` |
+| `general/` | `Product`, `Sale`, `SalesItem`, `SecondHandProduct`, `ShSale`, `ShSalesItem` |
 
 Las entidades mapean las tablas de [[Esquema de Base de Datos]].
 
@@ -38,9 +38,9 @@ Las entidades mapean las tablas de [[Esquema de Base de Datos]].
 | Paquete | DTOs |
 |---|---|
 | `Auth/` | Login/Register (admin y client) con sus respuestas |
-| `Admin/` | `DashboardDTO`, `NotificationEventDTO`, `ProductImageDTO`, `SaleItemResponseDTO`, `SaleResponseDato`, `UserAdminDTO`, `UserResponseDTO` |
+| `Admin/` | `DashboardDTO`, `NotificationEventDTO`, `ProductImageDTO`, `SaleItemResponseDTO`, `SaleResponseDato`, `UserAdminDTO`, `UserResponseDTO`, `CuponRequestDTO`, `CuponResponseDTO`, `SecondHandCuponRequestDTO`, `SecondHandCuponResponseDTO`, `ServiceRequestDTO`, `ServiceResponseDTO`, `ServiceCuponRequestDTO`, `ServiceCuponResponseDTO`, `ShProductImageDTO` |
 | `Client/` | `ClientResponseDTO`, `ClientDescriptionAboutUsersDTO`, `PaymentCardRequestDTO`, `PaymentCardResponseDTO` |
-| `General/` | `ProductResponseDTO`, `PurchaseRequestDTO`, `PurchaseResponseDTO`, `PurchaseItemRequestDTO/ResponseDTO` |
+| `General/` | `ProductResponseDTO`, `PurchaseRequestDTO` (ahora con `cuponCode` opcional), `PurchaseResponseDTO` (con `originalTotal`/`discountApplied`), `PurchaseItemRequestDTO/ResponseDTO`, `ShProductResponseDTO`, `ShProductCardResponseDTO`, `ShPurchaseRequestDTO`, `ShPurchaseItemRequestDTO`, `ShPurchaseResponseDTO`, `ShPurchaseItemResponseDTO`, `CuponValidationResponseDTO` |
 
 Los payloads concretos de cada DTO están en [[Endpoints API]].
 
@@ -51,21 +51,23 @@ Los payloads concretos de cada DTO están en [[Endpoints API]].
 ## repositories/
 | Paquete | Descripción |
 |---|---|
-| `admin/` | `UserRepository`, `DashboardRepository`, `ProductImageRepository`, `ReportDashboardRepository`, `ClientsSummaryViewRepository`, `SaleItemViewRepository` |
+| `admin/` | `UserRepository`, `DashboardRepository`, `ProductImageRepository`, `ReportDashboardRepository`, `ClientsSummaryViewRepository`, `SaleItemViewRepository`, `CuponRepository`, `ProductCuponRepository`, `CuponUsedByClientsRepository`, `SecondHandCuponRepository`, `SecondHandProductCuponRepository`, `ShCuponUsedByClientsRepository`, `ServiceOfferedRepository`, `ServiceCuponRepository`, `SecondHandProductImagesRepository` |
 | `client/` | `ClientRepository`, `PaymentCardRepository` |
-| `general/` | `ProductRepository`, `SaleRepository`, `SaleItemRepository` |
-| `projection/` | Proyecciones JPA: `ClientLoginProjection`, `ClientSummaryProjection`, `ClientHistoryProjection`, `DashboardProjection`, `ReportDashboardProjection`, `PaymentCardDetailsProjection`, `SaleItemViewProjection` |
+| `general/` | `ProductRepository`, `SaleRepository`, `SaleItemRepository`, `SecondHandProductRepository`, `ShSaleRepository`, `ShSaleItemRepository` |
+| `projection/` | Proyecciones JPA: `ClientLoginProjection`, `ClientSummaryProjection`, `ClientHistoryProjection`, `DashboardProjection`, `ReportDashboardProjection`, `PaymentCardDetailsProjection`, `SaleItemViewProjection`, `CuponAdminProjection`, `CuponUsageProjection`, `ShProductCardProjection`, `ShSaleHistoryProjection` |
 | `reportGenerator/` | `ReportService` (interfaz de exportación) |
 
-Los repos consultan las vistas de [[Esquema de Base de Datos#Vistas]].
+Los repos consultan las vistas de [[Esquema de Base de Datos#Vistas]]. **Convención**: todas las consultas nuevas (cupones, segunda mano, servicios) usan `nativeQuery = true`; los bloqueos de stock y canje de cupones usan `FOR UPDATE`.
 
 ## services/
 | Paquete | Servicios |
 |---|---|
-| `admin/` | `UserService`, `DashboardService`, `ProductImageService`, `NotificationService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory` |
+| `admin/` | `UserService`, `DashboardService`, `ProductImageService`, `NotificationService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`, `CuponService`, `SecondHandCuponService`, `ServiceOfferedService`, `ServiceCuponService`, `SecondHandProductImageService` |
 | `client/` | `ClientService` |
-| `general/` | `ProductService`, `SaleService`, `SaleItemService` |
+| `general/` | `ProductService`, `SaleService` (ahora integra cupones en `purchase`), `SaleItemService`, `SecondHandProductService`, `ShSaleService` |
 | `reportGenerator/` | `ReportService`, `ExcelService`, `PdfService` |
+
+Regla de cupones (`CuponService.resolveForCart/redeem/registerUsage`, espejo SH): el cupón debe cubrir **todos** los productos del carrito, ser del mismo admin dueño, estar vigente y tener usos disponibles; se descuenta 1 uso por compra y se registra la fila en `*_used_by_clients`. El descuento es un porcentaje sobre cada subtotal.
 
 ## security/
 - `AuthenticatedUser` — usuario autenticado en contexto.

@@ -230,31 +230,35 @@ Response: `204 No Content`.
 ## Ventas
 
 ### POST `/sale/purchase` — Compra de cliente (CLIENT)
-Request `PurchaseRequestDTO`:
+Request `PurchaseRequestDTO` (`cuponCode` opcional → [[#Regla de cupones]]):
 ```json
 {
   "clientId": 1,
+  "cuponCode": "VERANO10",
   "items": [
     { "productId": 10, "quantity": 2 },
     { "productId": 15, "quantity": 1 }
   ]
 }
 ```
-Response `PurchaseResponseDTO`:
+Response `PurchaseResponseDTO` (sin cupón los últimos 3 campos son `null`):
 ```json
 {
   "saleId": 100,
   "saleIds": [100],
   "clientId": 1,
-  "totalAmount": 85000.0,
+  "totalAmount": 76500.0,
   "createdAt": "2026-05-25T01:10:00",
+  "cuponCode": "VERANO10",
+  "originalTotal": 85000.0,
+  "discountApplied": true,
   "items": [
-    { "productId": 10, "productName": "Mouse Gamer", "quantity": 2, "unitPrice": 25000.0, "subtotal": 50000.0 },
-    { "productId": 15, "productName": "Teclado Mecanico", "quantity": 1, "unitPrice": 35000.0, "subtotal": 35000.0 }
+    { "productId": 10, "productName": "Mouse Gamer", "quantity": 2, "unitPrice": 25000.0, "subtotal": 45000.0 },
+    { "productId": 15, "productName": "Teclado Mecanico", "quantity": 1, "unitPrice": 35000.0, "subtotal": 31500.0 }
   ]
 }
 ```
-Error: `402 Payment Required` si el cliente no tiene tarjeta activa.
+Error: `402 Payment Required` si el cliente no tiene tarjeta activa; `400` si el cupón no es válido para el carrito.
 
 ### POST `/sale/sale/refresh` — Recalcular producto por venta (ADMIN)
 Body: `Product` + `UserClient` + `Integer amount` (endpoint legado, cuerpo combinado). Response: `ProductResponseDTO`.
@@ -310,14 +314,101 @@ Response `DashboardDTO`:
 ## Notificaciones (SSE)
 
 ### GET `/notification/stream` — Stream de eventos (ADMIN)
-`Content-Type: text/event-stream` (`SseEmitter`). Se emiten `NotificationEventDTO` cuando hay eventos del dashboard.
+`Content-Type: text/event-stream` (`SseEmitter`). Se emiten `NotificationEventDTO` cuando hay eventos del dashboard (incluye `VENTA_NUEVA_SH` y `STOCK_BAJO`).
+
+## Regla de cupones
+
+Común a cupones normales, SH y de servicios:
+1. Debe cubrir **todos** los productos del carrito (`product_cupons_applied`) y pertenecer al mismo admin dueño.
+2. Vigente: `cupon_date_limit` >= ahora.
+3. Usos disponibles: `quantity` > 0 (`NULL` = ilimitado).
+4. Se bloquea con `FOR UPDATE`, se descuenta 1 uso por compra (`redeem`) y se registra la fila en `cupons_used_by_clients` / `sh_cupons_used_by_clients`.
+5. El descuento es un **porcentaje** sobre cada subtotal.
+
+## Cupones de productos
+
+### POST `/cupons` — Crear cupón (ADMIN)
+Request `CuponRequestDTO`:
+```json
+{
+  "cuponCode": "VERANO10",
+  "dateLimit": "2026-12-31T23:59:59",
+  "discount": 10.0,
+  "quantity": 100,
+  "productIds": [10, 15]
+}
+```
+Response `CuponResponseDTO`: igual + `id` + lista de ids de productos aplicados.
+
+| Método / Ruta | Rol | Respuesta |
+|---|---|---|
+| PUT `/cupons/{id}` | ADMIN | `CuponResponseDTO` |
+| DELETE `/cupons/{id}` | ADMIN | `204 No Content` |
+| GET `/cupons/my` | ADMIN | `List<CuponResponseDTO>` (con productos aplicados) |
+| GET `/cupons/validate?code=X&productId=1` | Autenticado | `CuponValidationResponseDTO {valid, discount, message}` |
+
+## Cupones de segunda mano
+
+Igual que los anteriores bajo `/api/sh-cupons`, con `shCuponCode` como código y `shProductIds`. CRUD + `/my` + `/validate?code=&shProductId=` (ADMIN; validate autenticado). DTOs: `SecondHandCuponRequestDTO` / `SecondHandCuponResponseDTO`.
+
+## Servicios ofrecidos
+
+### POST `/services` — Crear servicio (ADMIN)
+Request `ServiceRequestDTO`:
+```json
+{ "nameOfService": "Instalacion", "valueOfService": 50000.0, "descriptionOfService": "Instalacion a domicilio" }
+```
+Response `ServiceResponseDTO`.
+
+| Método / Ruta | Rol | Respuesta |
+|---|---|---|
+| GET `/services/my` | ADMIN | `List<ServiceResponseDTO>` |
+| GET `/services/catalog/{ownerId}` | Autenticado | `List<ServiceResponseDTO>` |
+| PUT `/services/{id}` · DELETE `/services/{id}` | ADMIN | DTO / `204` |
+
+### Cupones de servicio
+Bajo `/api/services-cupons` (ADMIN): CRUD con `ServiceCuponRequestDTO {serviceCuponCode, dateLimit, discount, quantity}`, `GET /my`, y `GET /validate/{ownerId}?code=&value=` → valida vigencia/usos y devuelve el descuento a aplicar sobre el valor del servicio.
+
+## Productos de segunda mano
+
+### POST `/sh-product/save` — Crear producto SH (ADMIN)
+Request `ShProductRequestDTO` = campos de producto + `timeOfUse` (ISO datetime) + `levelOfSecondhandProduct` (0–10).
+
+| Método / Ruta | Rol | Respuesta |
+|---|---|---|
+| GET `/sh-product/my?page=&sizePage=` | ADMIN | `Page<ShProductCardResponseDTO>` (tarjetas con primera imagen) |
+| GET `/sh-product/search/active/{ownerId}?page=&sizePage=` | Autenticado | `Page<ShProductCardResponseDTO>` catálogo activo |
+| PUT `/sh-product/update/{id}` | ADMIN | `ShProductResponseDTO` |
+| POST `/sh-product/deleteSafe` | ADMIN | borrado suave (`active=false`) |
+
+`ShProductCardResponseDTO`: `{id, name, price, levelOfSecondhandProduct, timeOfUse, firstImageUrl}`.
+
+### Imágenes SH — `/api/sh-product-images`
+| Método / Ruta | Rol | Detalle |
+|---|---|---|
+| POST `/upload/{shProductId}` | ADMIN | multipart `file` → Cloudinary carpeta `secondhand` |
+| GET `/{shProductId}` | público | `List<ShProductImageDTO>` |
+| DELETE `/{imageId}` | ADMIN | `204 No Content` |
+
+### POST `/sh-sale/purchase` — Compra SH (CLIENT)
+Request `ShPurchaseRequestDTO`:
+```json
+{
+  "clientId": 1,
+  "cuponCode": null,
+  "items": [{ "shProductId": 3, "quantity": 1 }]
+}
+```
+Una venta por producto/admin (como la compra normal), descuenta stock con `FOR UPDATE`, exige tarjeta activa (`402` si no) y emite SSE `VENTA_NUEVA_SH` (+`STOCK_BAJO` si queda <= 5). Response `ShPurchaseResponseDTO` análogo al de `/sale/purchase` (con `saleIds` múltiples).
+
+Historiales: `GET /sh-sale/client` (CLIENT) y `GET /sh-sale/admin` (ADMIN) → `ShSaleHistoryProjection`.
 
 ## Seguridad (SecurityConfig)
-- Públicos: Swagger, `/actuator/health`, `/oauth2/**`, login/register, `GET /api/product-images/**`, `GET /api/user/{id}/admin`.
-- `/api/client/**` → rol `CLIENT`; `/api/user/**`, `/dashboard-controller/**`, `/api/sales-items/**`, `/api/client-show-summary/**` → rol `ADMIN`.
-- Catálogo de lectura (`/api/product/search/active-with-images`, `/activeProducts`, etc.) → cualquier usuario autenticado.
-- Escritura de productos e imágenes → `ADMIN`.
-- `POST /api/sale/purchase` → `CLIENT`; resto de `/api/sale/**` → `ADMIN`.
+- Públicos: Swagger, `/actuator/health`, `/oauth2/**`, login/register, `GET /api/product-images/**`, `GET /api/user/{id}/admin`, `GET /api/sh-product-images/**`.
+- `/api/client/**` → rol `CLIENT`; `/api/user/**`, `/dashboard-controller/**`, `/api/sales-items/**`, `/api/client-show-summary/**`, `/api/cupons/**`, `/api/sh-cupons/**`, `/api/services/**`, `/api/services-cupons/**`, `/api/sh-product/**`, `/api/sh-sale/**` → rol `ADMIN`.
+- Autenticados: validaciones de cupones (`/cupons/validate`, `/sh-cupons/validate`, `/services/catalog/*`, `/services-cupons/validate/*`), `/sh-product/search/active/*`, catálogo normal.
+- Escritura de productos/imágenes (normales y SH) → `ADMIN`.
+- `/api/sale/purchase` y `/api/sh-sale/purchase`, `/api/sh-sale/client` → `CLIENT`; resto de ventas → `ADMIN`.
 - CORS solo para `http://localhost:3000` → [[Configuración#Seguridad (SecurityConfig)]].
 
 > Documentación previa del frontend: `API_FRONTEND_CONSUMPTION.txt` en la raíz del proyecto.

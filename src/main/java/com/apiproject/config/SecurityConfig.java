@@ -98,6 +98,31 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/product/update/**").hasRole("ADMIN")
                         .requestMatchers("/api/product/**").hasRole("ADMIN")
                         .requestMatchers("/api/sale/**").hasRole("ADMIN")
+                        // ===== Cupones (validaciones accesibles a clientes, gestion solo ADMIN) =====
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/cupons/validate",
+                                "/api/sh-cupons/validate"
+                        ).authenticated()
+                        .requestMatchers(
+                                "/api/cupons/**",
+                                "/api/sh-cupons/**",
+                                "/api/services-cupons/**"
+                        ).hasRole("ADMIN")
+                        // ===== Servicios ofrecidos =====
+                        .requestMatchers(HttpMethod.GET, "/api/services/catalog/*").authenticated()
+                        .requestMatchers("/api/services/**").hasRole("ADMIN")
+                        // ===== Productos de segunda mano =====
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/sh-product/search/active",
+                                "/api/sh-product-images/**"
+                        ).permitAll()
+                        .requestMatchers("/api/sh-product/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/sh-product-images/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/sh-product-images/**").hasRole("ADMIN")
+                        // ===== Ventas de segunda mano =====
+                        .requestMatchers(HttpMethod.POST, "/api/sh-sale/purchase").hasRole("CLIENT")
+                        .requestMatchers(HttpMethod.GET, "/api/sh-sale/client").hasRole("CLIENT")
+                        .requestMatchers("/api/sh-sale/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/notification/stream")
                         .hasRole("ADMIN")
                         .anyRequest()

@@ -23,6 +23,39 @@ Relaciones principales:
 - `products` 1 — N `product_image` (cascade) y `sale_items`
 - `sales` 1 — N `sale_items` (cascade)
 
+## Tablas nuevas — cupones, segunda mano y servicios
+
+Agregadas en `schema-postgres.sql` (secciones 4–7). Todas las consultas JPA sobre estas tablas usan *native query* (→ [[Arquitectura del Código#repositories/]]).
+
+### Cupones para productos normales
+| Tabla | Columnas principales | Restricciones / FKs |
+|---|---|---|
+| `cupons` | `id BIGSERIAL PK`, `cupon_code VARCHAR(15)`, `cupon_date_limit TIMESTAMP`, `discount DOUBLE`, `quantity INTEGER`, `user_id` | FK `user_id → users(id) CASCADE`; `quantity NULL = ilimitado`; índice `LOWER(cupon_code)` |
+| `product_cupons_applied` | `id BIGSERIAL PK`, `cupons_id`, `product_id` | N:M cupón↔producto; FKs CASCADE; `UNIQUE(cupons_id, product_id)` |
+| `cupons_used_by_clients` | `id BIGSERIAL PK`, `client_user`, `sale_id`, `cupon_id`, `created_at` | FKs `clients`/`sales`/`cupons`; 1 fila por compra con cupón |
+
+### Segunda mano
+| Tabla | Columnas principales | Restricciones / FKs |
+|---|---|---|
+| `secondhand_product` | como `products` + `time_of_use TIMESTAMP NOT NULL`, `level_of_secondhand_product BIGINT NOT NULL`, `id_users NOT NULL` | FK `users CASCADE`; borrado suave vía `active=false` |
+| `secondhand_product_images` | `file_name`, `file_path`, `url TEXT`, `display_order`, `product_id`, `user_id` | FK `secondhand_product CASCADE`; `UNIQUE(product_id, display_order)` |
+| `secondhand_cupons` | igual que `cupons` pero código en `sh_cupon_code` | aplica solo a productos SH vía tabla de enlace |
+| `secondhand_product_cupons_applied` | `sh_cupons_id`, `sh_product_id` | `UNIQUE(sh_cupons_id, sh_product_id)` |
+| `sh_sales` / `sh_sales_item` | espejo de `sales` / `sale_items` | una venta por producto; items `COMPLETED` |
+| `sh_cupons_used_by_clients` | igual estructura que `cupons_used_by_clients` | ⚠️ **FKs corregidas vs DBML**: `sale_id → sh_sales(id)`, `cupon_id → secondhand_cupons(id)` |
+
+### Servicios ofrecidos
+| Tabla | Columnas principales | Restricciones / FKs |
+|---|---|---|
+| `services_offered` | `user_id`, `name_of_service VARCHAR(40)`, `value_of_service DOUBLE`, `description_of_service VARCHAR(255)` | FK `users CASCADE`; todo `NOT NULL` |
+| `services_cupon` | `service_cupon_code VARCHAR(15)`, `cupon_date_limit`, `discount`, `quantity`, `user_id` | ⚠️ columna renombrada vs DBML (`sh_cupon_code` → `service_cupon_code`) |
+
+Relaciones nuevas:
+- `users` 1 — N `cupons` / `secondhand_cupons` / `services_offered` / `services_cupon`
+- `cupons` 1 — N `product_cupons_applied` N — 1 `products` (ídem SH con sus tablas)
+- `clients` 1 — N `cupons_used_by_clients` / `sh_cupons_used_by_clients`
+- `sh_sales` 1 — N `sh_sales_item` (cascade)
+
 ## Índices
 - `products`: `(id_users)`, `(active, name)`, `LOWER(name)`, `LOWER(category)`.
 - `product_image`: `(product_id, display_order)`.
@@ -30,6 +63,7 @@ Relaciones principales:
 - `sale_items`: `(sale_id)`, `(client_id, date DESC, id DESC)`, `(product_id, date DESC, id DESC)`.
 - `clients`: `LOWER(full_name)`, `LOWER(email)`.
 - `payment_cards`: `(client_id, active)`.
+- Nuevos: `cupons(LOWER(cupon_code))`, `cupons(user_id)`, `product_cupons_applied(product_id)`, `cupons_used_by_clients(cupon_id)`, `secondhand_product(id_users, level_of_secondhand_product)`, `secondhand_product(active, name)`, `secondhand_cupons(LOWER(sh_cupon_code))`, `spca(sh_product_id)`, `sh_sales(client_id/user_id/created_at)`, `sh_sale_items(sale_id, client_date, product_date)`, `services_offered(user_id)`, `services_cupon(LOWER(service_cupon_code))`.
 
 ## Vistas
 

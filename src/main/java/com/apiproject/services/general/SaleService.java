@@ -3,34 +3,36 @@ package com.apiproject.services.general;
 import com.apiproject.DTOs.Admin.NotificationEventDTO;
 import com.apiproject.DTOs.General.*;
 import com.apiproject.config.CacheConstants;
+import com.apiproject.entities.admin.Cupon;
+import com.apiproject.entities.admin.CuponUsedByClients;
 import com.apiproject.entities.client.UserClient;
 import com.apiproject.entities.general.Product;
 import com.apiproject.entities.general.Sale;
 import com.apiproject.entities.general.SalesItem;
 import com.apiproject.enums.Status;
 import com.apiproject.exceptions.ResourceNotFoundException;
+import com.apiproject.repositories.admin.CuponRepository;
 import com.apiproject.repositories.client.ClientRepository;
 import com.apiproject.repositories.client.PaymentCardRepository;
 import com.apiproject.repositories.general.ProductRepository;
 import com.apiproject.repositories.general.SaleItemRepository;
 import com.apiproject.repositories.general.SaleRepository;
+import com.apiproject.services.admin.CuponService;
 import com.apiproject.services.admin.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -46,6 +48,24 @@ public class SaleService {
     private final PaymentCardRepository paymentCardRepository;
     private final CacheManager cacheManager;
     private final SaleRepository saleRepository;
+    private final CuponService cuponService;
+    private final CuponRepository cuponRepository;
+
+    @Scheduled(
+            initialDelay = 0,
+            fixedDelayString = "${app.cache.refresh-ms:20000}"
+    )
+    @CachePut(
+            value = CacheConstants.PRODUCTS_ACTIVE_WITH_IMAGES,
+            key = "'all'"
+    )
+    @Transactional(readOnly = true)
+    public List<ProductResponseDTO> refreshClientProductsCache() {
+        return productRepository.findAllActiveWithImages()
+                .stream()
+                .map(ProductResponseDTO::fromEntity)
+                .toList();
+    }
 
     @Transactional
     @Caching(evict = {
@@ -88,10 +108,9 @@ public class SaleService {
         LocalDateTime now = LocalDateTime.now();
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<SaleDraft> saleDrafts = new ArrayList<>(requestedQuantities.size());
-        List<Sale> sales = new ArrayList<>(requestedQuantities.size());
         Set<Long> affectedAdminIds = new LinkedHashSet<>();
 
-        // Crea una venta individual por producto/admin y descuenta el stock dentro de la transaccion.
+        // Valida y descuenta el stock; arma un borrador de venta por producto/admin.
         for (Map.Entry<Long, Integer> entry : requestedQuantities.entrySet()) {
             Product product = productsById.get(entry.getKey());
             int quantity = entry.getValue();
@@ -100,28 +119,59 @@ public class SaleService {
 
             product.setStock(product.getStock() - quantity);
             BigDecimal subtotal = unitPrice(product).multiply(BigDecimal.valueOf(quantity));
-            Long saleOwnerId = product.getUserAdmin().getId();
 
+            totalAmount = totalAmount.add(subtotal);
+            affectedAdminIds.add(product.getUserAdmin().getId());
+            saleDrafts.add(new SaleDraft(product, quantity, subtotal, product.getUserAdmin().getId()));
+        }
+
+        // Cupon opcional: debe cubrir TODOS los productos del carrito y ser del mismo dueño.
+        CuponService.CouponResolution coupon = null;
+        if (requestDTO.cuponCode() != null && !requestDTO.cuponCode().isBlank()) {
+            Set<Long> ownerIds = saleDrafts.stream()
+                    .map(SaleDraft::adminId)
+                    .collect(Collectors.toSet());
+            if (ownerIds.size() > 1) {
+                throw new ResponseStatusException(CONFLICT,
+                        "El cupon no puede aplicarse a un carrito de varios vendedores");
+            }
+            coupon = cuponService.resolveForCart(requestDTO.cuponCode(), productIds, ownerIds.iterator().next());
+        }
+
+        // Crea una venta individual por producto/admin con el descuento proporcional si hay cupon.
+        List<Sale> sales = new ArrayList<>(saleDrafts.size());
+        for (SaleDraft draft : saleDrafts) {
             Sale sale = new Sale();
             sale.setUserClient(client);
             sale.setHora(now);
-            sale.setUserAdmin(product.getUserAdmin());
-            sale.setTotalAmount(subtotal);
-
+            sale.setUserAdmin(productOwner(draft));
+            sale.setTotalAmount(applyDiscount(draft.subtotal(), coupon));
             sales.add(sale);
-            saleDrafts.add(new SaleDraft(sale, product, quantity, subtotal, saleOwnerId));
-            affectedAdminIds.add(saleOwnerId);
-            totalAmount = totalAmount.add(subtotal);
         }
 
         // Inserta todas las ventas en un solo batch y asigna los ids generados a cada venta.
         List<Sale> savedSales = saleRepository.saveAll(sales);
 
         // Crea los items de venta enlazados a las ventas insertadas.
-        List<SalesItem> saleItems = saleDrafts.stream()
-                .map(draft -> buildSaleItem(draft.sale(), client, draft.product(), draft.quantity(), now))
-                .toList();
+        List<SalesItem> saleItems = new ArrayList<>(saleDrafts.size());
+        for (int i = 0; i < saleDrafts.size(); i++) {
+            SaleDraft draft = saleDrafts.get(i);
+            saleItems.add(buildSaleItem(sales.get(i), client, draft.product(), draft.quantity(), now));
+        }
         saleItemRepository.saveAll(saleItems);
+
+        // Canjea el cupon una sola vez por compra y registra el uso del cliente.
+        if (coupon != null) {
+            cuponService.redeem(coupon);
+
+            Cupon cuponRef = cuponRepository.getReferenceById(coupon.cuponId());
+            CuponUsedByClients usage = new CuponUsedByClients();
+            usage.setClientUser(client);
+            usage.setSale(savedSales.getFirst());
+            usage.setCupon(cuponRef);
+            usage.setCreatedAt(now);
+            cuponService.registerUsage(usage);
+        }
 
         List<PurchaseItemResponseDTO> responseItems = saleItems.stream()
                 .map(this::toPurchaseItemResponse)
@@ -155,14 +205,35 @@ public class SaleService {
                 .map(Sale::getId)
                 .toList();
 
+        BigDecimal finalTotal = sales.stream()
+                .map(Sale::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         // Retornamos la venta
         return new PurchaseResponseDTO(
                 saleIds.getFirst(),
                 saleIds,
                 requestDTO.clientId(),
+                coupon == null ? null : requestDTO.cuponCode(),
                 totalAmount,
+                totalAmount.subtract(finalTotal),
+                finalTotal,
                 now,
                 responseItems);
+    }
+
+    private com.apiproject.entities.admin.UserAdmin productOwner(SaleDraft draft) {
+        return draft.product().getUserAdmin();
+    }
+
+    private BigDecimal applyDiscount(BigDecimal subtotal, CuponService.CouponResolution coupon) {
+        if (coupon == null) {
+            return subtotal.setScale(2, RoundingMode.HALF_UP);
+        }
+        BigDecimal discountFactor = BigDecimal.valueOf(coupon.discountPercent())
+                .divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
+        return subtotal.subtract(subtotal.multiply(discountFactor))
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -261,7 +332,6 @@ public class SaleService {
     }
 
     private record SaleDraft(
-            Sale sale,
             Product product,
             Integer quantity,
             BigDecimal subtotal,

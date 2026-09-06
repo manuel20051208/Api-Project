@@ -9,6 +9,7 @@ import com.apiproject.DTOs.Admin.ShProductCuponToClientResponseDTO;
 import com.apiproject.DTOs.General.CuponValidationResponseDTO;
 import com.apiproject.entities.admin.SecondHandCupon;
 import com.apiproject.entities.admin.SecondHandProductCuponsApplied;
+import com.apiproject.entities.admin.ShCuponUsedByClients;
 import com.apiproject.entities.admin.ShProductCuponToAClient;
 import com.apiproject.entities.client.UserClient;
 import com.apiproject.entities.general.SecondHandProduct;
@@ -21,6 +22,7 @@ import com.apiproject.repositories.admin.UserRepository;
 import com.apiproject.repositories.client.ClientRepository;
 import com.apiproject.repositories.general.SecondHandProductRepository;
 import com.apiproject.repositories.projection.CuponAdminProjection;
+import com.apiproject.repositories.projection.ShProductCuponAssignmentProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -133,7 +136,7 @@ public class SecondHandCuponService {
      */
     @Transactional
     public CouponResolution resolveForCart(String code, List<Long> shCarritoProductIds,
-                                           java.util.function.Function<Long, Long> shProductoOwnerFn) {
+                                           Function<Long, Long> shProductoOwnerFn) {
         SecondHandCupon cupon = secondHandCuponRepository.lockByCode(code)
                 .orElseThrow(() -> new ResponseStatusException(CONFLICT, "El cupon no existe: " + code));
 
@@ -239,7 +242,7 @@ public class SecondHandCuponService {
         return ids == null ? new LinkedHashSet<>() : new LinkedHashSet<>(ids);
     }
 
-    public void registerUsage(com.apiproject.entities.admin.ShCuponUsedByClients usage) {
+    public void registerUsage(ShCuponUsedByClients usage) {
         shCuponUsedByClientsRepository.save(usage);
     }
 
@@ -323,18 +326,18 @@ public class SecondHandCuponService {
         shProductCuponToAClientRepository.deleteByCuponId(cuponId);
     }
 
-    private ShProductCuponToClientResponseDTO toAssignmentDto(Object[] row) {
+    private ShProductCuponToClientResponseDTO toAssignmentDto(ShProductCuponAssignmentProjection p) {
         return new ShProductCuponToClientResponseDTO(
-                ((Number) row[0]).longValue(),
-                ((Number) row[1]).longValue(),
-                (String) row[2],
-                (String) row[3],
-                ((Number) row[4]).longValue(),
-                (String) row[5],
-                (Double) row[6],
-                row[7] instanceof java.sql.Timestamp ts ? ts.toLocalDateTime() : (java.time.LocalDateTime) row[7],
-                ((Number) row[8]).longValue(),
-                (String) row[9]
+                p.getId(),
+                p.getClientId(),
+                p.getClientName(),
+                p.getClientEmail(),
+                p.getShCuponsId(),
+                p.getShCuponCode(),
+                p.getDiscount(),
+                p.getCuponDateLimit(),
+                p.getShProductId(),
+                p.getProductName()
         );
     }
 }

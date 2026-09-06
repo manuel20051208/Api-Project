@@ -15,6 +15,7 @@ import com.apiproject.repositories.admin.ServiceCuponToAClientRepository;
 import com.apiproject.repositories.admin.ServiceOfferedRepository;
 import com.apiproject.repositories.admin.UserRepository;
 import com.apiproject.repositories.client.ClientRepository;
+import com.apiproject.repositories.projection.ServiceCuponAssignmentProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,8 +45,7 @@ public class ServiceCuponService {
         ServiceCupon cupon = new ServiceCupon();
         applyFields(cupon, request);
         cupon.setUserAdmin(userRepository.getReferenceById(adminId));
-        return ServiceCuponResponseDTO.fromProjection(
-                toProjection(serviceCuponRepository.save(cupon)));
+        return ServiceCuponResponseDTO.fromEntity(serviceCuponRepository.save(cupon), adminId);
     }
 
     @Transactional(readOnly = true)
@@ -64,7 +64,7 @@ public class ServiceCuponService {
         requireOwner(cupon, adminId);
         applyFields(cupon, request);
 
-        return ServiceCuponResponseDTO.fromProjection(toProjection(cupon));
+        return ServiceCuponResponseDTO.fromEntity(cupon, adminId);
     }
 
     @Transactional
@@ -89,17 +89,6 @@ public class ServiceCuponService {
     }
 
     // ================= Helpers =================
-
-    private CuponAdminProjectionAdapter toProjection(ServiceCupon cupon) {
-        Long ownerId = cupon.getUserAdmin() != null ? cupon.getUserAdmin().getId() : null;
-        return new CuponAdminProjectionAdapter(
-                cupon.getId(),
-                cupon.getServiceCuponCode(),
-                cupon.getCuponDateLimit(),
-                cupon.getDiscount(),
-                cupon.getQuantity(),
-                ownerId);
-    }
 
     private void applyFields(ServiceCupon cupon, ServiceCuponRequestDTO request) {
         cupon.setServiceCuponCode(request.serviceCuponCode().trim());
@@ -130,59 +119,6 @@ public class ServiceCuponService {
         Long ownerId = cupon.getUserAdmin() != null ? cupon.getUserAdmin().getId() : null;
         if (ownerId == null || !ownerId.equals(adminId)) {
             throw new ResponseStatusException(FORBIDDEN, "No puedes modificar cupones de otro admin");
-        }
-    }
-
-    /**
-     * Adapter para reutilizar la forma del projection de cupones en respuestas
-     * sin duplicar mapeo.
-     */
-    private record CuponAdminProjectionAdapter(
-            Long id,
-            String cuponCode,
-            LocalDateTime cuponDateLimit,
-            Double discount,
-            Integer quantity,
-            Long ownerId
-    ) implements com.apiproject.repositories.projection.CuponAdminProjection {
-        @Override
-        public Long getId() {
-            return id;
-        }
-
-        @Override
-        public String getCuponCode() {
-            return cuponCode;
-        }
-
-        @Override
-        public LocalDateTime getCuponDateLimit() {
-            return cuponDateLimit;
-        }
-
-        @Override
-        public Double getDiscount() {
-            return discount;
-        }
-
-        @Override
-        public Integer getQuantity() {
-            return quantity;
-        }
-
-        @Override
-        public Long getOwnerId() {
-            return ownerId;
-        }
-
-        @Override
-        public String getAppliedProducts() {
-            return "";
-        }
-
-        @Override
-        public String getAppliedProductIds() {
-            return "";
         }
     }
 
@@ -267,18 +203,18 @@ public class ServiceCuponService {
         serviceCuponToAClientRepository.deleteByCuponId(cuponId);
     }
 
-    private ServiceCuponToClientResponseDTO toAssignmentDto(Object[] row) {
+    private ServiceCuponToClientResponseDTO toAssignmentDto(ServiceCuponAssignmentProjection p) {
         return new ServiceCuponToClientResponseDTO(
-                ((Number) row[0]).longValue(),
-                ((Number) row[1]).longValue(),
-                (String) row[2],
-                (String) row[3],
-                ((Number) row[4]).longValue(),
-                (String) row[5],
-                (Double) row[6],
-                row[7] instanceof java.sql.Timestamp ts ? ts.toLocalDateTime() : (java.time.LocalDateTime) row[7],
-                ((Number) row[8]).longValue(),
-                (String) row[9]
+                p.getId(),
+                p.getClientId(),
+                p.getClientName(),
+                p.getClientEmail(),
+                p.getServiceCuponId(),
+                p.getServiceCuponCode(),
+                p.getDiscount(),
+                p.getCuponDateLimit(),
+                p.getServiceId(),
+                p.getServiceName()
         );
     }
 }

@@ -1,6 +1,7 @@
 package com.apiproject.repositories.admin;
 
 import com.apiproject.entities.admin.ProductCuponToAClient;
+import com.apiproject.repositories.projection.ProductCuponAssignmentProjection;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,7 +25,7 @@ public interface ProductCuponToAClientRepository extends JpaRepository<ProductCu
             WHERE ct.user_id = :adminId
             ORDER BY pct.id DESC
             """, nativeQuery = true)
-    List<Object[]> findAllByAdmin(@Param("adminId") Long adminId);
+    List<ProductCuponAssignmentProjection> findAllByAdmin(@Param("adminId") Long adminId);
 
     @Query(value = """
             SELECT pct.id, pct.client_id, c.full_name AS client_name, c.email AS client_email,
@@ -37,7 +38,7 @@ public interface ProductCuponToAClientRepository extends JpaRepository<ProductCu
             WHERE ct.user_id = :adminId AND pct.client_id = :clientId
             ORDER BY pct.id DESC
             """, nativeQuery = true)
-    List<Object[]> findByAdminAndClient(@Param("adminId") Long adminId, @Param("clientId") Long clientId);
+    List<ProductCuponAssignmentProjection> findByAdminAndClient(@Param("adminId") Long adminId, @Param("clientId") Long clientId);
 
     @Query(value = """
             SELECT pct.id, pct.client_id, c.full_name AS client_name, c.email AS client_email,
@@ -50,7 +51,7 @@ public interface ProductCuponToAClientRepository extends JpaRepository<ProductCu
             WHERE ct.user_id = :adminId AND pct.cupon_id = :cuponId
             ORDER BY pct.id DESC
             """, nativeQuery = true)
-    List<Object[]> findByAdminAndCupon(@Param("adminId") Long adminId, @Param("cuponId") Long cuponId);
+    List<ProductCuponAssignmentProjection> findByAdminAndCupon(@Param("adminId") Long adminId, @Param("cuponId") Long cuponId);
 
     @Query(value = """
             SELECT pct.id, pct.client_id, c.full_name AS client_name, c.email AS client_email,
@@ -63,7 +64,7 @@ public interface ProductCuponToAClientRepository extends JpaRepository<ProductCu
             WHERE pct.client_id = :clientId
             ORDER BY pct.id DESC
             """, nativeQuery = true)
-    List<Object[]> findAllByClient(@Param("clientId") Long clientId);
+    List<ProductCuponAssignmentProjection> findAllByClient(@Param("clientId") Long clientId);
 
     @Modifying
     @Transactional

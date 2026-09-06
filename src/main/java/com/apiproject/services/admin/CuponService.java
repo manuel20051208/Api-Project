@@ -6,6 +6,7 @@ import com.apiproject.DTOs.Admin.CuponResponseDTO;
 import com.apiproject.DTOs.Admin.ProductCuponToClientResponseDTO;
 import com.apiproject.DTOs.General.CuponValidationResponseDTO;
 import com.apiproject.entities.admin.Cupon;
+import com.apiproject.entities.admin.CuponUsedByClients;
 import com.apiproject.entities.admin.ProductCuponApplied;
 import com.apiproject.entities.admin.ProductCuponToAClient;
 import com.apiproject.entities.client.UserClient;
@@ -20,6 +21,7 @@ import com.apiproject.repositories.client.ClientRepository;
 import com.apiproject.repositories.general.ProductRepository;
 import com.apiproject.repositories.projection.CuponAdminProjection;
 import com.apiproject.repositories.projection.CuponUsageProjection;
+import com.apiproject.repositories.projection.ProductCuponAssignmentProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -128,7 +131,7 @@ public class CuponService {
      */
     @Transactional
     public CouponResolution resolveForCart(String code, List<Long> carritoProductIds,
-                                           java.util.function.Function<Long, Long> productoOwnerFn) {
+                                           Function<Long, Long> productoOwnerFn) {
         Cupon cupon = cuponRepository.lockByCode(code)
                 .orElseThrow(() -> new ResponseStatusException(CONFLICT, "El cupon no existe: " + code));
 
@@ -252,7 +255,7 @@ public class CuponService {
     }
 
     // Referencia usada por SaleService al registrar el uso
-    public void registerUsage(com.apiproject.entities.admin.CuponUsedByClients usage) {
+    public void registerUsage(CuponUsedByClients usage) {
         cuponUsedByClientsRepository.save(usage);
     }
 
@@ -343,18 +346,18 @@ public class CuponService {
         productCuponToAClientRepository.deleteByCuponId(cuponId);
     }
 
-    private ProductCuponToClientResponseDTO toAssignmentDto(Object[] row) {
+    private ProductCuponToClientResponseDTO toAssignmentDto(ProductCuponAssignmentProjection p) {
         return new ProductCuponToClientResponseDTO(
-                ((Number) row[0]).longValue(),
-                ((Number) row[1]).longValue(),
-                (String) row[2],
-                (String) row[3],
-                ((Number) row[4]).longValue(),
-                (String) row[5],
-                (Double) row[6],
-                row[7] instanceof java.sql.Timestamp ts ? ts.toLocalDateTime() : (java.time.LocalDateTime) row[7],
-                ((Number) row[8]).longValue(),
-                (String) row[9]
+                p.getId(),
+                p.getClientId(),
+                p.getClientName(),
+                p.getClientEmail(),
+                p.getCuponId(),
+                p.getCuponCode(),
+                p.getDiscount(),
+                p.getCuponDateLimit(),
+                p.getProductId(),
+                p.getProductName()
         );
     }
 }

@@ -1,6 +1,7 @@
 package com.apiproject.repositories.admin;
 
 import com.apiproject.entities.admin.ShProductCuponToAClient;
+import com.apiproject.repositories.projection.ShProductCuponAssignmentProjection;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,7 +25,7 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
             WHERE sc.user_id = :adminId
             ORDER BY spct.id DESC
             """, nativeQuery = true)
-    List<Object[]> findAllByAdmin(@Param("adminId") Long adminId);
+    List<ShProductCuponAssignmentProjection> findAllByAdmin(@Param("adminId") Long adminId);
 
     @Query(value = """
             SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,
@@ -37,7 +38,7 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
             WHERE sc.user_id = :adminId AND spct.client_id = :clientId
             ORDER BY spct.id DESC
             """, nativeQuery = true)
-    List<Object[]> findByAdminAndClient(@Param("adminId") Long adminId, @Param("clientId") Long clientId);
+    List<ShProductCuponAssignmentProjection> findByAdminAndClient(@Param("adminId") Long adminId, @Param("clientId") Long clientId);
 
     @Query(value = """
             SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,
@@ -50,7 +51,7 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
             WHERE sc.user_id = :adminId AND spct.sh_cupons_id = :cuponId
             ORDER BY spct.id DESC
             """, nativeQuery = true)
-    List<Object[]> findByAdminAndCupon(@Param("adminId") Long adminId, @Param("cuponId") Long cuponId);
+    List<ShProductCuponAssignmentProjection> findByAdminAndCupon(@Param("adminId") Long adminId, @Param("cuponId") Long cuponId);
 
     @Modifying
     @Transactional

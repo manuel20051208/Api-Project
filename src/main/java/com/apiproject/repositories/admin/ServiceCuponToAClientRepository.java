@@ -1,6 +1,7 @@
 package com.apiproject.repositories.admin;
 
 import com.apiproject.entities.admin.ServiceCuponToAClient;
+import com.apiproject.repositories.projection.ServiceCuponAssignmentProjection;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -16,7 +17,7 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
     @Query(value = """
             SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,
                    sct.service_cupon_id, sc.service_cupon_code, sc.discount, sc.cupon_date_limit,
-                   sct.service_id, so.name_of_service
+                   sct.service_id, so.name_of_service AS service_name
             FROM service_cupon_to_a_client sct
                      JOIN clients c ON c.id = sct.client_id
                      JOIN services_cupon sc ON sc.id = sct.service_cupon_id
@@ -24,12 +25,12 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
             WHERE sc.user_id = :adminId
             ORDER BY sct.id DESC
             """, nativeQuery = true)
-    List<Object[]> findAllByAdmin(@Param("adminId") Long adminId);
+    List<ServiceCuponAssignmentProjection> findAllByAdmin(@Param("adminId") Long adminId);
 
     @Query(value = """
             SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,
                    sct.service_cupon_id, sc.service_cupon_code, sc.discount, sc.cupon_date_limit,
-                   sct.service_id, so.name_of_service
+                   sct.service_id, so.name_of_service AS service_name
             FROM service_cupon_to_a_client sct
                      JOIN clients c ON c.id = sct.client_id
                      JOIN services_cupon sc ON sc.id = sct.service_cupon_id
@@ -37,12 +38,12 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
             WHERE sc.user_id = :adminId AND sct.client_id = :clientId
             ORDER BY sct.id DESC
             """, nativeQuery = true)
-    List<Object[]> findByAdminAndClient(@Param("adminId") Long adminId, @Param("clientId") Long clientId);
+    List<ServiceCuponAssignmentProjection> findByAdminAndClient(@Param("adminId") Long adminId, @Param("clientId") Long clientId);
 
     @Query(value = """
             SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,
                    sct.service_cupon_id, sc.service_cupon_code, sc.discount, sc.cupon_date_limit,
-                   sct.service_id, so.name_of_service
+                   sct.service_id, so.name_of_service AS service_name
             FROM service_cupon_to_a_client sct
                      JOIN clients c ON c.id = sct.client_id
                      JOIN services_cupon sc ON sc.id = sct.service_cupon_id
@@ -50,7 +51,7 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
             WHERE sc.user_id = :adminId AND sct.service_cupon_id = :cuponId
             ORDER BY sct.id DESC
             """, nativeQuery = true)
-    List<Object[]> findByAdminAndCupon(@Param("adminId") Long adminId, @Param("cuponId") Long cuponId);
+    List<ServiceCuponAssignmentProjection> findByAdminAndCupon(@Param("adminId") Long adminId, @Param("cuponId") Long cuponId);
 
     @Modifying
     @Transactional

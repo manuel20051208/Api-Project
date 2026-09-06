@@ -1,5 +1,6 @@
 package com.apiproject.DTOs.Admin;
 
+import com.apiproject.entities.admin.ServiceCupon;
 import com.apiproject.repositories.projection.CuponAdminProjection;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,18 @@ public record ServiceCuponResponseDTO(
                 projection.getQuantity(),
                 CuponResponseDTO.isUsable(projection.getCuponDateLimit(), projection.getQuantity()),
                 projection.getOwnerId()
+        );
+    }
+
+    public static ServiceCuponResponseDTO fromEntity(ServiceCupon cupon, Long ownerId) {
+        return new ServiceCuponResponseDTO(
+                cupon.getId(),
+                cupon.getServiceCuponCode(),
+                cupon.getCuponDateLimit(),
+                cupon.getDiscount(),
+                cupon.getQuantity(),
+                CuponResponseDTO.isUsable(cupon.getCuponDateLimit(), cupon.getQuantity()),
+                ownerId
         );
     }
 }

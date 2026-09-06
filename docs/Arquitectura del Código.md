@@ -55,7 +55,7 @@ Los payloads concretos de cada DTO están en [[Endpoints API]].
 | `admin/` | `UserRepository`, `DashboardRepository`, `ProductImageRepository`, `ReportDashboardRepository`, `ClientsSummaryViewRepository`, `SaleItemViewRepository`, `CuponRepository`, `ProductCuponRepository`, `CuponUsedByClientsRepository`, `SecondHandCuponRepository`, `SecondHandProductCuponRepository`, `ShCuponUsedByClientsRepository`, `ServiceOfferedRepository`, `ServiceCuponRepository`, `SecondHandProductImagesRepository`, `RankingsRepository` |
 | `client/` | `ClientRepository`, `PaymentCardRepository` |
 | `general/` | `ProductRepository`, `SaleRepository`, `SaleItemRepository`, `SecondHandProductRepository`, `ShSaleRepository`, `ShSaleItemRepository` |
-| `projection/` | Proyecciones JPA: `ClientLoginProjection`, `ClientSummaryProjection`, `ClientHistoryProjection`, `DashboardProjection`, `ReportDashboardProjection`, `PaymentCardDetailsProjection`, `SaleItemViewProjection`, `CuponAdminProjection`, `CuponUsageProjection`, `ShProductCardProjection`, `ShSaleHistoryProjection` |
+| `projection/` | Proyecciones JPA: `ClientLoginProjection`, `ClientSummaryProjection`, `ClientHistoryProjection`, `DashboardProjection`, `ReportDashboardProjection`, `PaymentCardDetailsProjection`, `SaleItemViewProjection`, `CuponAdminProjection`, `CuponUsageProjection`, `ShProductCardProjection`, `ShSaleHistoryProjection`, `ProductCuponAssignmentProjection`, `ShProductCuponAssignmentProjection`, `ServiceCuponAssignmentProjection` (asignaciones cupón→cliente con dato de producto/servicio; reemplazaron a `List<Object[]>` + casteo en los 3 servicios de cupones) |
 | `reportGenerator/` | `ReportService` (interfaz de exportación) |
 
 Los repos consultan las vistas de [[Esquema de Base de Datos#Vistas]]. **Convención**: todas las consultas nuevas (cupones, segunda mano, servicios) usan `nativeQuery = true`; los bloqueos de stock y canje de cupones usan `FOR UPDATE`.
@@ -69,7 +69,7 @@ Los repos consultan las vistas de [[Esquema de Base de Datos#Vistas]]. **Convenc
 | `reportGenerator/` | `ReportService`, `ExcelService`, `PdfService` |
 | `databasefunctions/` | `MaterializedViewRefreshService` — refresca las materialized views de rankings cada 5 min (`REFRESH MATERIALIZED VIEW CONCURRENTLY` vía `JdbcTemplate`) → [[Esquema de Base de Datos#Vistas materializadas — rankings]] |
 
-Regla de cupones (`CuponService.resolveForCart/redeem/registerUsage`, espejo SH): el cupón debe cubrir **todos** los productos del carrito, ser del mismo admin dueño, estar vigente y tener usos disponibles; se descuenta 1 uso por compra y se registra la fila en `*_used_by_clients`. El descuento es un porcentaje sobre cada subtotal.
+Regla de cupones (`CuponService.resolveForCart/redeem/registerUsage`, espejo SH): el cupón debe estar vigente y tener usos disponibles, pertenece a un **solo admin** y descuenta **solo los productos del carrito de ese admin que estén vinculados** (`product_cupons_applied`); se permite carrito multi-vendedor (lo de otros admins se cobra completo). Se bloquea con `FOR UPDATE`, se descuenta 1 uso por compra y se registra la fila en `*_used_by_clients`. El descuento es un porcentaje sobre cada subtotal elegible.
 
 ## security/
 - `AuthenticatedUser` — usuario autenticado en contexto.

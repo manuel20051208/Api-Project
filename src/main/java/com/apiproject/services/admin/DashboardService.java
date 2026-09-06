@@ -1,9 +1,13 @@
 package com.apiproject.services.admin;
 
 import com.apiproject.DTOs.Admin.DashboardDTO;
+import com.apiproject.DTOs.General.TheThreeBestClients;
+import com.apiproject.DTOs.General.TheThreeBestProducts;
 import com.apiproject.config.CacheConstants;
 import com.apiproject.exceptions.ResourceNotFoundException;
-import com.apiproject.repositories.admin.*;
+import com.apiproject.repositories.admin.DashboardRepository;
+import com.apiproject.repositories.admin.ReportDashboardRepository;
+import com.apiproject.repositories.admin.UserRepository;
 import com.apiproject.repositories.projection.ClientSummaryProjection;
 import com.apiproject.repositories.projection.DashboardProjection;
 import com.apiproject.repositories.projection.ReportDashboardProjection;
@@ -17,11 +21,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class DashboardService{
+public class DashboardService {
     private final UserRepository userRepository;
     private final DashboardRepository dashboardRepository;
     private final ClientsSummaryViewService clientsSummaryViewService;
     private final ReportDashboardRepository reportDashboardRepository;
+    private final RankingsService rankingsService;
 
     @Transactional(readOnly = true)
     @Cacheable(value = CacheConstants.DASHBOARD, key = "#userId")
@@ -56,5 +61,15 @@ public class DashboardService{
             throw new ResourceNotFoundException("User not found");
         }
         return reportDashboardRepository.findAllDashboard(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TheThreeBestClients> getBestClients(Long userId) {
+        return rankingsService.getBestClients(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TheThreeBestProducts> getBestProducts(Long userId) {
+        return rankingsService.getBestProducts(userId);
     }
 }

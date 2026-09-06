@@ -104,6 +104,14 @@ public class CuponController {
         return cuponService.findAssignmentsByClient(authenticatedUser.id(), clientId);
     }
 
+    @Operation(summary = "Listar cupones asignados al cliente autenticado (CLIENT)")
+    @GetMapping("/assignments/my")
+    public List<ProductCuponToClientResponseDTO> findMyAssignments(
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return cuponService.findMyAssignments(authenticatedUser.id());
+    }
+
     @Operation(summary = "Eliminar una asignación específica")
     @DeleteMapping("/assignments/{assignmentId}")
     public ResponseEntity<Void> removeAssignment(

@@ -9,6 +9,7 @@ public record PurchaseResponseDTO(
         List<Long> saleIds,
         Long clientId,
         String cuponCode,
+        CuponAppliedDTO cupon,
         BigDecimal originalTotal,
         BigDecimal discountApplied,
         BigDecimal totalAmount,
@@ -23,7 +24,7 @@ public record PurchaseResponseDTO(
             LocalDateTime createdAt,
             List<PurchaseItemResponseDTO> items
     ) {
-        this(saleId, saleIds, clientId, null, null, BigDecimal.ZERO, totalAmount, createdAt, items);
+        this(saleId, saleIds, clientId, null, null, null, BigDecimal.ZERO, totalAmount, createdAt, items);
     }
 
     public PurchaseResponseDTO(
@@ -33,6 +34,6 @@ public record PurchaseResponseDTO(
             LocalDateTime createdAt,
             List<PurchaseItemResponseDTO> items
     ) {
-        this(saleId, List.of(saleId), clientId, null, null, BigDecimal.ZERO, totalAmount, createdAt, items);
+        this(saleId, List.of(saleId), clientId, null, null, null, BigDecimal.ZERO, totalAmount, createdAt, items);
     }
 }

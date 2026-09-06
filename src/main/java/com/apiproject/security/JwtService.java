@@ -23,7 +23,7 @@ public class JwtService {
 
     private SecretKey getSigningKey() {
         if (secretKey == null || secretKey.isBlank()) {
-            throw new IllegalStateException("Configura jwt.secret.key con una llave Base64 de minimo 32 bytes");
+            throw new IllegalStateException("Configura jwt.secret.key con una llave Base64 de mínimo 32 bytes");
         }
         byte[] keyBytes = Base64.getDecoder().decode(secretKey.trim());
         return Keys.hmacShaKeyFor(keyBytes);

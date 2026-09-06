@@ -34,10 +34,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Cross-Site Request Forgery -> Es un tipo de ataque informático.
                 .csrf(AbstractHttpConfigurer::disable)
+                // Cross-Origin Resource Sharing -> Es una regla de seguridad que aplican los navegadores web.
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // como se manejaran los datos en la web, stateless para no guardar, session para sí guardar y
+                // IF_REQUIRED para guardar durante una petición etc.
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .securityContext(securityContext -> securityContext
+                        // el contexto se guarda como atributo de la request HTTP actual,
+                        // por lo que persiste durante forwards/includes/errores
                         .securityContextRepository(new RequestAttributeSecurityContextRepository()))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -85,7 +91,8 @@ public class SecurityConfig {
                                 "/api/user/**",
                                 "/dashboard-controller/**",
                                 "/api/sales-items/**",
-                                "/api/client-show-summary/**"
+                                "/api/client-show-summary/**",
+                                "/api/rankings/**"
                         ).hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET,
                                 "/api/product/search",
@@ -101,6 +108,7 @@ public class SecurityConfig {
                         // ===== Cupones (validaciones accesibles a clientes, gestion solo ADMIN) =====
                         .requestMatchers(HttpMethod.GET,
                                 "/api/cupons/validate",
+                                "/api/cupons/assignments/my",
                                 "/api/sh-cupons/validate"
                         ).authenticated()
                         .requestMatchers(
@@ -131,7 +139,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 ->
                         oauth2
                                 .successHandler(oAuth2SuccessHandler)
-                                .failureHandler((request,response,exception) ->
+                                .failureHandler((request, response, exception) ->
                                         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error autenticando con google"))
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

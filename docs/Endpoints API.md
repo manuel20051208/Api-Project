@@ -20,6 +20,7 @@ Response `LoginAdminResponseDTO`:
   "phone": 3001234567,
   "businessName": "Mi Negocio",
   "photo": "https://res.cloudinary.com/...",
+  "colorTypes": "VERDE",
   "accountType": "ADMIN",
   "token": "eyJhbGciOiJIUzI1NiJ9...",
   "message": "Inicio de sesion exitoso"
@@ -54,6 +55,7 @@ Response `LoginClientResponseDTO`:
   "address": "Calle 1 #2-3",
   "createdAt": "2026-05-25T01:10:00",
   "photo": null,
+  "colorTypes": "VERDE",
   "accountType": "CLIENT",
   "token": "eyJhbGciOiJIUzI1NiJ9...",
   "message": "Inicio de sesion exitoso"
@@ -403,9 +405,18 @@ Una venta por producto/admin (como la compra normal), descuenta stock con `FOR U
 
 Historiales: `GET /sh-sale/client` (CLIENT) y `GET /sh-sale/admin` (ADMIN) → `ShSaleHistoryProjection`.
 
+## Rankings (ADMIN)
+
+Ambos devuelven el top 3 de un admin autenticado. Se leen de las materialized views `three_best_clients` / `three_best_products` (→ [[Esquema de Base de Datos#Vistas materializadas — rankings]]).
+
+| Método / Ruta | Respuesta |
+|---|---|
+| GET `/api/rankings/best-clients` | `List<TheThreeBestClients>` = `[{ clientId, userId, name, amountOfBuys }]` |
+| GET `/api/rankings/best-products` | `List<TheThreeBestProducts>` = `[{ productId, userId, name, amountOfBuys }]` |
+
 ## Seguridad (SecurityConfig)
 - Públicos: Swagger, `/actuator/health`, `/oauth2/**`, login/register, `GET /api/product-images/**`, `GET /api/user/{id}/admin`, `GET /api/sh-product-images/**`.
-- `/api/client/**` → rol `CLIENT`; `/api/user/**`, `/dashboard-controller/**`, `/api/sales-items/**`, `/api/client-show-summary/**`, `/api/cupons/**`, `/api/sh-cupons/**`, `/api/services/**`, `/api/services-cupons/**`, `/api/sh-product/**`, `/api/sh-sale/**` → rol `ADMIN`.
+- `/api/client/**` → rol `CLIENT`; `/api/user/**`, `/dashboard-controller/**`, `/api/sales-items/**`, `/api/client-show-summary/**`, `/api/cupons/**`, `/api/sh-cupons/**`, `/api/services/**`, `/api/services-cupons/**`, `/api/sh-product/**`, `/api/sh-sale/**`, `/api/rankings/**` → rol `ADMIN`.
 - Autenticados: validaciones de cupones (`/cupons/validate`, `/sh-cupons/validate`, `/services/catalog/*`, `/services-cupons/validate/*`), `/sh-product/search/active/*`, catálogo normal.
 - Escritura de productos/imágenes (normales y SH) → `ADMIN`.
 - `/api/sale/purchase` y `/api/sh-sale/purchase`, `/api/sh-sale/client` → `CLIENT`; resto de ventas → `ADMIN`.

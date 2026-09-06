@@ -92,7 +92,8 @@ public class GlobalExceptionHandler {
                 message,
                 request.getRequestURI()
         );
-        return ResponseEntity.status(status)
+        return ResponseEntity
+                .status(status)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(error);
     }

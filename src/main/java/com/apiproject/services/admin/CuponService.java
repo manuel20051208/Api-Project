@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -114,12 +115,20 @@ public class CuponService {
     }
 
     /**
-     * Resuelve un cupon para un carrito: debe existir, estar vigente con usos disponibles,
-     * cubrir TODOS los productos comprados y pertenecer al mismo dueño que los productos.
-     * Bloquea la fila del cupon (FOR UPDATE) para evitar canjes concurrentes.
+     * Resuelve un cupon para un carrito: debe existir, estar vigente con usos disponibles.
+     * El cupon pertenece a un solo admin; aplica descuento únicamente a los productos del
+     * carrito que le pertenecen a ese admin y que estan vinculados al cupon (elegibles).
+     * No se exige que todos los productos del carrito sean del mismo vendedor; los de otros
+     * admins (o no vinculados) se cobran completos. Bloquea la fila (FOR UPDATE).
+     *
+     * @param code          codigo del cupon
+     * @param carritoProductIds ids de todos los productos del carrito
+     * @param productoOwnerFn  funcion (productId -> adminId) que devuelve el dueño de cada producto
+     * @return la resolucion con los ids de productos elegibles para descuento
      */
     @Transactional
-    public CouponResolution resolveForCart(String code, List<Long> productIds, Long productsOwnerId) {
+    public CouponResolution resolveForCart(String code, List<Long> carritoProductIds,
+                                           java.util.function.Function<Long, Long> productoOwnerFn) {
         Cupon cupon = cuponRepository.lockByCode(code)
                 .orElseThrow(() -> new ResponseStatusException(CONFLICT, "El cupon no existe: " + code));
 
@@ -129,16 +138,29 @@ public class CuponService {
         if (cupon.getQuantity() != null && cupon.getQuantity() <= 0) {
             throw new ResponseStatusException(CONFLICT, "El cupon agoto sus usos");
         }
-        if (!cupon.getUserAdmin().getId().equals(productsOwnerId)) {
-            throw new ResponseStatusException(CONFLICT, "El cupon no pertenece al dueño de los productos");
+
+        Long cuponOwnerId = cupon.getUserAdmin().getId();
+        Set<Long> linkedProducts = new LinkedHashSet<>(
+                productCuponRepository.findProductIdsByCuponId(cupon.getId()));
+
+        // Elegibles = productos del carrito que pertenecen al admin del cupon Y estan vinculados.
+        List<Long> elegibles = carritoProductIds.stream()
+                .filter(id -> cuponOwnerId.equals(productoOwnerFn.apply(id)))
+                .filter(linkedProducts::contains)
+                .toList();
+
+        if (elegibles.isEmpty()) {
+            throw new ResponseStatusException(CONFLICT,
+                    "El cupon no aplica a ningun producto del carrito de este vendedor");
         }
 
-        List<Long> linkedProducts = productCuponRepository.findProductIdsByCuponId(cupon.getId());
-        if (!new LinkedHashSet<>(linkedProducts).containsAll(productIds)) {
-            throw new ResponseStatusException(CONFLICT, "El cupon no aplica a todos los productos del carrito");
+        // Si la cantidad limite no es ilimitada, solo se descuentan los primeros 'quantity' elegibles.
+        Integer quantity = cupon.getQuantity();
+        if (quantity != null && elegibles.size() > quantity) {
+            elegibles = elegibles.subList(0, quantity);
         }
 
-        return new CouponResolution(cupon.getId(), cupon.getDiscount(), productsOwnerId);
+        return new CouponResolution(cupon.getId(), cupon.getDiscount(), cuponOwnerId, elegibles);
     }
 
     /** Descuenta un uso del cupon; lanza CONFLICT si ya no quedan usos. */
@@ -150,7 +172,7 @@ public class CuponService {
         }
     }
 
-    public record CouponResolution(Long cuponId, Double discountPercent, Long ownerId) {
+    public record CouponResolution(Long cuponId, Double discountPercent, Long ownerId, List<Long> elegibleProductIds) {
     }
 
     // ================= Helpers =================
@@ -287,6 +309,13 @@ public class CuponService {
     @Transactional(readOnly = true)
     public List<ProductCuponToClientResponseDTO> findAssignmentsByClient(Long adminId, Long clientId) {
         return productCuponToAClientRepository.findByAdminAndClient(adminId, clientId).stream()
+                .map(this::toAssignmentDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductCuponToClientResponseDTO> findMyAssignments(Long clientId) {
+        return productCuponToAClientRepository.findAllByClient(clientId).stream()
                 .map(this::toAssignmentDto)
                 .toList();
     }

@@ -100,7 +100,7 @@ public class ExcelService implements ReportService {
 
     private CellStyle createHeaderStyle(Workbook workbook) {
         CellStyle style = workbook.createCellStyle();
-        style.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+        style.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         style.setAlignment(HorizontalAlignment.CENTER);
         style.setVerticalAlignment(VerticalAlignment.CENTER);

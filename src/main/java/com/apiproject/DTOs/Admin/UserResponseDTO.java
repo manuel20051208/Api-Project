@@ -1,6 +1,7 @@
 package com.apiproject.DTOs.Admin;
 
 import com.apiproject.entities.admin.UserAdmin;
+import com.apiproject.enums.ColorTypes;
 
 public record UserResponseDTO(
         Long id,
@@ -8,7 +9,8 @@ public record UserResponseDTO(
         String email,
         Long phone,
         String photo,
-        String businessName) {
+        String businessName,
+        ColorTypes colorTypes) {
 
     public static UserResponseDTO fromEntity(UserAdmin userAdmin) {
         return new UserResponseDTO(
@@ -17,6 +19,7 @@ public record UserResponseDTO(
                 userAdmin.getEmail(),
                 userAdmin.getPhone(),
                 userAdmin.getProfilePhotoUrl(),
-                userAdmin.getBusinessName());
+                userAdmin.getBusinessName(),
+                userAdmin.getColorTypes());
     }
 }

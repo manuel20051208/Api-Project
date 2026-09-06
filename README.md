@@ -52,12 +52,6 @@ ReportServiceFactory.getService(type)
 
 Diagrama completo: [secuencia-reportes-factory.html](docs/diagrams/secuencia-reportes-factory.html)
 
-### Flujo de generación de reportes
-
-El diagrama generado con la skill de diseño se inserta directamente en GitHub como SVG:
-
-![Secuencia de generación de reportes con ReportServiceFactory](docs/diagrams/secuencia-reportes-factory.svg)
-
 ## Stack tecnológico
 
 | Área | Tecnología |
@@ -186,6 +180,42 @@ Authorization: Bearer <jwt>
 
 La lista completa de endpoints y payloads está en [API_FRONTEND_CONSUMPTION.txt](API_FRONTEND_CONSUMPTION.txt) y en Swagger.
 
+## Flujo de compra
+
+El endpoint `POST /api/sale/purchase` gestiona la compra completa de un cliente:
+
+1. **Validación**: verifica que el `clientId` del body coincida con el usuario autenticado y que exista una tarjeta activa (402 si no).
+2. **Bloqueo de stock**: usa `FOR UPDATE` en las filas de productos para evitar condiciones de carrera entre compras simultáneas.
+3. **Descuento de inventario**: valida disponibilidad y estado de cada producto, descuenta stock y calcula subtotales.
+4. **Cupón opcional**: si se envía `cuponCode`, resuelve el cupón, valida vigencia y usos, y aplica descuento solo a productos elegibles del mismo admin. Soporta carrito multi-vendedor.
+5. **Persistencia**: crea una `Sale` + `SaleItem` por producto/admin en lote.
+6. **Notificaciones SSE**: envía `VENTA_NUEVA` y `STOCK_BAJO` (si stock ≤ 5) al admin afectado.
+7. **Evicción de caché**: limpia las claves de dashboard, ventas y historial del cliente.
+
+![Flujo de compra de productos](docs/diagrams/secuencia-compra.svg)
+
+Diagrama interactivo: [secuencia-compra.html](docs/diagrams/secuencia-compra.html)
+
+## Catálogo y búsqueda de productos
+
+Los endpoints de lectura de productos usan caché por clave (`@Cacheable`) y devuelven siempre `ProductResponseDTO` con imágenes.
+
+| Endpoint | Descripción | Caché |
+|---|---|---|
+| `GET /product/activeProducts?sizePage=N` | Catálogo paginado (patrón IDs → imágenes) | `PRODUCTS_ACTIVE_PAGE` |
+| `GET /product/search/category/{cat}` | Filtrar por categoría (case-insensitive) | `PRODUCTS_BY_CATEGORY` |
+| `GET /product/search/name/{name}` | Buscar por nombre exacto | `PRODUCTS_BY_NAME` |
+| `GET /product/search` | Todos los productos de un admin | `PRODUCTS_BY_ADMIN` |
+| `GET /product/search/id/{id}` | Producto por ID | `PRODUCTS_BY_ID` |
+
+El endpoint paginado usa un patrón de dos pasos: primero obtiene los IDs con `Pageable` (query ligera), luego carga los productos completos con imágenes en una sola consulta — evita el problema N+1.
+
+Las escrituras (crear, actualizar, borrado suave) invalidan todas las claves de caché de productos.
+
+![Catálogo y búsqueda de productos](docs/diagrams/secuencia-catalogo-filtros.svg)
+
+Diagrama interactivo: [secuencia-catalogo-filtros.html](docs/diagrams/secuencia-catalogo-filtros.html)
+
 ## Reportes
 
 Los reportes consultan la vista SQL `report_view_dashboard` y comparten la interfaz `ReportService`.
@@ -194,6 +224,10 @@ Los reportes consultan la vista SQL `report_view_dashboard` y comparten la inter
 - `PdfService` genera archivos `.pdf` usando OpenPDF.
 - `ReportServiceFactory` decide qué implementación utilizar.
 - Ambos formatos devuelven una respuesta HTTP con `Content-Disposition: attachment`.
+
+![Secuencia de generación de reportes con ReportServiceFactory](docs/diagrams/secuencia-reportes-factory.svg)
+
+Diagrama interactivo: [secuencia-reportes-factory.html](docs/diagrams/secuencia-reportes-factory.html)
 
 ## Base de datos
 
@@ -241,6 +275,8 @@ src/main/resources/
 - [Configuración](docs/Configuración.md)
 - [Esquema de base de datos](docs/Esquema%20de%20Base%20de%20Datos.md)
 - [Diagrama de autenticación](docs/diagrams/authentication.html)
+- [Diagrama de flujo de compra](docs/diagrams/secuencia-compra.html)
+- [Diagrama de catálogo y filtros](docs/diagrams/secuencia-catalogo-filtros.html)
 - [Diagrama de reportes con Factory](docs/diagrams/secuencia-reportes-factory.html)
 
 ## Seguridad

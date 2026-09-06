@@ -1,9 +1,12 @@
 package com.apiproject.entities.client;
 
+import com.apiproject.enums.ColorTypes;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,4 +45,9 @@ public class UserClient {
 
     @Column(name = "photo")
     private String photo;
+
+    @Column(name = "color_config")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Enumerated(EnumType.STRING)
+    private ColorTypes colorTypes;
 }

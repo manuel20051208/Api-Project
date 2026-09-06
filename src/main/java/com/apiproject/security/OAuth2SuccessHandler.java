@@ -74,7 +74,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                         nuevo.setBusinessName("");
                         return userRepository.save(nuevo);
                     });
-
             token = jwtService.generateAdminToken(admin.getId(), admin.getEmail(), "ADMIN");
             redirectUrl = ADMIN_REDIRECT_URL;
             photo = admin.getProfilePhotoUrl();
@@ -105,7 +104,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         request.getSession().invalidate();
         SecurityContextHolder.clearContext();
-        // 4. Redirigimos al frontend con el JWT como query param
+        // 4. Redirigimos al frontend con el JWT como query param para poder guardar el token en el frontend
         response.sendRedirect(buildRedirectUrl(redirectUrl, token, photo));
     }
 

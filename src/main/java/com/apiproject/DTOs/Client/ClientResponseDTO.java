@@ -2,6 +2,7 @@ package com.apiproject.DTOs.Client;
 
 import com.apiproject.entities.client.PaymentCard;
 import com.apiproject.entities.client.UserClient;
+import com.apiproject.enums.ColorTypes;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,7 +15,8 @@ public record ClientResponseDTO(
         List<PaymentCard> paymentCards,
         String address,
         LocalDateTime createdAt,
-        String photo) {
+        String photo,
+        ColorTypes colorTypes) {
 
     public static ClientResponseDTO fromEntity(UserClient userClient) {
         return new ClientResponseDTO(
@@ -25,6 +27,7 @@ public record ClientResponseDTO(
                 userClient.getPaymentCards(),
                 userClient.getAddress(),
                 userClient.getCreatedAt(),
-                userClient.getPhoto());
+                userClient.getPhoto(),
+                userClient.getColorTypes());
     }
 }

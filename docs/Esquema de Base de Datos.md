@@ -8,8 +8,8 @@ PostgreSQL. Archivo de referencia: `src/main/resources/db/schema-postgres.sql` (
 
 | Tabla | Columnas principales | Restricciones / FKs |
 |---|---|---|
-| `users` | `id BIGSERIAL PK`, `password`, `phone BIGINT`, `full_name`, `email`, `business_name`, `profile_photo`, `profile_photo_url` | `UNIQUE(email)` — admin |
-| `clients` | `id BIGSERIAL PK`, `full_name`, `email`, `username`, `password`, `phone`, `address`, `created_at`, `photo` | `UNIQUE(username)`, `UNIQUE(email)` |
+| `users` | `id BIGSERIAL PK`, `password`, `phone BIGINT`, `full_name`, `email`, `business_name`, `profile_photo`, `profile_photo_url`, `color_config` | `UNIQUE(email)` — admin |
+| `clients` | `id BIGSERIAL PK`, `full_name`, `email`, `username`, `password`, `phone`, `address`, `created_at`, `photo`, `color_config` | `UNIQUE(username)`, `UNIQUE(email)` |
 | `payment_cards` | `id BIGSERIAL PK`, `client_id`, `card_holder_name`, `brand`, `last_four`, `active`, `created_at` | FK `client_id → clients(id) ON DELETE CASCADE`; `CHECK last_four ~ '^[0-9]{4}$'` |
 | `products` | `id BIGSERIAL PK`, `name`, `price DOUBLE`, `stock`, `category`, `description`, `active`, `id_users` | FK `id_users → users(id) ON DELETE SET NULL` |
 | `product_image` | `id BIGSERIAL PK`, `file_name`, `file_path`, `display_order`, `product_id` | FK `product_id → products(id) ON DELETE CASCADE`; `UNIQUE(product_id, display_order)` |
@@ -56,8 +56,24 @@ Relaciones nuevas:
 - `clients` 1 — N `cupons_used_by_clients` / `sh_cupons_used_by_clients`
 - `sh_sales` 1 — N `sh_sales_item` (cascade)
 
-## Índices
-- `products`: `(id_users)`, `(active, name)`, `LOWER(name)`, `LOWER(category)`.
+## Colores de interfaz (`color_config`)
+
+Tanto `users` (admin) como `clients` tienen la columna `color_config` mapeada al enum Java `ColorTypes` en [[Arquitectura del Código#enums/]]. Es un **tipo enum nativo de Postgres** (`NAMED_ENUM` en Hibernate 6 / Spring Boot 3): con `@JdbcTypeCode(SqlTypes.NAMED_ENUM)` + `@Enumerated(EnumType.STRING)`.
+
+Valores del enum `ColorTypes`: `VERDE`, `AZUL`, `VIOLETA`, `AMBAR`, `ROSA`.
+
+## Vistas materializadas — rankings
+
+Se agregan dos **materialized views** para el top de ventas por admin, refrescadas en segundo plano cada 5 min (ver `MaterializedViewRefreshService`):
+
+| Vista | Columnas | Propósito |
+|---|---|---|
+| `three_best_clients` | `client_id`, `user_id`, `name`, `amount_of_buys` | Top 3 clientes por nº de compras de un admin |
+| `three_best_products` | `product_id`, `users_id`, `name`, `amount_of_buys` | Top 3 productos por nº de compras de un admin |
+
+Se refrescan con `REFRESH MATERIALIZED VIEW CONCURRENTLY` (un `execute` por vista, no dos en el mismo — lanzaría excepción). Consultadas vía **native query** en `RankingsRepository` (`findAllByUser` / `findAllByUserId`) → [[Endpoints API#Rankings (ADMIN)]].
+
+## Índices- `products`: `(id_users)`, `(active, name)`, `LOWER(name)`, `LOWER(category)`.
 - `product_image`: `(product_id, display_order)`.
 - `sales`: `(client_id)`, `(user_id)`, `(created_at)`.
 - `sale_items`: `(sale_id)`, `(client_id, date DESC, id DESC)`, `(product_id, date DESC, id DESC)`.

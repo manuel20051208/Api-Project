@@ -52,6 +52,19 @@ public interface ProductCuponToAClientRepository extends JpaRepository<ProductCu
             """, nativeQuery = true)
     List<Object[]> findByAdminAndCupon(@Param("adminId") Long adminId, @Param("cuponId") Long cuponId);
 
+    @Query(value = """
+            SELECT pct.id, pct.client_id, c.full_name AS client_name, c.email AS client_email,
+                   pct.cupon_id, ct.cupon_code, ct.discount, ct.cupon_date_limit,
+                   pct.product_id, p.name AS product_name
+            FROM product_cupon_to_a_client pct
+                     JOIN clients c ON c.id = pct.client_id
+                     JOIN cupons ct ON ct.id = pct.cupon_id
+                     JOIN products p ON p.id = pct.product_id
+            WHERE pct.client_id = :clientId
+            ORDER BY pct.id DESC
+            """, nativeQuery = true)
+    List<Object[]> findAllByClient(@Param("clientId") Long clientId);
+
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM product_cupon_to_a_client WHERE cupon_id = :cuponId", nativeQuery = true)

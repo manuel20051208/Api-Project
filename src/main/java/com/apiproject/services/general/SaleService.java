@@ -22,9 +22,7 @@ import com.apiproject.services.admin.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -50,22 +48,6 @@ public class SaleService {
     private final SaleRepository saleRepository;
     private final CuponService cuponService;
     private final CuponRepository cuponRepository;
-
-    @Scheduled(
-            initialDelay = 0,
-            fixedDelayString = "${app.cache.refresh-ms:20000}"
-    )
-    @CachePut(
-            value = CacheConstants.PRODUCTS_ACTIVE_WITH_IMAGES,
-            key = "'all'"
-    )
-    @Transactional(readOnly = true)
-    public List<ProductResponseDTO> refreshClientProductsCache() {
-        return productRepository.findAllActiveWithImages()
-                .stream()
-                .map(ProductResponseDTO::fromEntity)
-                .toList();
-    }
 
     @Transactional
     @Caching(evict = {
@@ -96,8 +78,8 @@ public class SaleService {
                 .toList();
 
         // Bloquea todos los productos pedidos para evitar ventas concurrentes sobre el mismo stock.
-        Map<Long, Product> productsById = productRepository.findAllByIdInForUpdate(
-                        productIds)
+        Map<Long, Product> productsById = productRepository
+                .findAllByIdInForUpdate(productIds)
                 .stream()
                 .collect(Collectors.toMap(Product::getId, Function.identity()));
 
@@ -125,18 +107,20 @@ public class SaleService {
             saleDrafts.add(new SaleDraft(product, quantity, subtotal, product.getUserAdmin().getId()));
         }
 
-        // Cupon opcional: debe cubrir TODOS los productos del carrito y ser del mismo dueño.
+        // Cupon opcional: aplica descuento solo a los productos del carrito que son del
+        // admin dueño del cupon y estan vinculados a el. Se permite carrito multi-vendedor.
         CuponService.CouponResolution coupon = null;
         if (requestDTO.cuponCode() != null && !requestDTO.cuponCode().isBlank()) {
-            Set<Long> ownerIds = saleDrafts.stream()
-                    .map(SaleDraft::adminId)
-                    .collect(Collectors.toSet());
-            if (ownerIds.size() > 1) {
-                throw new ResponseStatusException(CONFLICT,
-                        "El cupon no puede aplicarse a un carrito de varios vendedores");
-            }
-            coupon = cuponService.resolveForCart(requestDTO.cuponCode(), productIds, ownerIds.iterator().next());
+            Map<Long, Long> productOwnerByProductId = saleDrafts.stream()
+                    .collect(Collectors.toMap(d -> d.product().getId(), SaleDraft::adminId, (a, b) -> a));
+            coupon = cuponService.resolveForCart(
+                    requestDTO.cuponCode(),
+                    productIds,
+                    productOwnerByProductId::get);
         }
+        Set<Long> elegibles = coupon == null
+                ? Set.of()
+                : new HashSet<>(coupon.elegibleProductIds());
 
         // Crea una venta individual por producto/admin con el descuento proporcional si hay cupon.
         List<Sale> sales = new ArrayList<>(saleDrafts.size());
@@ -145,7 +129,9 @@ public class SaleService {
             sale.setUserClient(client);
             sale.setHora(now);
             sale.setUserAdmin(productOwner(draft));
-            sale.setTotalAmount(applyDiscount(draft.subtotal(), coupon));
+            sale.setTotalAmount(elegibles.contains(draft.product().getId())
+                    ? applyDiscount(draft.subtotal(), coupon)
+                    : applyDiscount(draft.subtotal(), null));
             sales.add(sale);
         }
 
@@ -161,10 +147,13 @@ public class SaleService {
         saleItemRepository.saveAll(saleItems);
 
         // Canjea el cupon una sola vez por compra y registra el uso del cliente.
+        CuponAppliedDTO couponApplied = null;
         if (coupon != null) {
             cuponService.redeem(coupon);
 
             Cupon cuponRef = cuponRepository.getReferenceById(coupon.cuponId());
+            couponApplied = CuponAppliedDTO.fromEntity(cuponRef);
+
             CuponUsedByClients usage = new CuponUsedByClients();
             usage.setClientUser(client);
             usage.setSale(savedSales.getFirst());
@@ -215,6 +204,7 @@ public class SaleService {
                 saleIds,
                 requestDTO.clientId(),
                 coupon == null ? null : requestDTO.cuponCode(),
+                couponApplied,
                 totalAmount,
                 totalAmount.subtract(finalTotal),
                 finalTotal,

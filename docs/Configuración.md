@@ -40,3 +40,6 @@
 
 ## Reportes
 - Excel/PDF vía `ReportServiceFactory` + `poi-ooxml`/`openpdf` → [[Arquitectura del Código#services/]] y [[Endpoints API#Panel de administración (ADMIN)]].
+
+## Tareas programadas
+- `MaterializedViewRefreshService` refresca las materialized views de rankings (`three_best_clients` / `three_best_products`) cada **5 minutos** (`@Scheduled(fixedDelay)`) → [[Esquema de Base de Datos#Vistas materializadas — rankings]].

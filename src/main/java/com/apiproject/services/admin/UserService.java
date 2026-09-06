@@ -1,7 +1,5 @@
 package com.apiproject.services.admin;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 import com.apiproject.DTOs.Admin.UserResponseDTO;
 import com.apiproject.DTOs.Auth.LoginAdminResponseDTO;
 import com.apiproject.DTOs.Auth.RegisterAdminRequestDTO;
@@ -11,12 +9,15 @@ import com.apiproject.entities.admin.UserAdmin;
 import com.apiproject.exceptions.ResourceNotFoundException;
 import com.apiproject.repositories.admin.UserRepository;
 import com.apiproject.security.JwtService;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.CacheManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -67,6 +68,7 @@ public class UserService {
         return toUserResponse(userAdmin);
     }
 
+    @Transactional
     @CachePut(value = CacheConstants.USER_RESPONSE, key = "#id")
     public UserResponseDTO modifyData(Long id, UserAdmin userAdmin){
         UserAdmin existing = userRepository.findById(id)
@@ -74,12 +76,12 @@ public class UserService {
 
         Optional.ofNullable(userAdmin.getFullName()).ifPresent(existing::setFullName);
         Optional.ofNullable(userAdmin.getEmail()).ifPresent(existing::setEmail);
-        Optional.ofNullable(userAdmin.getPassword())
-                .filter(password -> !password.isBlank())
-                .map(passwordEncoder::encode)
-                .ifPresent(existing::setPassword);
         Optional.ofNullable(userAdmin.getBusinessName()).ifPresent(existing::setBusinessName);
         Optional.ofNullable(userAdmin.getPhone()).ifPresent(existing::setPhone);
+        Optional.ofNullable(userAdmin.getColorTypes()).ifPresent(existing::setColorTypes);
+
+        // hacemos un log para ver si cambia o no los colores el back end
+        System.out.println(existing.getColorTypes());
 
         userRepository.save(existing);
 
@@ -94,7 +96,10 @@ public class UserService {
     }
 
     @Cacheable(value = "clientDescriptions", key = "#id")
+    // obtenemos el usuario para la tienda
     public ClientDescriptionAboutUsersDTO getUserAdminForStore (Long id){
+
+        // Usamos un DTO para no traer datos sensibles al front end
         return userRepository.findProfileById(id)
                 .map(this::toStoreResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
@@ -120,6 +125,7 @@ public class UserService {
                 userAdmin.getPhone(),
                 userAdmin.getBusinessName(),
                 userAdmin.getProfilePhotoUrl(),
+                userAdmin.getColorTypes(),
                 "ADMIN",
                 token,
                 "Inicio de sesion exitoso");
@@ -180,7 +186,8 @@ public class UserService {
                 userAdmin.getEmail(),
                 userAdmin.getPhone(),
                 userAdmin.getProfilePhotoUrl(),
-                userAdmin.getBusinessName());
+                userAdmin.getBusinessName(),
+                userAdmin.getColorTypes());
     }
 
     private void cacheUserResponse(UserAdmin userAdmin) {

@@ -129,6 +129,7 @@ public class ClientService {
                 .ifPresent(existing::setPassword);
         Optional.ofNullable(userClient.getPhone()).ifPresent(existing::setPhone);
         Optional.ofNullable(userClient.getAddress()).ifPresent(existing::setAddress);
+        Optional.ofNullable(userClient.getColorTypes()).ifPresent(existing::setColorTypes);
 
         clientRepository.save(existing);
 
@@ -155,6 +156,7 @@ public class ClientService {
                 userClient.getAddress(),
                 userClient.getCreatedAt(),
                 userClient.getPhoto(),
+                userClient.getColorTypes(),
                 "CLIENT",
                 token,
                 "Inicio de sesion exitoso");
@@ -261,7 +263,8 @@ public class ClientService {
                 userClient.getPaymentCards(),
                 userClient.getAddress(),
                 userClient.getCreatedAt(),
-                userClient.getPhoto());
+                userClient.getPhoto(),
+                userClient.getColorTypes());
     }
 
     // la parte de fotos fue implementada con ayuda de la IA (linea 262 - 313)

@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -126,11 +127,13 @@ public class SecondHandCuponService {
     }
 
     /**
-     * Igual que CuponService.resolveForCart pero para productos de segunda mano:
-     * el cupon debe cubrir todos los productos del carrito y ser del mismo dueño.
+     * Igual que CuponService.resolveForCart pero para productos de segunda mano.
+     * El cupon pertenece a un solo admin y aplica descuento solo a los productos del
+     * carrito de ese admin que esten vinculados; se permite carrito multi-vendedor.
      */
     @Transactional
-    public CouponResolution resolveForCart(String code, List<Long> shProductIds, Long productsOwnerId) {
+    public CouponResolution resolveForCart(String code, List<Long> shCarritoProductIds,
+                                           java.util.function.Function<Long, Long> shProductoOwnerFn) {
         SecondHandCupon cupon = secondHandCuponRepository.lockByCode(code)
                 .orElseThrow(() -> new ResponseStatusException(CONFLICT, "El cupon no existe: " + code));
 
@@ -140,16 +143,27 @@ public class SecondHandCuponService {
         if (cupon.getQuantity() != null && cupon.getQuantity() <= 0) {
             throw new ResponseStatusException(CONFLICT, "El cupon agoto sus usos");
         }
-        if (!cupon.getUserAdmin().getId().equals(productsOwnerId)) {
-            throw new ResponseStatusException(CONFLICT, "El cupon no pertenece al dueño de los productos");
+
+        Long cuponOwnerId = cupon.getUserAdmin().getId();
+        Set<Long> linkedProducts = new LinkedHashSet<>(
+                secondHandProductCuponRepository.findShProductIdsByCuponId(cupon.getId()));
+
+        List<Long> elegibles = shCarritoProductIds.stream()
+                .filter(id -> cuponOwnerId.equals(shProductoOwnerFn.apply(id)))
+                .filter(linkedProducts::contains)
+                .toList();
+
+        if (elegibles.isEmpty()) {
+            throw new ResponseStatusException(CONFLICT,
+                    "El cupon no aplica a ningun producto del carrito de este vendedor");
         }
 
-        List<Long> linkedProducts = secondHandProductCuponRepository.findShProductIdsByCuponId(cupon.getId());
-        if (!new LinkedHashSet<>(linkedProducts).containsAll(shProductIds)) {
-            throw new ResponseStatusException(CONFLICT, "El cupon no aplica a todos los productos del carrito");
+        Integer quantity = cupon.getQuantity();
+        if (quantity != null && elegibles.size() > quantity) {
+            elegibles = elegibles.subList(0, quantity);
         }
 
-        return new CouponResolution(cupon.getId(), cupon.getDiscount(), productsOwnerId);
+        return new CouponResolution(cupon.getId(), cupon.getDiscount(), cuponOwnerId, elegibles);
     }
 
     @Transactional
@@ -160,7 +174,7 @@ public class SecondHandCuponService {
         }
     }
 
-    public record CouponResolution(Long cuponId, Double discountPercent, Long ownerId) {
+    public record CouponResolution(Long cuponId, Double discountPercent, Long ownerId, List<Long> elegibleProductIds) {
     }
 
     // ================= Helpers =================

@@ -1,6 +1,7 @@
 package com.apiproject.DTOs.Auth;
 
 import com.apiproject.entities.admin.UserAdmin;
+import com.apiproject.enums.ColorTypes;
 
 public record LoginAdminResponseDTO(
         Long id,
@@ -9,6 +10,7 @@ public record LoginAdminResponseDTO(
         Number phone,
         String businessName,
         String photo,
+        ColorTypes colorTypes,
         String accountType,
         String token,
         String message) {
@@ -21,6 +23,7 @@ public record LoginAdminResponseDTO(
                 userAdmin.getPhone(),
                 userAdmin.getBusinessName(),
                 userAdmin.getProfilePhotoUrl(),
+                userAdmin.getColorTypes(),
                 "ADMIN",
                 token,
                 "Inicio de sesion exitoso");

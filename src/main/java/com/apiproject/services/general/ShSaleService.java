@@ -88,19 +88,19 @@ public class ShSaleService {
             saleDrafts.add(new ShSaleDraft(product, quantity, subtotal, product.getUserAdmin()));
         }
 
-        // El cupon (opcional) debe cubrir TODOS los productos del carrito y ser del mismo dueño.
+        // El cupon opcional aplica descuento solo a los productos del carrito del admin dueño
+        // del cupon que esten vinculados; se permite carrito multi-vendedor.
         SecondHandCuponService.CouponResolution coupon = null;
         if (requestDTO.cuponCode() != null && !requestDTO.cuponCode().isBlank()) {
-            Set<Long> ownerIds = saleDrafts.stream()
-                    .map(draft -> draft.owner().getId())
-                    .collect(Collectors.toSet());
-            if (ownerIds.size() > 1) {
-                throw new ResponseStatusException(CONFLICT,
-                        "El cupon no puede aplicarse a un carrito de varios vendedores");
-            }
+            Map<Long, Long> ownerByProductId = saleDrafts.stream()
+                    .collect(Collectors.toMap(d -> d.product().getId(),
+                            d -> d.owner() == null ? null : d.owner().getId(), (a, b) -> a));
             coupon = secondHandCuponService.resolveForCart(
-                    requestDTO.cuponCode(), productIds, ownerIds.iterator().next());
+                    requestDTO.cuponCode(), productIds, ownerByProductId::get);
         }
+        Set<Long> elegibles = coupon == null
+                ? Set.of()
+                : new HashSet<>(coupon.elegibleProductIds());
 
         // Crea una venta individual por producto con el descuento proporcional si hay cupon.
         List<ShSale> sales = new ArrayList<>(saleDrafts.size());
@@ -109,7 +109,9 @@ public class ShSaleService {
             sale.setUserClient(client);
             sale.setHora(now);
             sale.setUserAdmin(draft.owner());
-            sale.setTotalAmount(applyDiscount(draft.subtotal(), coupon));
+            sale.setTotalAmount(elegibles.contains(draft.product().getId())
+                    ? applyDiscount(draft.subtotal(), coupon)
+                    : applyDiscount(draft.subtotal(), null));
             sales.add(sale);
         }
 

@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Endpoints de cupones para producto de segunda mano (/api/sh-cupons).
+ * Espejo de {@link CuponController} contra {@link SecondHandCuponService}.
+ */
 @Tag(name = "Second Hand Cupon", description = "CRUD y validacion de cupones para productos de segunda mano")
 @RestController
 @RequiredArgsConstructor

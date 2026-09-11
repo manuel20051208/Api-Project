@@ -1,16 +1,16 @@
-# Graph Report - ApiProject  (2026-09-05)
+# Graph Report - ApiProject  (2026-09-11)
 
 ## Corpus Check
-- 193 files · ~38,982 words
+- 193 files · ~40,976 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1670 nodes · 4053 edges · 103 communities (91 shown, 12 thin omitted)
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 328 edges (avg confidence: 0.8)
+- 1672 nodes · 4049 edges · 108 communities (96 shown, 12 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 329 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3ba5dc02`
+- Built from commit: `028ced3c`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -30,21 +30,21 @@
 - UserClient
 - ClientHistoryProjection
 - NotificationService
-- AuthenticatedUser
-- read
 - PdfService
+- read
+- ExcelService
 - Protected Endpoints
 - ColorTypes
 - PaymentCard
 - mvnw
-- ServiceCuponRepository
+- CuponUsageProjection
 - ClientLoginProjection
 - CloudinaryConfig.java
 - SaleItemService.java
 - SaleResponseDato.java
 - com.apiproject:ApiProject
 - ShProductCuponAssignmentProjection
-- .update
+- ResourceNotFoundException
 - SwaggerConfig.java
 - ServiceOffered
 - graphify-out Knowledge Graph
@@ -64,7 +64,7 @@
 - ShSaleService.java
 - ShSaleHistoryProjection
 - ApiJuegoInventario
-- ServiceCuponToAClient
+- ReportDashboardProjection
 - ShProductCardProjection
 - ShCuponUsedByClients
 - SaleController.java
@@ -72,48 +72,53 @@
 - .purchase
 - ProductCuponAssignmentProjection
 - ServiceCuponAssignmentProjection
-- CuponService
+- FileTypes
 - Sale
 - SecondHandProductRepository
 - Arquitectura del Código
 - ShSale
 - Estructura del Proyecto — ApiProject
 - JpaRepository
+- AuthenticatedUser
 - CuponRepository
-- ServiceCupon
 - CuponUsedByClients
-- ShProductCuponToAClient
-- SecondHandProduct
+- DashboardController.java
+- SecondHandProductCuponsApplied
 - Configuración
-- ReportDashboardProjection
+- RankingsController.java
 - Esquema de Base de Datos
-- SalesItem
+- ServiceCuponToAClient
 - Endpoints API
 - Clientes y tarjetas
 - Cupon
 - Imágenes de producto
 - Panel de administración (ADMIN)
 - Productos de segunda mano
-- CuponValidationResponseDTO
+- CuponResponseDTO
 - Productos
 - Servicios ofrecidos
 - SecondHandCuponController
 - Ventas
-- ResourceNotFoundException
+- ServiceCuponService
 - SecondHandCupon
 - UserResponseDTO
 - ServiceCuponToAClientRepository
 - ServiceCuponController
 - .onAuthenticationSuccess
-- SecondHandProductCuponsApplied
-- ServiceCuponResponseDTO
+- DashboardService.java
+- ServiceCupon
 - UserAdmin
-- ProductCuponToAClientRepository
-- ShProductCuponToAClientRepository
+- CuponService
+- .update
 - UserRepository
 - UserController.java
-- SecondHandCuponService
-- ProductCuponToAClient
+- LoginClientResponseDTO
+- ShProductCuponToAClientRepository
+- DashboardProjection
+- ShProductCuponToAClient
+- SalesItem
+- SecondHandProduct
+- ReportDashboard
 
 ## God Nodes (most connected - your core abstractions)
 1. `AuthenticatedUser` - 99 edges
@@ -125,9 +130,11 @@
 7. `SecondHandProduct` - 37 edges
 8. `SecondHandCuponService` - 36 edges
 9. `ClientService` - 33 edges
-10. `UserRepository` - 28 edges
+10. `ProductRepository` - 28 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `DashboardDTO` --references--> `ClientSummaryProjection`  [EXTRACTED]
+  src/main/java/com/apiproject/DTOs/Admin/DashboardDTO.java → src/main/java/com/apiproject/repositories/projection/ClientSummaryProjection.java
 - `ProductResponseDTO` --references--> `ProductImageDTO`  [EXTRACTED]
   src/main/java/com/apiproject/DTOs/General/ProductResponseDTO.java → src/main/java/com/apiproject/DTOs/Admin/ProductImageDTO.java
 - `ShProductResponseDTO` --references--> `ShProductImageDTO`  [EXTRACTED]
@@ -136,8 +143,6 @@
   src/main/java/com/apiproject/DTOs/Admin/UserResponseDTO.java → src/main/java/com/apiproject/enums/ColorTypes.java
 - `LoginAdminResponseDTO` --references--> `ColorTypes`  [EXTRACTED]
   src/main/java/com/apiproject/DTOs/Auth/LoginAdminResponseDTO.java → src/main/java/com/apiproject/enums/ColorTypes.java
-- `LoginClientResponseDTO` --references--> `ColorTypes`  [EXTRACTED]
-  src/main/java/com/apiproject/DTOs/Auth/LoginClientResponseDTO.java → src/main/java/com/apiproject/enums/ColorTypes.java
 
 ## Import Cycles
 - None detected.
@@ -147,7 +152,7 @@
 - **Payment Card Feature** — api_frontend_consumption_payment_cards, api_frontend_consumption_purchase, api_frontend_consumption_add_payment_cards_sql, api_frontend_consumption_payment_cards_table [INFERRED 0.85]
 - **Product Catalog Feature** — api_frontend_consumption_product_catalog, api_frontend_consumption_product_images, api_frontend_consumption_purchase, api_frontend_consumption_client_token, api_frontend_consumption_admin_token [INFERRED 0.75]
 
-## Communities (103 total, 12 thin omitted)
+## Communities (108 total, 12 thin omitted)
 
 ### Community 0 - "Product"
 Cohesion: 0.05
@@ -182,8 +187,8 @@ Cohesion: 0.19
 Nodes (5): Modifying, Query, Repository, PaymentCardRepository, PaymentCardDetailsProjection
 
 ### Community 9 - "ClientControllers.java"
-Cohesion: 0.13
-Nodes (14): ClientControllers, GetMapping, MultipartFile, Operation, PatchMapping, PostMapping, RequestMapping, RequiredArgsConstructor (+6 more)
+Cohesion: 0.20
+Nodes (10): ClientControllers, GetMapping, MultipartFile, Operation, PatchMapping, RequestMapping, RequiredArgsConstructor, ResponseEntity (+2 more)
 
 ### Community 10 - "GlobalExceptionHandler"
 Cohesion: 0.28
@@ -201,24 +206,24 @@ Nodes (10): AllArgsConstructor, Data, Entity, NoArgsConstructor, Table, UserClie
 Cohesion: 0.21
 Nodes (11): GetMapping, Operation, RequestMapping, RequiredArgsConstructor, RestController, SseEmitter, NotificationController, NotificationEventDTO (+3 more)
 
-### Community 15 - "AuthenticatedUser"
-Cohesion: 0.07
-Nodes (25): CellStyle, GrantedAuthority, IndexedColors, Sheet, DashboardController, GetMapping, Operation, RequestMapping (+17 more)
+### Community 15 - "PdfService"
+Cohesion: 0.22
+Nodes (7): Color, Document, Font, PdfPTable, Override, Service, PdfService
 
 ### Community 16 - "read"
 Cohesion: 0.17
 Nodes (11): cat *.env*, rm -rf *, type *.env*, $schema, permission, bash, read, *.env (+3 more)
 
-### Community 17 - "PdfService"
-Cohesion: 0.22
-Nodes (7): Color, Document, Font, PdfPTable, Override, Service, PdfService
+### Community 17 - "ExcelService"
+Cohesion: 0.23
+Nodes (6): CellStyle, IndexedColors, Sheet, ExcelService, Override, Workbook
 
 ### Community 18 - "Protected Endpoints"
 Cohesion: 0.22
 Nodes (14): add-payment-cards.sql Script, Admin Token, /api Base Path, Bearer Token Authentication, Client Token, Login Endpoint, LoginResponseDTO, Payment Cards API (+6 more)
 
 ### Community 19 - "ColorTypes"
-Cohesion: 0.20
+Cohesion: 0.22
 Nodes (7): ClientResponseDTO, ColorTypes, AMBAR, AZUL, ROSA, VERDE, VIOLETA
 
 ### Community 20 - "PaymentCard"
@@ -229,9 +234,9 @@ Nodes (9): PaymentCardRequestDTO, PaymentCardResponseDTO, AllArgsConstructor, Da
 Cohesion: 0.33
 Nodes (6): mvnw script, clean(), die(), exec_maven(), set_java_home(), verbose()
 
-### Community 22 - "ServiceCuponRepository"
-Cohesion: 0.39
-Nodes (5): Modifying, Query, Repository, Transactional, ServiceCuponRepository
+### Community 22 - "CuponUsageProjection"
+Cohesion: 0.23
+Nodes (6): Modifying, Query, Repository, Transactional, ServiceCuponRepository, CuponUsageProjection
 
 ### Community 24 - "CloudinaryConfig.java"
 Cohesion: 0.53
@@ -241,9 +246,9 @@ Nodes (4): CloudinaryConfig, Bean, Cloudinary, Configuration
 Cohesion: 0.83
 Nodes (3): RequiredArgsConstructor, Service, SaleItemService
 
-### Community 29 - ".update"
-Cohesion: 0.29
-Nodes (3): PutMapping, SecondHandCuponRequestDTO, SecondHandCuponResponseDTO
+### Community 29 - "ResourceNotFoundException"
+Cohesion: 0.19
+Nodes (6): ResourceNotFoundException, CouponResolution, RequiredArgsConstructor, Service, Transactional, SecondHandCuponService
 
 ### Community 30 - "SwaggerConfig.java"
 Cohesion: 0.53
@@ -298,7 +303,7 @@ Cohesion: 0.18
 Nodes (11): GetMapping, Operation, PostMapping, RequestMapping, RequiredArgsConstructor, ResponseEntity, RestController, Tag (+3 more)
 
 ### Community 45 - "CuponController"
-Cohesion: 0.14
+Cohesion: 0.18
 Nodes (11): CuponController, DeleteMapping, GetMapping, Operation, PostMapping, RequestMapping, RequiredArgsConstructor, ResponseEntity (+3 more)
 
 ### Community 46 - "ShSaleService.java"
@@ -313,10 +318,6 @@ Nodes (3): Query, ShSaleHistoryProjection, Transactional
 Cohesion: 0.10
 Nodes (20): ApiJuegoInventario, Arquitectura, Base de datos, Catálogo y búsqueda de productos, Configuración, Documentación adicional, Ejecución con Docker, Ejecución local (+12 more)
 
-### Community 49 - "ServiceCuponToAClient"
-Cohesion: 0.39
-Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, ServiceCuponToAClient
-
 ### Community 51 - "ShCuponUsedByClients"
 Cohesion: 0.33
 Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, ShCuponUsedByClients
@@ -326,16 +327,20 @@ Cohesion: 0.23
 Nodes (9): Operation, PostMapping, RequestMapping, RequiredArgsConstructor, RestController, Tag, SaleController, PurchaseItemResponseDTO (+1 more)
 
 ### Community 53 - "ClientSummaryProjection"
-Cohesion: 0.09
-Nodes (23): ClientsSummaryViewController, GetMapping, Operation, Page, RequestMapping, RequiredArgsConstructor, RestController, Tag (+15 more)
+Cohesion: 0.11
+Nodes (20): ClientsSummaryViewController, GetMapping, Operation, Page, RequestMapping, RequiredArgsConstructor, RestController, Tag (+12 more)
 
 ### Community 54 - ".purchase"
 Cohesion: 0.24
 Nodes (5): ShPurchaseItemRequestDTO, ShPurchaseRequestDTO, CouponResolution, ShSaleDraft, ShSaleService
 
-### Community 57 - "CuponService"
-Cohesion: 0.18
-Nodes (8): PutMapping, CuponRequestDTO, CuponResponseDTO, CouponResolution, CuponService, RequiredArgsConstructor, Service, Transactional
+### Community 55 - "ProductCuponAssignmentProjection"
+Cohesion: 0.11
+Nodes (13): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, ProductCuponToAClient, Modifying (+5 more)
+
+### Community 57 - "FileTypes"
+Cohesion: 0.17
+Nodes (8): FileTypes, EXCEL, PDF, ReportService, ResponseEntity, Component, ReportServiceFactory, Component
 
 ### Community 58 - "Sale"
 Cohesion: 0.27
@@ -361,41 +366,41 @@ Nodes (10): Arquitectura general, Dependencias principales (pom.xml), Directorio
 Cohesion: 0.33
 Nodes (6): JpaRepository, Query, Repository, ShCuponUsedByClientsRepository, Repository, SaleItemRepository
 
-### Community 64 - "CuponRepository"
-Cohesion: 0.20
-Nodes (6): CuponRepository, Modifying, Query, Repository, Transactional, CuponUsageProjection
+### Community 64 - "AuthenticatedUser"
+Cohesion: 0.24
+Nodes (4): GrantedAuthority, AuthenticatedUser, Override, UserDetails
 
-### Community 65 - "ServiceCupon"
-Cohesion: 0.39
-Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, ServiceCupon
+### Community 65 - "CuponRepository"
+Cohesion: 0.36
+Nodes (5): CuponRepository, Modifying, Query, Repository, Transactional
 
 ### Community 66 - "CuponUsedByClients"
 Cohesion: 0.23
 Nodes (10): CuponUsedByClients, AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, CuponUsedByClientsRepository (+2 more)
 
-### Community 67 - "ShProductCuponToAClient"
-Cohesion: 0.39
-Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, ShProductCuponToAClient
+### Community 67 - "DashboardController.java"
+Cohesion: 0.21
+Nodes (11): DashboardController, GetMapping, Operation, RequestMapping, RequiredArgsConstructor, ResponseEntity, RestController, Tag (+3 more)
 
-### Community 68 - "SecondHandProduct"
-Cohesion: 0.39
-Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, SecondHandProduct
+### Community 68 - "SecondHandProductCuponsApplied"
+Cohesion: 0.21
+Nodes (12): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, SecondHandProductCuponsApplied, Modifying (+4 more)
 
 ### Community 70 - "Configuración"
 Cohesion: 0.29
 Nodes (7): Archivos (src/main/resources), Configuración, Perfil dev — puntos clave, Reportes, Seguridad (SecurityConfig), Tareas programadas, Variables de entorno (.env)
 
-### Community 71 - "ReportDashboardProjection"
-Cohesion: 0.05
-Nodes (32): Immutable, Repository, GetMapping, Operation, RequestMapping, RequiredArgsConstructor, RestController, Tag (+24 more)
+### Community 71 - "RankingsController.java"
+Cohesion: 0.16
+Nodes (16): GetMapping, Operation, RequestMapping, RequiredArgsConstructor, RestController, Tag, RankingsController, TheThreeBestClients (+8 more)
 
 ### Community 72 - "Esquema de Base de Datos"
 Cohesion: 0.18
 Nodes (11): Colores de interfaz (`color_config`), Cupones para productos normales, Esquema de Base de Datos, Nota, Segunda mano, Servicios ofrecidos, Tablas, Tablas nuevas — cupones, segunda mano y servicios (+3 more)
 
-### Community 73 - "SalesItem"
+### Community 73 - "ServiceCuponToAClient"
 Cohesion: 0.39
-Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, SalesItem
+Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, ServiceCuponToAClient
 
 ### Community 77 - "Endpoints API"
 Cohesion: 0.18
@@ -406,7 +411,7 @@ Cohesion: 0.22
 Nodes (9): Clientes y tarjetas, GET `/client/payment-cards` — Listar tarjetas (CLIENT), GET `/client/profile-photo` — Obtener foto de perfil (CLIENT), GET `/client/user-data` — Datos del cliente (CLIENT), GET /client/user-payments — Historial de compras del cliente (CLIENT), PATCH `/client/modify` — Modificar datos del cliente (CLIENT), PATCH `/client/payment-cards/{cardId}/status?active=true` — Activar/desactivar tarjeta (CLIENT), PATCH `/client/upload-profile` — Foto de perfil del cliente (CLIENT) (+1 more)
 
 ### Community 79 - "Cupon"
-Cohesion: 0.24
+Cohesion: 0.27
 Nodes (8): CuponAppliedDTO, Cupon, AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table
 
 ### Community 80 - "Imágenes de producto"
@@ -421,6 +426,10 @@ Nodes (4): GET /dashboard-controller/excel — Reporte en Excel (adjunto .xlsx),
 Cohesion: 0.50
 Nodes (4): Imágenes SH — `/api/sh-product-images`, POST `/sh-product/save` — Crear producto SH (ADMIN), POST `/sh-sale/purchase` — Compra SH (CLIENT), Productos de segunda mano
 
+### Community 83 - "CuponResponseDTO"
+Cohesion: 0.27
+Nodes (3): PutMapping, CuponRequestDTO, CuponResponseDTO
+
 ### Community 84 - "Productos"
 Cohesion: 0.50
 Nodes (4): POST `/product/deleteSafe` — Borrado suave (ADMIN), POST `/product/saveProduct` — Crear producto (ADMIN), Productos, PUT `/product/update/{id}` — Actualizar producto (ADMIN)
@@ -430,16 +439,16 @@ Cohesion: 0.67
 Nodes (3): Cupones de servicio, POST `/services` — Crear servicio (ADMIN), Servicios ofrecidos
 
 ### Community 86 - "SecondHandCuponController"
-Cohesion: 0.19
-Nodes (11): DeleteMapping, GetMapping, Operation, PostMapping, RequestMapping, RequiredArgsConstructor, ResponseEntity, RestController (+3 more)
+Cohesion: 0.15
+Nodes (12): DeleteMapping, GetMapping, Operation, PostMapping, RequestMapping, RequiredArgsConstructor, ResponseEntity, RestController (+4 more)
 
 ### Community 87 - "Ventas"
 Cohesion: 0.67
 Nodes (3): POST `/sale/purchase` — Compra de cliente (CLIENT), POST `/sale/sale/refresh` — Recalcular producto por venta (ADMIN), Ventas
 
-### Community 88 - "ResourceNotFoundException"
-Cohesion: 0.26
-Nodes (5): ResourceNotFoundException, RequiredArgsConstructor, Service, Transactional, ServiceCuponService
+### Community 88 - "ServiceCuponService"
+Cohesion: 0.22
+Nodes (7): PostMapping, CuponAssignmentRequestDTO, ServiceCuponToClientResponseDTO, RequiredArgsConstructor, Service, Transactional, ServiceCuponService
 
 ### Community 89 - "SecondHandCupon"
 Cohesion: 0.20
@@ -454,32 +463,32 @@ Cohesion: 0.33
 Nodes (5): Modifying, Query, Repository, Transactional, ServiceCuponToAClientRepository
 
 ### Community 92 - "ServiceCuponController"
-Cohesion: 0.17
-Nodes (12): DeleteMapping, GetMapping, Operation, PostMapping, RequestMapping, RequiredArgsConstructor, ResponseEntity, RestController (+4 more)
+Cohesion: 0.24
+Nodes (9): DeleteMapping, GetMapping, Operation, RequestMapping, RequiredArgsConstructor, ResponseEntity, RestController, Tag (+1 more)
 
 ### Community 93 - ".onAuthenticationSuccess"
 Cohesion: 0.22
 Nodes (9): Authentication, AuthenticationSuccessHandler, Component, HttpServletRequest, HttpServletResponse, Override, RequiredArgsConstructor, Transactional (+1 more)
 
-### Community 94 - "SecondHandProductCuponsApplied"
-Cohesion: 0.21
-Nodes (12): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, SecondHandProductCuponsApplied, Modifying (+4 more)
+### Community 94 - "DashboardService.java"
+Cohesion: 0.26
+Nodes (9): Repository, DashboardRepository, Query, ReportDashboardRepository, DashboardService, Cacheable, RequiredArgsConstructor, Service (+1 more)
 
-### Community 95 - "ServiceCuponResponseDTO"
-Cohesion: 0.38
-Nodes (3): PutMapping, ServiceCuponRequestDTO, ServiceCuponResponseDTO
+### Community 95 - "ServiceCupon"
+Cohesion: 0.19
+Nodes (10): PutMapping, ServiceCuponRequestDTO, ServiceCuponResponseDTO, AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor (+2 more)
 
 ### Community 96 - "UserAdmin"
 Cohesion: 0.23
 Nodes (8): ClientDescriptionAboutUsersDTO, AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, UserAdmin
 
-### Community 97 - "ProductCuponToAClientRepository"
-Cohesion: 0.28
-Nodes (5): Modifying, Query, Repository, Transactional, ProductCuponToAClientRepository
+### Community 97 - "CuponService"
+Cohesion: 0.23
+Nodes (5): CouponResolution, CuponService, RequiredArgsConstructor, Service, Transactional
 
-### Community 98 - "ShProductCuponToAClientRepository"
-Cohesion: 0.33
-Nodes (5): Modifying, Query, Repository, Transactional, ShProductCuponToAClientRepository
+### Community 98 - ".update"
+Cohesion: 0.32
+Nodes (3): PutMapping, SecondHandCuponRequestDTO, SecondHandCuponResponseDTO
 
 ### Community 99 - "UserRepository"
 Cohesion: 0.33
@@ -489,13 +498,29 @@ Nodes (5): Modifying, Query, Repository, Transactional, UserRepository
 Cohesion: 0.16
 Nodes (12): DynamicUpdate, GetMapping, Operation, PostMapping, RequestMapping, RequiredArgsConstructor, RestController, Tag (+4 more)
 
-### Community 102 - "SecondHandCuponService"
+### Community 101 - "LoginClientResponseDTO"
 Cohesion: 0.24
-Nodes (5): CouponResolution, RequiredArgsConstructor, Service, Transactional, SecondHandCuponService
+Nodes (4): PostMapping, LoginClientRequestDTO, LoginClientResponseDTO, RegisterClientRequestDTO
 
-### Community 105 - "ProductCuponToAClient"
+### Community 102 - "ShProductCuponToAClientRepository"
+Cohesion: 0.33
+Nodes (5): Modifying, Query, Repository, Transactional, ShProductCuponToAClientRepository
+
+### Community 104 - "ShProductCuponToAClient"
 Cohesion: 0.39
-Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, ProductCuponToAClient
+Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, ShProductCuponToAClient
+
+### Community 105 - "SalesItem"
+Cohesion: 0.39
+Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, SalesItem
+
+### Community 106 - "SecondHandProduct"
+Cohesion: 0.39
+Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, Table, SecondHandProduct
+
+### Community 107 - "ReportDashboard"
+Cohesion: 0.70
+Nodes (4): Immutable, Entity, Table, ReportDashboard
 
 ## Knowledge Gaps
 - **144 isolated node(s):** `$schema`, `*.env`, `*.env.example`, `*.key`, `*.pem` (+139 more)
@@ -505,17 +530,17 @@ Nodes (7): AllArgsConstructor, Data, DynamicUpdate, Entity, NoArgsConstructor, T
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AuthenticatedUser` connect `AuthenticatedUser` to `Product`, `ProductImage`, `JwtService`, `ClientControllers.java`, `NotificationService`, `PaymentCard`, `.update`, `ServiceOffered`, `SecondHandProductService`, `ShProductImageDTO`, `ShSaleController.java`, `CuponController`, `SaleController.java`, `CuponService`, `ReportDashboardProjection`, `SecondHandCuponController`, `UserResponseDTO`, `ServiceCuponController`, `ServiceCuponResponseDTO`, `UserController.java`?**
-  _High betweenness centrality (0.171) - this node is a cross-community bridge._
-- **Why does `ResourceNotFoundException` connect `ResourceNotFoundException` to `Product`, `UserService`, `ProductImage`, `ResponseStatusException`, `GlobalExceptionHandler`, `SaleService.java`, `.update`, `ServiceOffered`, `SecondHandProductService`, `SecondHandProductImage`, `CuponController`, `ShSaleService.java`, `.purchase`, `CuponService`, `ReportDashboardProjection`, `UserResponseDTO`, `ServiceCuponResponseDTO`, `ProductCuponToAClientRepository`, `SecondHandCuponService`?**
-  _High betweenness centrality (0.096) - this node is a cross-community bridge._
-- **Why does `UserClient` connect `UserClient` to `Product`, `ResponseStatusException`, `ClientControllers.java`, `SaleService.java`, `ColorTypes`, `PaymentCard`, `ShSaleService.java`, `ServiceCuponToAClient`, `ShCuponUsedByClients`, `SaleController.java`, `ClientSummaryProjection`, `.purchase`, `CuponService`, `Sale`, `ShSale`, `CuponUsedByClients`, `ShProductCuponToAClient`, `SalesItem`, `ResourceNotFoundException`, `.onAuthenticationSuccess`, `SecondHandCuponService`, `ProductCuponToAClient`?**
-  _High betweenness centrality (0.084) - this node is a cross-community bridge._
+- **Why does `AuthenticatedUser` connect `AuthenticatedUser` to `Product`, `ProductImage`, `JwtService`, `ClientControllers.java`, `NotificationService`, `PaymentCard`, `ServiceOffered`, `SecondHandProductService`, `ShProductImageDTO`, `ShSaleController.java`, `CuponController`, `SaleController.java`, `DashboardController.java`, `RankingsController.java`, `CuponResponseDTO`, `SecondHandCuponController`, `ServiceCuponService`, `UserResponseDTO`, `ServiceCuponController`, `ServiceCupon`, `.update`, `UserController.java`?**
+  _High betweenness centrality (0.170) - this node is a cross-community bridge._
+- **Why does `UserClient` connect `UserClient` to `Product`, `ResponseStatusException`, `ClientControllers.java`, `SaleService.java`, `ColorTypes`, `PaymentCard`, `ResourceNotFoundException`, `ShSaleService.java`, `ShCuponUsedByClients`, `SaleController.java`, `ClientSummaryProjection`, `.purchase`, `ProductCuponAssignmentProjection`, `Sale`, `ShSale`, `CuponUsedByClients`, `ServiceCuponToAClient`, `ServiceCuponService`, `.onAuthenticationSuccess`, `CuponService`, `LoginClientResponseDTO`, `ShProductCuponToAClient`, `SalesItem`?**
+  _High betweenness centrality (0.097) - this node is a cross-community bridge._
+- **Why does `ResourceNotFoundException` connect `ResourceNotFoundException` to `Product`, `UserService`, `ProductImage`, `ResponseStatusException`, `GlobalExceptionHandler`, `SaleService.java`, `ServiceOffered`, `SecondHandProductService`, `SecondHandProductImage`, `ShSaleService.java`, `ReportDashboardProjection`, `.purchase`, `CuponResponseDTO`, `ServiceCuponService`, `UserResponseDTO`, `DashboardService.java`, `ServiceCupon`, `CuponService`, `.update`?**
+  _High betweenness centrality (0.081) - this node is a cross-community bridge._
 - **What connects `$schema`, `*.env`, `*.env.example` to the rest of the system?**
   _144 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Product` be split into smaller, more focused modules?**
-  _Cohesion score 0.054982817869415807 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05380333951762523 - nodes in this community are weakly interconnected._
 - **Should `ProductImage` be split into smaller, more focused modules?**
-  _Cohesion score 0.0851063829787234 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08788159111933395 - nodes in this community are weakly interconnected._
 - **Should `SaleItemViewProjection` be split into smaller, more focused modules?**
   _Cohesion score 0.10570824524312897 - nodes in this community are weakly interconnected._

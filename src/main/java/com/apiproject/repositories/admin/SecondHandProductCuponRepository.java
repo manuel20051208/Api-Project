@@ -13,6 +13,7 @@ import java.util.List;
 @Repository
 public interface SecondHandProductCuponRepository extends JpaRepository<SecondHandProductCuponsApplied, Long> {
 
+    /** Ids de los productos SH a los que aplica un cupón (tabla N:M secondhand_product_cupons_applied). */
     @Query(value = """
             SELECT sh_product_id FROM secondhand_product_cupons_applied
             WHERE sh_cupons_id = :cuponId
@@ -20,6 +21,7 @@ public interface SecondHandProductCuponRepository extends JpaRepository<SecondHa
             """, nativeQuery = true)
     List<Long> findShProductIdsByCuponId(@Param("cuponId") Long cuponId);
 
+    /** Borra todos los enlaces cupón SH<->producto SH (antes de reemplazar o borrar el cupón). */
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM secondhand_product_cupons_applied WHERE sh_cupons_id = :cuponId", nativeQuery = true)

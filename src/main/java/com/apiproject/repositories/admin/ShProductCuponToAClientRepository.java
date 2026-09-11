@@ -14,6 +14,7 @@ import java.util.List;
 @Repository
 public interface ShProductCuponToAClientRepository extends JpaRepository<ShProductCuponToAClient, Long> {
 
+    /** Asignaciones de los cupones SH del admin (cupón x producto SH x cliente). */
     @Query(value = """
             SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,
                    spct.sh_cupons_id, sc.sh_cupon_code, sc.discount, sc.cupon_date_limit,
@@ -27,6 +28,7 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
             """, nativeQuery = true)
     List<ShProductCuponAssignmentProjection> findAllByAdmin(@Param("adminId") Long adminId);
 
+    /** Asignaciones SH del admin hacia un cliente concreto. */
     @Query(value = """
             SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,
                    spct.sh_cupons_id, sc.sh_cupon_code, sc.discount, sc.cupon_date_limit,
@@ -40,6 +42,7 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
             """, nativeQuery = true)
     List<ShProductCuponAssignmentProjection> findByAdminAndClient(@Param("adminId") Long adminId, @Param("clientId") Long clientId);
 
+    /** Asignaciones de un cupón SH concreto del admin. */
     @Query(value = """
             SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,
                    spct.sh_cupons_id, sc.sh_cupon_code, sc.discount, sc.cupon_date_limit,
@@ -53,16 +56,19 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
             """, nativeQuery = true)
     List<ShProductCuponAssignmentProjection> findByAdminAndCupon(@Param("adminId") Long adminId, @Param("cuponId") Long cuponId);
 
+    /** Borra las asignaciones SH de un cupón completo. */
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM sh_product_cupo_to_a_client WHERE sh_cupons_id = :cuponId", nativeQuery = true)
     int deleteByCuponId(@Param("cuponId") Long cuponId);
 
+    /** Borra las asignaciones SH de un cupón para un cliente concreto. */
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM sh_product_cupo_to_a_client WHERE sh_cupons_id = :cuponId AND client_id = :clientId", nativeQuery = true)
     int deleteByCuponIdAndClientId(@Param("cuponId") Long cuponId, @Param("clientId") Long clientId);
 
+    /** Cupón SH asignado al cliente y vigente para ese producto SH (id + descuento). */
     @Query(value = """
             SELECT sc.id AS cupon_id, sc.discount AS discount
             FROM sh_product_cupo_to_a_client spct

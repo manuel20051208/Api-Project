@@ -28,6 +28,11 @@ import java.util.List;
 
 import static org.springframework.http.HttpStatus.*;
 
+/**
+ * Lógica de cupones de servicios ofrecidos por una tienda.
+ * A diferencia de los cupones de producto, estos aplican al conjunto de servicios
+ * del admin (sin vínculo por producto individual) y se asignan a clientes igual que el resto.
+ */
 @Service
 @RequiredArgsConstructor
 public class ServiceCuponService {
@@ -39,15 +44,17 @@ public class ServiceCuponService {
 
     // ================= CRUD (ADMIN) =================
 
+    /** Crea un cupón de servicio para el admin autenticado. */
     @Transactional
     public ServiceCuponResponseDTO create(ServiceCuponRequestDTO request, Long adminId) {
         validateRequest(request);
         ServiceCupon cupon = new ServiceCupon();
         applyFields(cupon, request);
-        cupon.setUserAdmin(userRepository.getReferenceById(adminId));
+        cupon.setUserAdmin(userRepository.getReferenceById(adminId)); // dueño = admin autenticado
         return ServiceCuponResponseDTO.fromEntity(serviceCuponRepository.save(cupon), adminId);
     }
 
+    /** Lista los cupones de servicio del admin. */
     @Transactional(readOnly = true)
     public List<ServiceCuponResponseDTO> findAllByOwner(Long adminId) {
         return serviceCuponRepository.findAllByOwner(adminId).stream()
@@ -55,18 +62,20 @@ public class ServiceCuponService {
                 .toList();
     }
 
+    /** Actualiza un cupón de servicio propio (LOCK FOR UPDATE). */
     @Transactional
     public ServiceCuponResponseDTO update(Long id, ServiceCuponRequestDTO request, Long adminId) {
         validateRequest(request);
 
         ServiceCupon cupon = serviceCuponRepository.lockById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Service cupon not found: " + id));
-        requireOwner(cupon, adminId);
+        requireOwner(cupon, adminId); // solo el dueño lo edita
         applyFields(cupon, request);
 
         return ServiceCuponResponseDTO.fromEntity(cupon, adminId);
     }
 
+    /** Borra un cupón de servicio propio (validando dueño). No tiene N:M que limpiar. */
     @Transactional
     public void delete(Long id, Long adminId) {
         ServiceCupon cupon = serviceCuponRepository.lockById(id)
@@ -90,6 +99,7 @@ public class ServiceCuponService {
 
     // ================= Helpers =================
 
+    /** Copia los campos editables del request a la entidad. */
     private void applyFields(ServiceCupon cupon, ServiceCuponRequestDTO request) {
         cupon.setServiceCuponCode(request.serviceCuponCode().trim());
         cupon.setCuponDateLimit(request.cuponDateLimit());
@@ -97,6 +107,7 @@ public class ServiceCuponService {
         cupon.setQuantity(request.quantity());
     }
 
+    /** Valida los campos del request: código no vacío (<=15), fecha futura, descuento 1-100, usos > 0. */
     private void validateRequest(ServiceCuponRequestDTO request) {
         if (request == null || request.serviceCuponCode() == null || request.serviceCuponCode().isBlank()) {
             throw new ResponseStatusException(BAD_REQUEST, "serviceCuponCode es obligatorio");
@@ -115,6 +126,7 @@ public class ServiceCuponService {
         }
     }
 
+    /** Verifica que el cupón de servicio pertenezca al admin. */
     private void requireOwner(ServiceCupon cupon, Long adminId) {
         Long ownerId = cupon.getUserAdmin() != null ? cupon.getUserAdmin().getId() : null;
         if (ownerId == null || !ownerId.equals(adminId)) {
@@ -124,15 +136,21 @@ public class ServiceCuponService {
 
     // ================= Asignación de cupones de servicio a clientes =================
 
+    /**
+     * Asigna un cupón de servicio a clientes (todos o una lista).
+     * Aquí el cupón se cruza con los servicios del admin: cada cliente recibe una
+     * fila por cada servicio ofrecido por esa tienda.
+     */
     @Transactional
     public List<ServiceCuponToClientResponseDTO> assignToClients(CuponAssignmentRequestDTO request, Long adminId) {
         if (request.cuponId() == null) {
             throw new ResponseStatusException(BAD_REQUEST, "cuponId es obligatorio");
         }
-        ServiceCupon cupon = serviceCuponRepository.lockById(request.cuponId())
+        ServiceCupon cupon = serviceCuponRepository.lockById(request.cuponId()) // LOCK contra duplicados
                 .orElseThrow(() -> new ResourceNotFoundException("Service cupon not found: " + request.cuponId()));
         requireOwner(cupon, adminId);
 
+        // Los servicios objetivo son los del propio admin (no hay vínculo por producto)
         List<ServiceOffered> services = serviceOfferedRepository.findAll().stream()
                 .filter(s -> s.getUserAdmin() != null && s.getUserAdmin().getId().equals(adminId))
                 .toList();
@@ -140,6 +158,7 @@ public class ServiceCuponService {
             throw new ResponseStatusException(CONFLICT, "El admin no tiene servicios ofrecidos");
         }
 
+        // Destinatarios: todos los clientes o la lista indicada
         List<Long> targetClientIds;
         if (request.assignToAll()) {
             targetClientIds = clientRepository.findAll().stream()
@@ -151,6 +170,7 @@ public class ServiceCuponService {
             throw new ResponseStatusException(BAD_REQUEST, "Debe indicar clientIds o assignToAll=true");
         }
 
+        // Producto cruzado: cada cliente recibe una fila por cada servicio de la tienda
         List<ServiceCuponToAClient> assignments = new ArrayList<>();
         for (Long clientId : targetClientIds) {
             UserClient client = clientRepository.getReferenceById(clientId);
@@ -163,9 +183,10 @@ public class ServiceCuponService {
             }
         }
         serviceCuponToAClientRepository.saveAll(assignments);
-        return findAllAssignmentsByAdmin(adminId);
+        return findAllAssignmentsByAdmin(adminId); // estado completo tras asignar
     }
 
+    /** Todas las asignaciones de cupones de servicio del admin. */
     @Transactional(readOnly = true)
     public List<ServiceCuponToClientResponseDTO> findAllAssignmentsByAdmin(Long adminId) {
         return serviceCuponToAClientRepository.findAllByAdmin(adminId).stream()
@@ -173,6 +194,7 @@ public class ServiceCuponService {
                 .toList();
     }
 
+    /** Asignaciones del admin hacia un cliente concreto. */
     @Transactional(readOnly = true)
     public List<ServiceCuponToClientResponseDTO> findAssignmentsByClient(Long adminId, Long clientId) {
         return serviceCuponToAClientRepository.findByAdminAndClient(adminId, clientId).stream()
@@ -180,6 +202,7 @@ public class ServiceCuponService {
                 .toList();
     }
 
+    /** Asignaciones de un cupón de servicio concreto del admin. */
     @Transactional(readOnly = true)
     public List<ServiceCuponToClientResponseDTO> findAssignmentsByCupon(Long adminId, Long cuponId) {
         return serviceCuponToAClientRepository.findByAdminAndCupon(adminId, cuponId).stream()
@@ -187,6 +210,7 @@ public class ServiceCuponService {
                 .toList();
     }
 
+    /** Elimina una asignación puntual (validando dueño del cupón). */
     @Transactional
     public void removeAssignment(Long assignmentId, Long adminId) {
         ServiceCuponToAClient assignment = serviceCuponToAClientRepository.findById(assignmentId)
@@ -195,6 +219,7 @@ public class ServiceCuponService {
         serviceCuponToAClientRepository.deleteById(assignmentId);
     }
 
+    /** Elimina todas las asignaciones de un cupón de servicio (validando dueño). */
     @Transactional
     public void removeAllByCupon(Long cuponId, Long adminId) {
         ServiceCupon cupon = serviceCuponRepository.lockById(cuponId)
@@ -203,6 +228,7 @@ public class ServiceCuponService {
         serviceCuponToAClientRepository.deleteByCuponId(cuponId);
     }
 
+    /** Proyección -> DTO de una asignación de servicio (sin casteo manual). */
     private ServiceCuponToClientResponseDTO toAssignmentDto(ServiceCuponAssignmentProjection p) {
         return new ServiceCuponToClientResponseDTO(
                 p.getId(),

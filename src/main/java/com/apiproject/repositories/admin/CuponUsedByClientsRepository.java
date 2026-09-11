@@ -9,9 +9,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CuponUsedByClientsRepository extends JpaRepository<CuponUsedByClients, Long> {
 
+    /** Veces que un cupón fue usado en compras (todas). */
     @Query(value = "SELECT COUNT(*) FROM cupons_used_by_clients WHERE cupon_id = :cuponId", nativeQuery = true)
     long countByCuponId(@Param("cuponId") Long cuponId);
 
+    /** Veces que un cliente concreto usó un cupón. */
     @Query(value = """
             SELECT COUNT(*) FROM cupons_used_by_clients
             WHERE cupon_id = :cuponId AND client_user = :clientId

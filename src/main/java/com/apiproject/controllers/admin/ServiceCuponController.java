@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Endpoints de cupones para servicios ofrecidos (/api/services-cupons).
+ * CRUD y asignación a clientes delegan en {@link ServiceCuponService}.
+ */
 @Tag(name = "Services Cupon", description = "CRUD y validacion de cupones para servicios")
 @RestController
 @RequiredArgsConstructor

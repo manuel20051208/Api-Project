@@ -16,6 +16,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Endpoints de cupones para productos normales (/api/cupons).
+ * CRUD para admin, validación pública para clientes y asignación de cupones a clientes.
+ * Todos los métodos son delegaciones finas a {@link CuponService}; el id del admin
+ * autenticado se obtiene del {@link AuthenticatedUser} para forzar aislamiento por dueño.
+ */
 @Tag(name = "Cupon", description = "CRUD y validacion de cupones para productos normales")
 @RestController
 @RequiredArgsConstructor

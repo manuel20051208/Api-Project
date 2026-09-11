@@ -175,8 +175,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/DashboardController.java": {
-    "mtime": 1786455790.384377,
-    "ast_hash": "cb34c59a6542ddd242ae0834d4eec96e",
+    "mtime": 1789149043.8551695,
+    "ast_hash": "5d9906b6d375d7a80928619d17993cfa",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/NotificationController.java": {
@@ -400,8 +400,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/DashboardService.java": {
-    "mtime": 1787783568.115693,
-    "ast_hash": "23804163c3a6b42413bb7dfb01e54fd5",
+    "mtime": 1789149023.9999137,
+    "ast_hash": "2ebff568ac7768ae62fbed9e072684c2",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/NotificationService.java": {
@@ -450,8 +450,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/reportGenerator/ExcelService.java": {
-    "mtime": 1788637981.8061023,
-    "ast_hash": "a8fbc30c8d87e8065fad2dc96b831cd9",
+    "mtime": 1788672693.9031558,
+    "ast_hash": "95ab381333189fa8a6cab75dcb6285ec",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/reportGenerator/PdfService.java": {
@@ -520,28 +520,28 @@
     "semantic_hash": ""
   },
   "docs/.obsidian/app.json": {
-    "mtime": 1788318908.5968764,
+    "mtime": 1788983535.341398,
     "ast_hash": "99914b932bd37a50b983c5e7c90ae93b",
     "semantic_hash": ""
   },
   "docs/.obsidian/appearance.json": {
-    "mtime": 1788318908.5968764,
+    "mtime": 1788983535.341398,
     "ast_hash": "99914b932bd37a50b983c5e7c90ae93b",
     "semantic_hash": ""
   },
   "docs/.obsidian/core-plugins.json": {
-    "mtime": 1788318908.4756298,
+    "mtime": 1788983534.963111,
     "ast_hash": "7c877bea49eaeabb100563bd157b9051",
     "semantic_hash": ""
   },
   "docs/.obsidian/graph.json": {
-    "mtime": 1788041795.873,
+    "mtime": 1788983540.662,
     "ast_hash": "da0efe3df3594d4c3a95e40c4565aa18",
     "semantic_hash": ""
   },
   "docs/.obsidian/workspace.json": {
-    "mtime": 1788321337.8481123,
-    "ast_hash": "3eec52508ee0a730f2d977d5e46dd0b5",
+    "mtime": 1788983563.649773,
+    "ast_hash": "cae8d1c8f4bf249d4ee06fdd537db5ab",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/DTOs/Admin/CuponRequestDTO.java": {
@@ -625,13 +625,13 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/CuponController.java": {
-    "mtime": 1788041151.3386953,
-    "ast_hash": "da12d46912f42e5444aca544537469b5",
+    "mtime": 1788657040.4278574,
+    "ast_hash": "9805dd22998947308f3154b446244c07",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/SecondHandCuponController.java": {
-    "mtime": 1787751689.2249389,
-    "ast_hash": "972c8e9f33fae4e309ea9232549b845e",
+    "mtime": 1788657046.2760284,
+    "ast_hash": "36458b6bafc79eb354786172fe450b7c",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/SecondHandProductImageController.java": {
@@ -640,8 +640,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/ServiceCuponController.java": {
-    "mtime": 1787751720.2532556,
-    "ast_hash": "94150753a2f87a7a5d9bf45f5b2fe1db",
+    "mtime": 1788657051.9158168,
+    "ast_hash": "98b46c18da74787beac78de778712c7e",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/ServiceOfferedController.java": {
@@ -720,28 +720,28 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/CuponRepository.java": {
-    "mtime": 1787451800.1585195,
-    "ast_hash": "b9f5197e657a8c6124f29e307158809e",
+    "mtime": 1788656819.539066,
+    "ast_hash": "4b080478127552500dd9c0228fbcd702",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/CuponUsedByClientsRepository.java": {
-    "mtime": 1787451352.4526143,
-    "ast_hash": "bc22ba8dde22b8e9efc6c5ac1c263f27",
+    "mtime": 1788657016.6990013,
+    "ast_hash": "03d3acc3f327a1bb7586ba63d7819a30",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ProductCuponRepository.java": {
-    "mtime": 1787451252.9643166,
-    "ast_hash": "f1a96ba88dab40d8a77d4f0ed16ace31",
+    "mtime": 1788656868.6097708,
+    "ast_hash": "075d650174067584768a301b772fd099",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/SecondHandCuponRepository.java": {
-    "mtime": 1787451802.611003,
-    "ast_hash": "8b86b5a0f5169fc43e19ff255526eb17",
+    "mtime": 1788656842.3487706,
+    "ast_hash": "9fe3c28fa437a454d7ca120993e4006e",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/SecondHandProductCuponRepository.java": {
-    "mtime": 1787451331.4414024,
-    "ast_hash": "9e1bf1e25796c3eaa3895d9b3e0ea132",
+    "mtime": 1788656876.5053232,
+    "ast_hash": "6dac2adcdbe06bc48828bc8bb9bcb9af",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/SecondHandProductImagesRepository.java": {
@@ -750,8 +750,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ServiceCuponRepository.java": {
-    "mtime": 1787451479.0193772,
-    "ast_hash": "f56ba61f62c35d2a87dd7e0cfd458d2d",
+    "mtime": 1788656859.6166935,
+    "ast_hash": "a9c6e493256857b6029ea046aac00c25",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ServiceOfferedRepository.java": {
@@ -760,8 +760,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ShCuponUsedByClientsRepository.java": {
-    "mtime": 1787451344.020601,
-    "ast_hash": "aa9c93939d213cef540ed4ddeaa171ba",
+    "mtime": 1788657026.9736707,
+    "ast_hash": "646cc10058bdb8c4d2cfd3d6590c9c69",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/general/SecondHandProductRepository.java": {
@@ -800,13 +800,13 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/CuponService.java": {
-    "mtime": 1788655216.1312485,
-    "ast_hash": "61b9f7561ada7b87c22ff048fb1ce788",
+    "mtime": 1788656921.3964577,
+    "ast_hash": "d6a50dbefa64ba41539e3261a3969f6f",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/SecondHandCuponService.java": {
-    "mtime": 1788655240.5528314,
-    "ast_hash": "a58cb1ee5703b246676f875c8c0f8616",
+    "mtime": 1788656765.2945342,
+    "ast_hash": "699ebc560943c64d26950821931df0d0",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/SecondHandProductImageService.java": {
@@ -815,8 +815,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/ServiceCuponService.java": {
-    "mtime": 1788655279.6715066,
-    "ast_hash": "3750d4403e739036aeb4713f7566e80a",
+    "mtime": 1788656798.0831707,
+    "ast_hash": "4702bccd568cde8a38b45a12f56c8733",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/ServiceOfferedService.java": {
@@ -835,8 +835,8 @@
     "semantic_hash": ""
   },
   "BRAIN.md": {
-    "mtime": 1788492458.9965374,
-    "ast_hash": "45694c67c2dab669517a13a07430658c",
+    "mtime": 1788655677.1447487,
+    "ast_hash": "3e06c2e65c284896b3021e32c7330785",
     "semantic_hash": ""
   },
   "README.md": {
@@ -845,8 +845,8 @@
     "semantic_hash": ""
   },
   "docs/Arquitectura del C\u00f3digo.md": {
-    "mtime": 1788040482.8787093,
-    "ast_hash": "a6ecd6bb77c992d34bd1c94280482c58",
+    "mtime": 1788983568.3634055,
+    "ast_hash": "8e309094ca995f406dbde215fb38ce8c",
     "semantic_hash": ""
   },
   "docs/Configuraci\u00f3n.md": {
@@ -940,8 +940,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ProductCuponToAClientRepository.java": {
-    "mtime": 1788655148.104187,
-    "ast_hash": "5d1d6e9259fe637f50f8d5bfda0c2181",
+    "mtime": 1788656944.5049305,
+    "ast_hash": "8be1066ebda84024d1afe7139dcc08a8",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/RankingsRepository.java": {
@@ -950,13 +950,13 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ServiceCuponToAClientRepository.java": {
-    "mtime": 1788655189.8163793,
-    "ast_hash": "216587479c3cf10bfae9b5708b77f658",
+    "mtime": 1788657010.7374942,
+    "ast_hash": "e7389dad659ed5d9ad144d4adaf4addd",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ShProductCuponToAClientRepository.java": {
-    "mtime": 1788655172.5426087,
-    "ast_hash": "a5481c38d08c26ea7e57023df82c08aa",
+    "mtime": 1788656982.380727,
+    "ast_hash": "c89ccd102955f818a86b5f12f1b43db4",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/RankingsService.java": {

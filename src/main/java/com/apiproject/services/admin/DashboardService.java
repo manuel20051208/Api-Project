@@ -4,6 +4,7 @@ import com.apiproject.DTOs.Admin.DashboardDTO;
 import com.apiproject.DTOs.General.TheThreeBestClients;
 import com.apiproject.DTOs.General.TheThreeBestProducts;
 import com.apiproject.config.CacheConstants;
+import com.apiproject.enums.FileTypes;
 import com.apiproject.exceptions.ResourceNotFoundException;
 import com.apiproject.repositories.admin.DashboardRepository;
 import com.apiproject.repositories.admin.ReportDashboardRepository;
@@ -11,12 +12,17 @@ import com.apiproject.repositories.admin.UserRepository;
 import com.apiproject.repositories.projection.ClientSummaryProjection;
 import com.apiproject.repositories.projection.DashboardProjection;
 import com.apiproject.repositories.projection.ReportDashboardProjection;
+import com.apiproject.repositories.reportGenerator.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -27,6 +33,7 @@ public class DashboardService {
     private final ClientsSummaryViewService clientsSummaryViewService;
     private final ReportDashboardRepository reportDashboardRepository;
     private final RankingsService rankingsService;
+    private final ReportServiceFactory reportServiceFactory;
 
     @Transactional(readOnly = true)
     @Cacheable(value = CacheConstants.DASHBOARD, key = "#userId")
@@ -61,6 +68,22 @@ public class DashboardService {
             throw new ResourceNotFoundException("User not found");
         }
         return reportDashboardRepository.findAllDashboard(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public ResponseEntity<byte[]> downloadReport(Long userId, FileTypes type) throws IOException {
+        ReportService reportService = reportServiceFactory.getService(type);
+        List<ReportDashboardProjection> data = getReportData(userId);
+        byte[] file = reportService.export(data);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(reportService.getContentType()));
+        headers.setContentDispositionFormData("attachment", reportService.getFileName());
+        headers.setContentLength(file.length);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(file);
     }
 
     @Transactional(readOnly = true)

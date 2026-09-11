@@ -11,10 +11,14 @@
             "id": "1f9227edb38c9521",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Arquitectura del Código.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "Nueva pestaña"
+              "title": "Arquitectura del Código"
             }
           }
         ]

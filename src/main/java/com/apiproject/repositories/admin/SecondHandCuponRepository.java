@@ -17,6 +17,7 @@ import java.util.Optional;
 @Repository
 public interface SecondHandCuponRepository extends JpaRepository<SecondHandCupon, Long> {
 
+    /** Lista los cupones SH de un admin con sus productos aplicados (agregados con string_agg). */
     @Query(value = """
             SELECT c.id,
                    c.sh_cupon_code AS cupon_code,
@@ -36,12 +37,15 @@ public interface SecondHandCuponRepository extends JpaRepository<SecondHandCupon
             """, nativeQuery = true)
     List<CuponAdminProjection> findAllByOwner(@Param("adminId") Long adminId);
 
+    // LOCK para operaciones de escritura no concurrentes
     @Query(value = "SELECT * FROM secondhand_cupons WHERE id = :id FOR UPDATE", nativeQuery = true)
     Optional<SecondHandCupon> lockById(@Param("id") Long id);
 
+    // LOCK por código: evita el doble canje en compras simultáneas
     @Query(value = "SELECT * FROM secondhand_cupons WHERE LOWER(sh_cupon_code) = LOWER(:code) FOR UPDATE", nativeQuery = true)
     Optional<SecondHandCupon> lockByCode(@Param("code") String code);
 
+    /** Devuelve el cupón SH si está vigente, con usos y vinculado a ese producto SH. */
     @Query(value = """
             SELECT c.id AS cupon_id, c.discount AS discount
             FROM secondhand_cupons c
@@ -59,6 +63,7 @@ public interface SecondHandCuponRepository extends JpaRepository<SecondHandCupon
             @Param("productId") Long productId,
             @Param("now") LocalDateTime now);
 
+    // where quantity > 0 hace el descuento atómico: 0 filas afectadas = cupón agotado
     @Modifying
     @Transactional
     @Query(value = "UPDATE secondhand_cupons SET quantity = quantity - 1 WHERE id = :id AND (quantity IS NULL OR quantity > 0)", nativeQuery = true)

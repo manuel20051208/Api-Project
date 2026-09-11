@@ -17,6 +17,7 @@ import java.util.Optional;
 @Repository
 public interface ServiceCuponRepository extends JpaRepository<ServiceCupon, Long> {
 
+    /** Lista los cupones de servicio de un admin (sin productos vinculados; campos vacíos). */
     @Query(value = """
             SELECT c.id,
                    c.service_cupon_code AS cupon_code,
@@ -33,9 +34,11 @@ public interface ServiceCuponRepository extends JpaRepository<ServiceCupon, Long
             """, nativeQuery = true)
     List<CuponAdminProjection> findAllByOwner(@Param("adminId") Long adminId);
 
+    // LOCK para operaciones de escritura no concurrentes
     @Query(value = "SELECT * FROM services_cupon WHERE id = :id FOR UPDATE", nativeQuery = true)
     Optional<ServiceCupon> lockById(@Param("id") Long id);
 
+    /** Devuelve el cupón si está vigente, con usos y pertenece a la tienda (ownerId). */
     @Query(value = """
             SELECT c.id AS cupon_id, c.discount AS discount
             FROM services_cupon c
@@ -51,6 +54,7 @@ public interface ServiceCuponRepository extends JpaRepository<ServiceCupon, Long
             @Param("ownerId") Long ownerId,
             @Param("now") LocalDateTime now);
 
+    // where quantity > 0 hace el descuento atómico: 0 filas afectadas = cupón agotado
     @Modifying
     @Transactional
     @Query(value = "UPDATE services_cupon SET quantity = quantity - 1 WHERE id = :id AND (quantity IS NULL OR quantity > 0)", nativeQuery = true)

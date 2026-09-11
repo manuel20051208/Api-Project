@@ -14,6 +14,7 @@ import java.util.List;
 @Repository
 public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCuponToAClient, Long> {
 
+    /** Asignaciones de los cupones de servicio del admin (cupón x servicio x cliente). */
     @Query(value = """
             SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,
                    sct.service_cupon_id, sc.service_cupon_code, sc.discount, sc.cupon_date_limit,
@@ -27,6 +28,7 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
             """, nativeQuery = true)
     List<ServiceCuponAssignmentProjection> findAllByAdmin(@Param("adminId") Long adminId);
 
+    /** Asignaciones de servicio del admin hacia un cliente concreto. */
     @Query(value = """
             SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,
                    sct.service_cupon_id, sc.service_cupon_code, sc.discount, sc.cupon_date_limit,
@@ -40,6 +42,7 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
             """, nativeQuery = true)
     List<ServiceCuponAssignmentProjection> findByAdminAndClient(@Param("adminId") Long adminId, @Param("clientId") Long clientId);
 
+    /** Asignaciones de un cupón de servicio concreto del admin. */
     @Query(value = """
             SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,
                    sct.service_cupon_id, sc.service_cupon_code, sc.discount, sc.cupon_date_limit,
@@ -53,16 +56,19 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
             """, nativeQuery = true)
     List<ServiceCuponAssignmentProjection> findByAdminAndCupon(@Param("adminId") Long adminId, @Param("cuponId") Long cuponId);
 
+    /** Borra las asignaciones de un cupón de servicio completo. */
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM service_cupon_to_a_client WHERE service_cupon_id = :cuponId", nativeQuery = true)
     int deleteByCuponId(@Param("cuponId") Long cuponId);
 
+    /** Borra las asignaciones de un cupón de servicio para un cliente concreto. */
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM service_cupon_to_a_client WHERE service_cupon_id = :cuponId AND client_id = :clientId", nativeQuery = true)
     int deleteByCuponIdAndClientId(@Param("cuponId") Long cuponId, @Param("clientId") Long clientId);
 
+    /** Cupón de servicio asignado al cliente y vigente para ese servicio (id + descuento). */
     @Query(value = """
             SELECT sc.id AS cupon_id, sc.discount AS discount
             FROM service_cupon_to_a_client sct

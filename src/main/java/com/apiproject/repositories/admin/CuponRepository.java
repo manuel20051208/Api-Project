@@ -17,6 +17,7 @@ import java.util.Optional;
 @Repository
 public interface CuponRepository extends JpaRepository<Cupon, Long> {
 
+    /** Lista los cupones de un admin con sus productos aplicados (string_agg agrega los ids/nombres en CSV). */
     @Query(value = """
             SELECT c.id,
                    c.cupon_code,
@@ -36,12 +37,15 @@ public interface CuponRepository extends JpaRepository<Cupon, Long> {
             """, nativeQuery = true)
     List<CuponAdminProjection> findAllByOwner(@Param("adminId") Long adminId);
 
+    // LOCK del registro para operaciones escritura/editado no concurrentes
     @Query(value = "SELECT * FROM cupons WHERE id = :id FOR UPDATE", nativeQuery = true)
     Optional<Cupon> lockById(@Param("id") Long id);
 
+    // LOCK por código: evita que dos compras simultáneas canjeen el mismo cupón
     @Query(value = "SELECT * FROM cupons WHERE LOWER(cupon_code) = LOWER(:code) FOR UPDATE", nativeQuery = true)
     Optional<Cupon> lockByCode(@Param("code") String code);
 
+    /** Devuelve el cupón si está vigente, con usos y vinculado a ese producto (para validar antes de comprar). */
     @Query(value = """
             SELECT c.id AS cupon_id, c.discount AS discount
             FROM cupons c
@@ -59,6 +63,7 @@ public interface CuponRepository extends JpaRepository<Cupon, Long> {
             @Param("productId") Long productId,
             @Param("now") LocalDateTime now);
 
+    // La condición quantity > 0 hace el descuento atómico: si no toca filas, el cupón se agotó
     @Modifying
     @Transactional
     @Query(value = "UPDATE cupons SET quantity = quantity - 1 WHERE id = :id AND (quantity IS NULL OR quantity > 0)", nativeQuery = true)

@@ -84,7 +84,8 @@ El diagrama generado con la skill de diseño se inserta directamente en GitHub c
 
 ## Configuración
 
-Crea un archivo `.env` en la raíz del proyecto. No subas este archivo al repositorio.
+Crea un archivo `.env` en la raíz del proyecto. 
+(Para el que este siguiento las instrucciones) No subas este archivo al repositorio.
 
 ```env
 DB_USERNAME=postgres

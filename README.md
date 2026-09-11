@@ -78,7 +78,8 @@ Diagrama completo: [secuencia-reportes-factory.html](docs/diagrams/secuencia-rep
 
 ## Configuración
 
-Crea un archivo `.env` en la raíz del proyecto. No subas este archivo al repositorio.
+Crea un archivo `.env` en la raíz del proyecto. 
+(Para el que este siguiento las instrucciones) No subas este archivo al repositorio.
 
 ```env
 DB_USERNAME=postgres

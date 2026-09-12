@@ -66,8 +66,10 @@ Table product_image {
   id            bigserial   [pk]
   file_name     varchar(255)
   file_path     varchar(255)
+  url           text
   display_order bigint
   product_id    bigint      [ref: > products.id, not null]
+  user_id       bigint      [ref: > users.id]
 
   Indexes {
     (product_id, display_order) [unique, name: 'idx_product_image_product_order']

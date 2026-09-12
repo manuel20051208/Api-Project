@@ -12,7 +12,7 @@ PostgreSQL. Archivo de referencia: `src/main/resources/db/schema-postgres.sql` (
 | `clients` | `id BIGSERIAL PK`, `full_name`, `email`, `username`, `password`, `phone`, `address`, `created_at`, `photo`, `color_config` | `UNIQUE(username)`, `UNIQUE(email)` |
 | `payment_cards` | `id BIGSERIAL PK`, `client_id`, `card_holder_name`, `brand`, `last_four`, `active`, `created_at` | FK `client_id → clients(id) ON DELETE CASCADE`; `CHECK last_four ~ '^[0-9]{4}$'` |
 | `products` | `id BIGSERIAL PK`, `name`, `price DOUBLE`, `stock`, `category`, `description`, `active`, `id_users` | FK `id_users → users(id) ON DELETE SET NULL` |
-| `product_image` | `id BIGSERIAL PK`, `file_name`, `file_path`, `display_order`, `product_id` | FK `product_id → products(id) ON DELETE CASCADE`; `UNIQUE(product_id, display_order)` |
+| `product_image` | `id BIGSERIAL PK`, `file_name`, `file_path`, `url TEXT`, `display_order`, `product_id`, `user_id` | FK `product_id → products(id) ON DELETE CASCADE`; FK `user_id → users(id) SET NULL`; `UNIQUE(product_id, display_order)` |
 | `sales` | `id BIGSERIAL PK`, `client_id`, `user_id`, `total_amount NUMERIC(10,2)`, `created_at` | FK `client_id → clients(id)`, FK `user_id → users(id)`, ambos `SET NULL` |
 | `sale_items` | `id BIGSERIAL PK`, `sale_id`, `product_id`, `quantity`, `client_id`, `state`, `date` | FKs `sale_id → sales(id) CASCADE`, `product_id → products(id)`, `client_id → clients(id)`; `CHECK state IN ('COMPLETED','HANGING','CANCELLED')`, `CHECK quantity > 0` |
 

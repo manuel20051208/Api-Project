@@ -36,6 +36,7 @@ public class ProductImage {
     @JsonIgnore
     private UserAdmin userAdmin;
 
+    @Column(columnDefinition = "TEXT")
     private String url;
 
     public Long getOwnerId() {

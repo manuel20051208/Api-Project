@@ -98,12 +98,18 @@ CREATE TABLE IF NOT EXISTS product_image (
                                              id BIGSERIAL PRIMARY KEY,
                                              file_name VARCHAR(255),
     file_path VARCHAR(255),
+    url TEXT,
     display_order BIGINT,
     product_id BIGINT,
+    user_id BIGINT,
     CONSTRAINT fk_product_image_products
     FOREIGN KEY (product_id)
     REFERENCES products (id)
     ON DELETE CASCADE,
+    CONSTRAINT fk_product_image_users
+    FOREIGN KEY (user_id)
+    REFERENCES users (id)
+    ON DELETE SET NULL,
     CONSTRAINT uk_product_image_product_order UNIQUE (product_id, display_order)
     );
 

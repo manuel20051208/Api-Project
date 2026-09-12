@@ -20,3 +20,9 @@ Rules:
 ## Obsidian docs
 
 `docs/` holds the human-readable Obsidian vault (MOC in `docs/PROJECT_STRUCTURE.md`). Keep it in sync with structural changes.
+
+## Git flow
+
+- Siempre ejecutar los tests antes de commitear.
+- Si los tests pasan: hacer commit en `main` y hacer `git push origin main` automáticamente.
+- No commitear ni pushear si los tests fallan.

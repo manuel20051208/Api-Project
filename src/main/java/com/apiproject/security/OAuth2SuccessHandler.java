@@ -7,6 +7,7 @@ import com.apiproject.repositories.client.ClientRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -29,8 +30,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private static final String ADMIN_REGISTRATION_ID = "google-admin";
     private static final String CLIENT_REGISTRATION_ID = "google-client";
-    private static final String ADMIN_REDIRECT_URL = "http://localhost:3000/";
-    private static final String CLIENT_REDIRECT_URL = "http://localhost:3000/portal";
+
+    // Origen del frontend: cors.allowed-origin (en dev http://localhost:3000,
+    // en produccion la URL publica via URL_FOR_REQUESTING_AND_RESPONSIVES).
+    @Value("${cors.allowed-origin}")
+    private String frontendUrl;
 
     @Override
     @Transactional
@@ -75,7 +79,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                         return userRepository.save(nuevo);
                     });
             token = jwtService.generateAdminToken(admin.getId(), admin.getEmail(), "ADMIN");
-            redirectUrl = ADMIN_REDIRECT_URL;
+            redirectUrl = frontendUrl;
             photo = admin.getProfilePhotoUrl();
 
         } else if (CLIENT_REGISTRATION_ID.equals(registrationId)) {
@@ -93,7 +97,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                     });
 
             token = jwtService.generateClientToken(client.getId(), client.getEmail(), "CLIENT");
-            redirectUrl = CLIENT_REDIRECT_URL;
+            redirectUrl = frontendUrl + "/portal";
             photo = client.getPhoto();
 
         } else {

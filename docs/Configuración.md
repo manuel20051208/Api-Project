@@ -6,9 +6,8 @@
 
 | Archivo | Descripción |
 |---|---|
-| `application.properties` | Solo activa el perfil `dev` |
-| `application-dev.properties` | Datasource, JWT, multipart (30MB), Cloudinary, OAuth2 Google (admin y client), Swagger, caché JPA |
-| `db/schema-postgres.sql` | Esquema SQL completo → [[Esquema de Base de Datos]] |
+| `application.properties` | Datasource, JWT, Flyway, multipart (30MB), Cloudinary, OAuth2 Google (admin y client), Swagger, caché JPA |
+| `db/migration/*.sql` | Migraciones Flyway (V1, V2, V3) → [[Esquema de Base de Datos]] |
 | `db/schema.dbml` | Esquema en notación DBML (con `.dbdiagram/settings.json`) |
 | `static/`, `templates/` | Contenido estático / vistas (sin archivos) |
 
@@ -29,7 +28,7 @@
 - **Datasource**: `jdbc:postgresql://localhost:5432/apiproject` (puerto local `5433` vía docker-compose).
 - **JPA**: `show-sql=true`, batch inserts de 50, `order_inserts`, dialecto PostgreSQL.
 - **Multipart**: máx. 30MB por archivo/solicitud.
-- **OAuth2**: dos registrations de Google — `google-admin` (ADMIN) y `google-client` (CLIENT), con redirects `{baseUrl}/login/oauth2/code/...`.
+- **OAuth2**: dos registrations de Google — `google-admin` (ADMIN) y `google-client` (CLIENT), con redirects `{baseUrl}/login/oauth2/code/...`. `server.forward-headers-strategy=framework` para que `{baseUrl}` resuelva la URL pública detrás del proxy (Render). Tras el login, `OAuth2SuccessHandler` redirige al frontend = `cors.allowed-origin` (`URL_FOR_REQUESTING_AND_RESPONSIVES`, admin a `/`, client a `/portal`) con el JWT como query param.
 - **Swagger**: activo en `/swagger-ui.html` → [[Endpoints API]].
 
 ## Seguridad (SecurityConfig)

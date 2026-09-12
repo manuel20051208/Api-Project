@@ -196,7 +196,7 @@ SELECT
     s.user_id,
     EXTRACT(MONTH FROM s.created_at)::INTEGER AS month_number,
     EXTRACT(YEAR FROM s.created_at)::INTEGER AS sales_year,
-    INITCAP(TRIM(TO_CHAR(s.created_at, 'TMMonth'))) AS month_name,
+    INITCAP(TRIM(TO_CHAR(MIN(s.created_at), 'TMMonth'))) AS month_name,
     SUM(s.total_amount)::DOUBLE PRECISION AS monthly_total,
     COUNT(DISTINCT p.id)::BIGINT AS number_of_products,
     COUNT(DISTINCT s.client_id)::BIGINT AS count_clients

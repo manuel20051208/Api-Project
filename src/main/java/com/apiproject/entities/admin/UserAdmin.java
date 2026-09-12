@@ -4,6 +4,7 @@ import com.apiproject.entities.general.Product;
 import com.apiproject.enums.ColorTypes;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
@@ -18,6 +19,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @DynamicUpdate
 public class UserAdmin {
     @Id

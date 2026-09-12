@@ -90,7 +90,7 @@ ApiProject/
 - **general/**: `ProductController` (catálogo + CRUD), `SaleController` (purchase con `cuponCode` opcional, refresh), `ShProductController` (catálogo + CRUD segunda mano), `ShSaleController` (purchase segunda mano + historiales client/admin).
 
 ### services/
-- **admin/**: `UserService`, `DashboardService`, `ProductImageService`, `NotificationService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`, `CuponService` (CRUD + `resolveForCart`/`redeem`/`registerUsage`), `SecondHandCuponService` (espejo SH), `ServiceOfferedService`, `ServiceCuponService`, `SecondHandProductImageService`.
+- **admin/**: `UserServiceTest`, `DashboardService`, `ProductImageService`, `NotificationService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`, `CuponService` (CRUD + `resolveForCart`/`redeem`/`registerUsage`), `SecondHandCuponService` (espejo SH), `ServiceOfferedService`, `ServiceCuponService`, `SecondHandProductImageService`.
 - **client/**: `ClientService`.
 - **general/**: `ProductService`, `SaleService`, `SaleItemService`, `SecondHandProductService`, `ShSaleService`.
 - **reportGenerator/**: `ReportService` (interfaz), `ExcelService`, `PdfService`.

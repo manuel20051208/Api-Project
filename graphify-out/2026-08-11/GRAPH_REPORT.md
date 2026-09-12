@@ -64,7 +64,7 @@
 3. `UserAdmin` - 41 edges
 4. `UserClient` - 41 edges
 5. `ClientService` - 33 edges
-6. `UserService` - 25 edges
+6. `UserServiceTest` - 25 edges
 7. `ProductResponseDTO` - 24 edges
 8. `ResourceNotFoundException` - 24 edges
 9. `ProductRepository` - 24 edges
@@ -79,7 +79,7 @@
   src/main/java/com/example/apiproject/DTOs/Client/ClientResponseDTO.java → src/main/java/com/example/apiproject/entities/client/PaymentCard.java
 - `DashboardController` --references--> `DashboardService`  [EXTRACTED]
   src/main/java/com/example/apiproject/controllers/admin/DashboardController.java → src/main/java/com/example/apiproject/services/admin/DashboardService.java
-- `ClientControllers` --references--> `UserService`  [EXTRACTED]
+- `ClientControllers` --references--> `UserServiceTest`  [EXTRACTED]
   src/main/java/com/example/apiproject/controllers/client/ClientControllers.java → src/main/java/com/example/apiproject/services/admin/UserService.java
 
 ## Import Cycles

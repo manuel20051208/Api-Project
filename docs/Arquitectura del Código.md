@@ -63,7 +63,7 @@ Los repos consultan las vistas de [[Esquema de Base de Datos#Vistas]]. **Convenc
 ## services/
 | Paquete | Servicios |
 |---|---|
-| `admin/` | `UserService`, `DashboardService` (ahora delega en `RankingsService` para top clientes/productos), `ProductImageService`, `NotificationService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`, `CuponService`, `SecondHandCuponService`, `ServiceOfferedService`, `ServiceCuponService`, `SecondHandProductImageService`, `RankingsService` |
+| `admin/` | `UserServiceTest`, `DashboardService` (ahora delega en `RankingsService` para top clientes/productos), `ProductImageService`, `NotificationService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`, `CuponService`, `SecondHandCuponService`, `ServiceOfferedService`, `ServiceCuponService`, `SecondHandProductImageService`, `RankingsService` |
 | `client/` | `ClientService` |
 | `general/` | `ProductService`, `SaleService` (ahora integra cupones en `purchase`), `SaleItemService`, `SecondHandProductService`, `ShSaleService` |
 | `reportGenerator/` | `ReportService`, `ExcelService`, `PdfService` |

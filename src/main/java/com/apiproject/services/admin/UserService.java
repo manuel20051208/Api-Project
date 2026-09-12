@@ -80,9 +80,6 @@ public class UserService {
         Optional.ofNullable(userAdmin.getPhone()).ifPresent(existing::setPhone);
         Optional.ofNullable(userAdmin.getColorTypes()).ifPresent(existing::setColorTypes);
 
-        // hacemos un log para ver si cambia o no los colores el back end
-        System.out.println(existing.getColorTypes());
-
         userRepository.save(existing);
 
         return UserResponseDTO.fromEntity(existing);

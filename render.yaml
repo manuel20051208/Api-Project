@@ -43,9 +43,7 @@ services:
       # Render exige TLS; añade sslmode=require a la URL JDBC
       - key: DB_SSLMODE
         value: require
-      # El entrypoint aplica schema-postgres.sql solo si la DB está vacía
-      - key: RUN_DB_MIGRATION
-        value: "true"
+      # Las migraciones las ejecuta Flyway al arrancar la app (classpath:db/migration)
       # La app usa SERVER_PORT=${PORT} (autodetectado por Render)
       - key: JAVA_OPTS
         value: "-Xms256m -Xmx384m -XX:MaxMetaspaceSize=140m"

@@ -2,7 +2,7 @@
 
 > Nota: [[PROJECT_STRUCTURE]] · Entidades en [[Arquitectura del Código#entities/]] · Consumida por [[Endpoints API]]
 
-PostgreSQL. Archivo de referencia: `src/main/resources/db/schema-postgres.sql` (tablas + índices + vistas). Modelo DBML: `src/main/resources/db/schema.dbml`. Configuración del datasource en [[Configuración]].
+PostgreSQL. El esquema se gestiona con **Flyway**: migraciones versionadas en `src/main/resources/db/migration/` (`V1__schema_inicial.sql` = tablas + índices + vistas; `V2__add_color_config.sql` = enum `color_types` + columna `color_config`). Modelo DBML (solo referencia visual): `src/main/resources/db/schema.dbml`. Configuración del datasource en [[Configuración]].
 
 ## Tablas
 
@@ -25,7 +25,7 @@ Relaciones principales:
 
 ## Tablas nuevas — cupones, segunda mano y servicios
 
-Agregadas en `schema-postgres.sql` (secciones 4–7). Todas las consultas JPA sobre estas tablas usan *native query* (→ [[Arquitectura del Código#repositories/]]).
+Agregadas en las migraciones Flyway. Todas las consultas JPA sobre estas tablas usan *native query* (→ [[Arquitectura del Código#repositories/]]).
 
 ### Cupones para productos normales
 | Tabla | Columnas principales | Restricciones / FKs |

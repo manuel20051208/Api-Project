@@ -46,9 +46,10 @@ ApiProject/
 │   ├── security/      # JwtService, JwtAuthenticationFilter, AuthenticatedUser, OAuth2SuccessHandler
 │   └── exceptions/    # GlobalExceptionHandler, ApiError, ResourceNotFoundException
 ├── src/main/resources/
-│   ├── application.properties         # Activa perfil dev
-│   ├── application-dev.properties     # Datasource, JWT, multipart, Cloudinary, OAuth2, Swagger
-│   └── db/            # schema-postgres.sql, schema.dbml
+│   ├── application.properties         # Datasource, JWT, Flyway, multipart, Cloudinary, OAuth2, Swagger
+│   └── db/
+│       ├── migration/  # Migraciones FLYWAY (V1__schema_inicial.sql, V2__add_color_config.sql, ...)
+│       └── schema.dbml # Modelo visual (diagrama)
 ├── src/test/java/     # ApiProjectApplicationTests, JwtServiceTest
 ├── uploads/           # perfiles/ y products/ (local, antes de Cloudinary)
 ├── graphify-out/      # Knowledge graph (graph.json, GRAPH_REPORT.md)
@@ -183,7 +184,10 @@ response: `{ saleId, saleIds, clientId, totalAmount, createdAt, items:[{ product
 
 ## 7. Base de datos (PostgreSQL)
 
-Esquema en `src/main/resources/db/schema-postgres.sql` (idempotente). Modelo visual en `schema.dbml`.
+El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones versionadas en `src/main/resources/db/migration/` (V1__schema_inicial.sql = tablas+índices+vistas; V2__add_color_config.sql = enum `color_types` + `color_config` en `users`/`clients`). Modelo visual en `db/schema.dbml` (solo referencia, no ejecutable).
+
+- `spring.jpa.hibernate.ddl-auto=validate` — Hibernate solo valida; cualquier cambio se hace con una migración nueva (nunca tocar migraciones ya aplicadas).
+- En BD ya existente (p.ej. la de Render): `baseline-on-migrate=true` + `baseline-version=0` hace que Flyway cree `flyway_schema_history` y ejecute **todas** las migraciones pendientes (V1 es idempotente/no destructivo).
 
 ### 7.1 Tablas
 | Tabla | Notas |
@@ -226,13 +230,14 @@ Esquema en `src/main/resources/db/schema-postgres.sql` (idempotente). Modelo vis
 ## 8. Configuración
 
 - `application.properties` → `spring.profiles.active=dev`.
-- `application-dev.properties`: datasource `jdbc:postgresql://localhost:5432/apiproject`, JPA show-sql + batch 50, multipart 30MB, OAuth2 Google (admin/client), Swagger on.
+- Datasource: `jdbc:postgresql://localhost:5432/apiproject`; JPA show-sql + batch 50 + **`ddl-auto=validate`**; **Flyway** (`locations=classpath:db/migration`, `baseline-on-migrate=true`, `baseline-version=0`); multipart 30MB, OAuth2 Google (admin/client), Swagger on.
 - Variables `.env` (vía spring-dotenv): `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET_KEY`, `JWT_EXPIRATION_MS`, `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET`, `BASIC_AUTH_USERNAME/PASSWORD`, `GOOGLE_CLIENT_ID/SECRET`.
 
 ## 9. Docker
 
-- **docker-compose**: `db` postgres:16-alpine en `5433:5432` + `app` en `8080` (perfil dev, espera healthcheck de la DB, env desde `.env`).
-- **Dockerfile**: build `maven:3.9-eclipse-temurin-21` (`mvn package -DskipTests`) → runtime `eclipse-temurin:21-jre` (`java -jar app.jar`).
+- **docker-compose**: `db` postgres:16-alpine en `5433:5432` + `app` en `8080` (espera healthcheck de la DB, env desde `.env`). El esquema lo crea **Flyway** al arrancar la app (ya no hay initdb.d ni entrypoint con SQL).
+- **Dockerfile**: build `maven:3.9-eclipse-temurin-21` (`mvn package -DskipTests`) → runtime `eclipse-temurin:21-jre`. Las migraciones viajan dentro del jar (`db/migration`).
+- **entrypoint.sh**: solo espera a PostgreSQL, construye `DB_URL` y arranca la app.
 
 ## 10. Tests
 
@@ -246,6 +251,7 @@ Esquema en `src/main/resources/db/schema-postgres.sql` (idempotente). Modelo vis
 - `PurchaseRequestDTO` tiene `clientId`, `userId` (lista, sin uso actual), `items` y `cuponCode` (opcional).
 - **Regla de cupones en compra** (normal y SH): si se envía `cuponCode`, el cupón debe estar vigente (`cupon_date_limit`) y tener usos disponibles (`quantity`, `NULL` = ilimitado). El cupón pertenece a un **solo admin** y aplica descuento **únicamente a los productos del carrito de ese admin** que estén vinculados al cupón (`product_cupons_applied`); se **permite carrito multi-vendedor** (los productos de otros admins se cobran completos). `quantity` es el **nº de productos que cubre por compra**; si el carrito trae más elegibles que `quantity`, solo se descuentan los primeros `quantity`. Se bloquea con `FOR UPDATE`, se descuenta 1 uso por compra (`redeem`) y se registra la fila en `*_used_by_clients`. El descuento es un porcentaje sobre cada subtotal elegible.
 - **Consultas nuevas siempre native query**; respuestas con DTO o projection (nunca `Object[]` — las asignaciones de cupones usan proyecciones de interfaz). Bloqueos de stock/cupones SH con `FOR UPDATE`.
+- **Flyway como única fuente de verdad del esquema**. Nunca editar una migración ya aplicada; añadir una nueva `V<n>__descripcion.sql`. `color_config` en `users`/`clients` es enum nativo `color_types` (`@JdbcTypeCode(SqlTypes.NAMED_ENUM)`).
 - Puertos: DB host `5433` (mapeado a `5432` en el contenedor), API `8080`.
 - CORS solo para localhost:3000.
 - Mantén el grafo actualizado tras cambios de código: `graphify update .`

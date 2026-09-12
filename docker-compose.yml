@@ -8,6 +8,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Falta DB_PASSWORD en tu archivo .env}
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./src/main/resources/db/schema-postgres.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     ports:
       - "5433:5432"
     healthcheck:
@@ -23,10 +24,13 @@ services:
       db:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      DB_URL: "jdbc:postgresql://db:5432/apiproject"
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: apiproject
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD}
+      DB_SSLMODE: ""
+      RUN_DB_MIGRATION: "true"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       BASIC_AUTH_USERNAME: ${BASIC_AUTH_USERNAME}
       BASIC_AUTH_PASSWORD: ${BASIC_AUTH_PASSWORD}

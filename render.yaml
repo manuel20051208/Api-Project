@@ -1,0 +1,73 @@
+# Render Blueprint: despliega la base PostgreSQL y la API en un solo clic.
+# Crea las dos instancias desde Render Dashboard -> "New +" -> "Blueprint".
+databases:
+  - name: apiproject-db
+    plan: free
+    region: oregon
+    databaseName: apiproject
+    user: apiproject
+    postgresMajorVersion: 16
+
+services:
+  - type: web
+    name: apiproject-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      # Credenciales de la base (Render las inyecta automáticamente)
+      - key: DB_HOST
+        fromDatabase:
+          name: apiproject-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: apiproject-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: apiproject-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: apiproject-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: apiproject-db
+          property: password
+      # Render exige TLS; añade sslmode=require a la URL JDBC
+      - key: DB_SSLMODE
+        value: require
+      # El entrypoint aplica schema-postgres.sql solo si la DB está vacía
+      - key: RUN_DB_MIGRATION
+        value: "true"
+      # La app usa SERVER_PORT=${PORT} (autodetectado por Render)
+      - key: JAVA_OPTS
+        value: "-Xms256m -Xmx384m -XX:MaxMetaspaceSize=140m"
+      - key: JWT_EXPIRATION_MS
+        value: "86400000"
+      # Secretos: Render te pedirá el valor al sincronizar el blueprint
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: BASIC_AUTH_USERNAME
+        sync: false
+      - key: BASIC_AUTH_PASSWORD
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      # Origen CORS/Frontend (cors.allowed-origin). P. ej. https://tu-app.onrender.com
+      - key: URL_FOR_REQUESTING_AND_RESPONSIVES
+        sync: false

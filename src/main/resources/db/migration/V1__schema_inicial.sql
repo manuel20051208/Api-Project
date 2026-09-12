@@ -148,7 +148,7 @@ CREATE INDEX IF NOT EXISTS idx_payment_cards_client_active ON payment_cards (cli
 -- ========================================================
 
 -- Vista de Ventas Detalladas
-DROP VIEW IF EXISTS view_of_sales;
+DROP VIEW IF EXISTS view_of_sales CASCADE;
 CREATE VIEW view_of_sales AS
 SELECT
     si.id,
@@ -164,7 +164,7 @@ FROM sale_items si
          LEFT JOIN clients c ON c.id = COALESCE(si.client_id, s.client_id)
          LEFT JOIN products p ON p.id = si.product_id;
 
-DROP VIEW IF EXISTS view_of_dashboard;
+DROP VIEW IF EXISTS view_of_dashboard CASCADE;
 CREATE VIEW view_of_dashboard AS
 SELECT
     (s.user_id * 1000000 + EXTRACT(YEAR FROM s.created_at) * 100 + EXTRACT(MONTH FROM s.created_at))::BIGINT AS id,
@@ -182,7 +182,7 @@ WHERE EXTRACT(YEAR FROM s.created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
 GROUP BY s.user_id, EXTRACT(YEAR FROM s.created_at), EXTRACT(MONTH FROM s.created_at)
 ORDER BY s.user_id, sales_year, month_number;
 
-DROP VIEW IF EXISTS clients_summary;
+DROP VIEW IF EXISTS clients_summary CASCADE;
 CREATE VIEW clients_summary AS
 SELECT c.id                                                                               AS id,
        s.user_id                                                                          AS user_id,
@@ -197,7 +197,7 @@ FROM clients c
          LEFT JOIN products p ON p.id = si.product_id
 GROUP BY c.id, s.user_id, c.full_name, c.email;
 
-DROP VIEW IF EXISTS view_of_client_history;
+DROP VIEW IF EXISTS view_of_client_history CASCADE;
 CREATE VIEW view_of_client_history AS
 SELECT
     si.id       AS sale_item_id,
@@ -221,7 +221,7 @@ FROM sale_items si
          LEFT JOIN products p ON p.id = si.product_id;
 
 -- Vista del reporte de dashboard por usuario (ReportDashboard entity)
-DROP VIEW IF EXISTS report_view_dashboard;
+DROP VIEW IF EXISTS report_view_dashboard CASCADE;
 CREATE VIEW report_view_dashboard AS
 SELECT
     s.user_id,

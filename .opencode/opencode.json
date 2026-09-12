@@ -2,5 +2,42 @@
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
     ".opencode/plugins/graphify.js"
-  ]
+  ],
+  "permission": {
+    "read": {
+      "*": "allow",
+      "**/.env": "deny",
+      "**/.env.*": "deny",
+      ".env": "deny",
+      ".env.*": "deny",
+      "**/*.key": "deny",
+      "**/*.pem": "deny",
+      "**/.env.example": "allow"
+    },
+    "grep": {
+      "*": "allow",
+      "**/.env": "deny",
+      "**/.env.*": "deny",
+      ".env": "deny",
+      ".env.*": "deny",
+      "**/.env.example": "allow"
+    },
+    "glob": {
+      "*": "allow",
+      "**/.env": "deny",
+      "**/.env.*": "deny",
+      ".env": "deny",
+      ".env.*": "deny",
+      "**/.env.example": "allow"
+    },
+    "bash": {
+      "*": "ask",
+      "cat .env": "deny",
+      "cat .env.*": "deny",
+      "cat **/.env*": "deny",
+      "type .env*": "deny",
+      "Get-Content .env*": "deny",
+      "rm -rf *": "deny"
+    }
+  }
 }

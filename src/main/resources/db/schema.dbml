@@ -1,0 +1,320 @@
+Table users {
+  id               bigserial       [pk]
+  password         varchar(255)    [not null]
+  phone            bigint
+  full_name        varchar(60)
+  email            varchar(60)     [not null, unique]
+  business_name    varchar(100)
+  business_address varchar(255)
+  service_area     varchar(150)
+  profile_photo    varchar(255)
+  profile_photo_url text
+
+  Indexes {
+    (email) [unique]
+  }
+}
+
+Table clients {
+  id           bigserial       [pk]
+  full_name    varchar(255)
+  email        varchar(255)    [unique]
+  username     varchar(60)     [unique]
+  password     varchar(255)
+  phone        bigint
+  address      varchar(255)
+  created_at   timestamp       [not null, default: `CURRENT_TIMESTAMP`]
+  photo        text
+
+  Indexes {
+    (email) [unique]
+    (username) [unique]
+  }
+}
+
+Table payment_cards {
+  id               bigserial    [pk]
+  client_id        bigint       [not null, ref: > clients.id]
+  card_holder_name varchar(100)
+  brand            varchar(40)
+  last_four        varchar(4)   [not null]
+  active           boolean      [not null, default: true]
+  created_at       timestamp    [not null, default: `CURRENT_TIMESTAMP`]
+
+  Indexes {
+    (client_id, active) [name: 'idx_payment_cards_client_active']
+  }
+}
+
+Table products {
+  id          bigserial       [pk]
+  name        varchar(255)    [not null]
+  price       double          [not null]
+  stock       integer         [not null]
+  category    varchar(255)    [not null]
+  description text
+  active      boolean         [not null, default: true]
+  id_users    bigint          [ref: > users.id, not null]
+
+  Indexes {
+    (id_users) [name: 'idx_products_user_id']
+    (active, name) [name: 'idx_products_active_name']
+  }
+}
+
+Table product_image {
+  id            bigserial   [pk]
+  file_name     varchar(255)
+  file_path     varchar(255)
+  display_order bigint
+  product_id    bigint      [ref: > products.id, not null]
+
+  Indexes {
+    (product_id, display_order) [unique, name: 'idx_product_image_product_order']
+  }
+}
+
+Table sales {
+  id           bigserial       [pk]
+  client_id    bigint          [ref: > clients.id, not null]
+  user_id      bigint          [ref: > users.id, not null]
+  total_amount numeric(10, 2)  [not null]
+  created_at   timestamp
+
+  Indexes {
+    (client_id) [name: 'idx_sales_client_id']
+    (user_id) [name: 'idx_sales_user_id']
+    (created_at) [name: 'idx_sales_created_at']
+  }
+}
+
+Table sale_items {
+  id         bigserial      [pk]
+  sale_id    bigint         [ref: > sales.id, not null]
+  product_id bigint         [ref: > products.id, not null]
+  quantity   integer
+  client_id  bigint         [ref: > clients.id, not null]
+  state      varchar(20)
+  date       timestamp
+
+  Indexes {
+    (sale_id) [name: 'idx_sale_items_sale_id']
+    (client_id, date, id) [name: 'idx_sale_items_client_date']
+    (product_id, date, id) [name: 'idx_sale_items_product_date']
+  }
+}
+
+Table view_of_sales {
+  id              bigint   [pk]
+  user_id         bigint
+  client_name     varchar
+  product_name    varchar
+  quantity        integer
+  total_calculated double
+  state           varchar
+  date            date
+}
+
+Table view_of_dashboard {
+  id                bigint   [pk]
+  user_id           bigint
+  month_number      integer
+  sales_year        integer
+  month_name        varchar
+  monthly_total     double
+  number_of_products bigint
+  count_clients     bigint
+}
+
+Table clients_summary {
+  id            bigint    [pk]
+  user_id       bigint
+  full_name     varchar
+  email         varchar
+  total_quantity numeric(38, 0)
+  total_spent   numeric(38, 2)
+  latest_sale   timestamp
+}
+
+Table view_of_client_history {
+  sale_item_id    bigint    [pk]
+  client_id       bigint
+  client_name     varchar
+  client_email    varchar
+  client_address  varchar
+  sale_id         bigint
+  user_id         bigint
+  product_id      bigint
+  product_name    varchar
+  product_category varchar
+  quantity        integer
+  unit_price      double
+  total_amount    double
+  state           varchar
+  occurred_at     timestamp
+}
+
+Table report_view_dashboard {
+  user_id         bigint   [pk]
+  client_name     varchar
+  product_name    varchar
+  quantity        integer
+  total_calculated double
+  state           varchar
+  date            timestamp
+  current_amount  double
+}
+
+Table cupons {
+  id bigint [pk]
+  cupon_code varchar(15) [not null]
+  cupon_date_Limit timestamp [not null]
+  discount double [not null]
+  quantity Integer
+  user_id bigint [ref: > users.id, not null]
+
+  Indexes {
+    (cupon_code) [name: 'idx_cupons_code_cupon']
+  }
+}
+
+Table product_cupons_applied {
+  id bigint [pk]
+  cupons_id bigint [ref: > cupons.id, not null]
+  product_id bigint [ref: > products.id , not null]
+}
+
+Table cupons_used_by_clients {
+  id bigint [pk]
+  client_user bigint [ref: > clients.id, not null]
+  sale_id bigint [ref: > sales.id, not null]
+  cupon_id bigint [ref: > cupons.id, not null]
+  created_at timestamp [not null]
+}
+
+Table secondHand_product {
+  id          bigserial       [pk]
+  name        varchar(255)    [not null]
+  price       double          [not null]
+  stock       integer         [not null]
+  category    varchar(255)    [not null]
+  description text
+  active      boolean         [not null, default: true]
+  time_of_use timestamp       [not null]
+  level_of_secondHand_product bigint [not null]
+  id_users    bigint          [ref: > users.id, not null]
+
+  Indexes {
+    (id_users, level_of_secondHand_product) [name: 'idx_secondHand_product_user_id_level_of_secondHand_product']
+    (active, name) [name: 'idx_secondHand_product_active_name']
+  }
+}
+
+Table secondHand_product_images {
+  id            bigserial   [pk]
+  file_name     varchar(255)
+  file_path     varchar(255)
+  display_order bigint
+  product_id    bigint      [ref: > secondHand_product.id, not null]
+
+  Indexes {
+    (product_id, display_order) [unique, name: 'idx_secondHand_product_images_product_order']
+  }
+}
+
+Table secondHand_cupons {
+  id bigint [pk]
+  sh_cupon_code varchar(15) [not null]
+  cupon_date_Limit timestamp [not null]
+  discount double [not null]
+  quantity Integer
+  user_id bigint [ref: > users.id, not null]
+
+  Indexes {
+    (sh_cupon_code) [name: 'idx_secondHand_cupons_sh_cupon_code']
+  }
+}
+
+Table secondHand_product_cupons_applied {
+  id bigint [pk]
+  sh_cupons_id bigint [ref: > secondHand_cupons.id, not null]
+  sh_product_id bigint [ref: > secondHand_product.id , not null]
+}
+
+Table sh_product_cupo_to_a_client {
+  id bigint [pk]
+  client_id bigint [ref: > clients.id, not null]
+  sh_cupons_id bigint [ref: > secondHand_cupons.id, not null]
+  sh_product_id bigint [ref: > secondHand_product.id , not null]
+}
+
+Table sh_cupons_used_by_clients {
+  id bigint [pk]
+  client_user bigint [ref: > clients.id, not null]
+  sale_id bigint [ref: > sales.id, not null]
+  cupon_id bigint [ref: > cupons.id, not null]
+  created_at timestamp [not null]
+}
+
+Table sh_sales {
+  id           bigserial       [pk]
+  client_id    bigint          [ref: > clients.id, not null]
+  user_id      bigint          [ref: > users.id, not null]
+  total_amount numeric(10, 2)  [not null]
+  created_at   timestamp
+}
+
+Table sh_sales_item {
+  id            bigserial      [pk]
+  sh_sale_id    bigint         [ref: > sh_sales.id, not null]
+  sh_product_id bigint         [ref: > secondHand_product.id, not null]
+  quantity      integer
+  client_id     bigint         [ref: > clients.id, not null]
+  state         varchar(20)
+  date          timestamp
+
+  Indexes {
+    (sh_sale_id) [name: 'idx_sh_sale_items_sale_id']
+    (client_id, date, id) [name: 'idx_sh_sale_items_client_date']
+    (sh_product_id, date, id) [name: 'idx_sh_sale_items_product_date']
+  }
+}
+
+Table services_offered {
+  id                      bigserial   [pk]
+  user_id                 bigint      [ref: > users.id, not null]
+  name_of_service         varchar(40) [not null]
+  value_of_service        double      [not null]
+  description_of_service  varchar(255) [not null]
+
+  Indexes {
+    (user_id) [name: 'idx_services_offered_user_id']
+  }
+}
+
+Table services_cupon {
+  id bigint [pk]
+  sh_cupon_code varchar(15) [not null]
+  cupon_date_Limit timestamp [not null]
+  discount double [not null]
+  quantity Integer
+  user_id bigint [ref: > users.id, not null]
+
+  Indexes {
+    (sh_cupon_code) [name: 'idx_services_cupon_code']
+  }
+}
+
+Table product_cupon_to_a_client {
+  id bigint [pk]
+  client_id bigint [ref: > clients.id, not null]
+  cupon_id bigint [ref: > cupons.id, not null]
+  product_id bigint [ref: > products.id, not null]
+}
+
+Table service_cupon_to_a_client {
+  id bigint [pk]
+  client_id bigint [ref: > clients.id, not null]
+  service_cupon_id bigint [ref: > services_cupon.id, not null]
+  service_id bigint [ref: > services_offered.id, not null]
+}

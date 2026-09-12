@@ -33,7 +33,6 @@ build/
 .vscode/
 
 ### Local profiles ###
-/src/main/resources/db
 .env
 uploads/products
 uploads/perfiles

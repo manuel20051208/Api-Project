@@ -2,7 +2,6 @@ name: api-project.yml
 on:
   push:
     branches: [ "main" ]
-
   pull_request:
     branches: [ "main" ]
 
@@ -15,17 +14,18 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: 21
-          distribution: 'termurin'
+          distribution: 'temurin' # Corregido: termurin -> temurin
           cache: 'maven'
       - name: Correr tests
         run: mvn test
 
   build-docker:
     needs: test
+    if: github.event_name == 'push' # Solo crea imagen si se hace merge a main
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      packages: write # Necesario para subir a GHCR
     steps:
       - uses: actions/checkout@v4
 
@@ -37,22 +37,28 @@ jobs:
           cache: 'maven'
 
       - name: Construir el JAR
-        run: mvn clean package -DskipTests   # ya corrimos tests antes, no los repitas
+        run: mvn clean package -DskipTests
 
-      - name: Login a Docker Hub
+      - name: Login a GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-                      - name: Build y push de imagen Docker
-                      uses: docker/build-push-action@v6
-                      with:
-                        context: .
-                        push: true
-                        tags: tuusuario/tu-api:latest
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }} # Token automático de GitHub
+
+      - name: Convertir nombre del repo a minúsculas
+        run: echo "REPO_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
+      - name: Build y push de imagen Docker
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ env.REPO_NAME }}:latest # Usa tu usuario/repo automáticamente
 
   deploy:
     needs: build-docker
+    if: github.event_name == 'push' # Evita despliegues desde un Pull Request
     runs-on: ubuntu-latest
     steps:
       - name: Deploy a Render

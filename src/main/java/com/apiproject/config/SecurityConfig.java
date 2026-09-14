@@ -4,6 +4,7 @@ import com.apiproject.security.JwtAuthenticationFilter;
 import com.apiproject.security.OAuth2SuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,7 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
@@ -144,8 +146,9 @@ public class SecurityConfig {
                         oauth2
                                 .successHandler(oAuth2SuccessHandler)
                                 .failureHandler((request, response, exception) -> {
-                                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error autenticando con google");
-                                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, exception.getMessage());
+                                    log.error("Error en login con Google: {}", exception.getMessage(), exception);
+                                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                                            "Error autenticando con google: " + exception.getMessage());
                                 })
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

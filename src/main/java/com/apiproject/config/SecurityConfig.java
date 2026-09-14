@@ -55,10 +55,16 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((request, response, authException) ->
-                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token requerido o invalido"))
-                        .accessDeniedHandler((request, response, accessDeniedException) ->
-                                response.sendError(HttpServletResponse.SC_FORBIDDEN, "No tienes permisos para este recurso"))
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            log.warn("401: endpoint sin autenticacion -> method={} uri={} msg={}",
+                                    request.getMethod(), request.getRequestURI(), authException.getMessage());
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token requerido o invalido");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            log.warn("403: acceso denegado -> method={} uri={} msg={}",
+                                    request.getMethod(), request.getRequestURI(), accessDeniedException.getMessage());
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "No tienes permisos para este recurso");
+                        })
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -147,7 +153,8 @@ public class SecurityConfig {
                         oauth2
                                 .successHandler(oAuth2SuccessHandler)
                                 .failureHandler((request, response, exception) -> {
-                                    log.error("Error en login con Google: {}", exception.getMessage(), exception);
+                                    log.error("301/302->frontend: fallo login google, uri={} msg={}",
+                                            request.getRequestURI(), exception.getMessage(), exception);
                                     String target = UriComponentsBuilder.fromUriString(URL)
                                             .queryParam("error", "google_login_failed")
                                             .queryParam("message", exception.getMessage() != null

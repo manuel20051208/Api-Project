@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
@@ -81,7 +83,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             //    Devuelve Optional<AuthenticatedUser>: presente si el token es válido,
             //    vacío si es inválido o expirado. Con ifPresent() evitamos un if/else
             //    y solo ejecutamos el bloque si el token fue válido.
-            jwtService.parseAuthenticatedUser(token).ifPresent(authenticatedUser -> {
+            var parsedUserOptional = jwtService.parseAuthenticatedUser(token);
+            if (parsedUserOptional.isEmpty()) {
+                log.warn("JWT presente pero invalido o expirado -> method={} uri={}",
+                        request.getMethod(), request.getRequestURI());
+            }
+            parsedUserOptional.ifPresent(authenticatedUser -> {
 
                 // 6. Construir el objeto Authentication que Spring Security reconoce.
                 //    UsernamePasswordAuthenticationToken con 3 argumentos indica

@@ -22,6 +22,7 @@ import org.springframework.security.web.context.RequestAttributeSecurityContextR
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -147,8 +148,15 @@ public class SecurityConfig {
                                 .successHandler(oAuth2SuccessHandler)
                                 .failureHandler((request, response, exception) -> {
                                     log.error("Error en login con Google: {}", exception.getMessage(), exception);
-                                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                                            "Error autenticando con google: " + exception.getMessage());
+                                    String target = UriComponentsBuilder.fromUriString(URL)
+                                            .queryParam("error", "google_login_failed")
+                                            .queryParam("message", exception.getMessage() != null
+                                                    ? exception.getMessage()
+                                                    : "Error autenticando con google")
+                                            .build()
+                                            .encode()
+                                            .toUriString();
+                                    response.sendRedirect(target);
                                 })
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

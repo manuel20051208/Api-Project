@@ -143,8 +143,10 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 ->
                         oauth2
                                 .successHandler(oAuth2SuccessHandler)
-                                .failureHandler((request, response, exception) ->
-                                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error autenticando con google"))
+                                .failureHandler((request, response, exception) -> {
+                                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error autenticando con google");
+                                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, exception.getMessage());
+                                })
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -30,8 +30,8 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 @Service
 @RequiredArgsConstructor
 public class ProductService {
-    public final ProductRepository productRepository;
-    public final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     @Cacheable(value = CacheConstants.PRODUCTS_BY_ADMIN, key = "#adminId", sync = true)
@@ -75,8 +75,8 @@ public class ProductService {
     }
 
     @Caching(evict = {
-            @CacheEvict(value = CacheConstants.PRODUCTS_BY_ADMIN, key = "#adminId"),
-            @CacheEvict(value = CacheConstants.PRODUCTS_WITH_IMAGES_BY_ADMIN, key = "#adminId"),
+            @CacheEvict(value = CacheConstants.PRODUCTS_BY_ADMIN, allEntries = true),
+            @CacheEvict(value = CacheConstants.PRODUCTS_WITH_IMAGES_BY_ADMIN, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_WITH_IMAGES, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_BY_CATEGORY, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_PAGE, allEntries = true)

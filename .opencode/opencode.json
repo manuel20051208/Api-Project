@@ -31,13 +31,19 @@
       "**/.env.example": "allow"
     },
     "bash": {
-      "*": "ask",
+      "*": "allow",
       "cat .env": "deny",
       "cat .env.*": "deny",
       "cat **/.env*": "deny",
       "type .env*": "deny",
       "Get-Content .env*": "deny",
       "rm -rf *": "deny"
-    }
+    },
+    "edit": "allow",
+    "task": "allow",
+    "external_directory": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
+    "todowrite": "allow"
   }
 }

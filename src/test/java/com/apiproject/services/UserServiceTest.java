@@ -64,7 +64,6 @@ class UserServiceTest {
 
         Map<String, Object> resultadoCloudinaryFalso = Map.of("secure_url", "https://cloudinary.com/foto123.jpg");
 
-        // 2️⃣ STUB: encadeno los mocks en orden de uso
         when(fileFalso.getContentType()).thenReturn("image/png");
         when(fileFalso.getBytes()).thenReturn(new byte[]{1, 2, 3});
         when(userRepository.findById(userId)).thenReturn(Optional.of(usuarioFalso));
@@ -72,14 +71,11 @@ class UserServiceTest {
         when(uploader.upload(any(), any())).thenReturn(resultadoCloudinaryFalso);
         when(userRepository.save(any(UserAdmin.class))).thenReturn(usuarioFalso);
 
-        // 3️⃣ ACT
         UserResponseDTO resultado = userService.subirFotoPerfil(userId, fileFalso);
 
-        // 4️⃣ ASSERT
         assertNotNull(resultado);
         assertEquals("https://cloudinary.com/foto123.jpg", resultado.photo());
 
-        // 5️⃣ VERIFY
         verify(userRepository, times(1)).findById(userId);
         verify(uploader, times(1)).upload(any(), any());
         verify(userRepository, times(1)).save(usuarioFalso);
@@ -87,7 +83,7 @@ class UserServiceTest {
 
     @Test
     void modifyData_usuarioExiste_debeActualizarSoloLosCamposNoNulos() {
-        // 1️⃣ ARRANGE: el usuario que YA existe en la "base de datos"
+        // 1️⃣ARRANGE: el usuario que YA existe en la "base de datos"
         UserAdmin existente = UserAdmin.builder()
                 .id(1L)
                 .fullName("Nombre Viejo")
@@ -109,13 +105,13 @@ class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(userRepository.save(any(UserAdmin.class))).thenReturn(existente);
 
-        // 2️⃣ ACT
+        // ACT
         UserResponseDTO resultado = userService.modifyData(1L, datosNuevos);
 
-        // 3️⃣ ASSERT: verifico el TIPO de retorno
+        // ASSERT: verifico el TIPO de retorno
         assertInstanceOf(UserResponseDTO.class, resultado);
 
-        // 4️⃣ ASSERT: verifico que solo cambió lo que SÍ venía con valor
+        // ASSERT: verifico que solo cambió lo que SÍ venía con valor
         assertEquals("Nombre Nuevo", resultado.fullName());       // sí cambió
         assertEquals("Negocio Nuevo", resultado.businessName());  // sí cambió
 

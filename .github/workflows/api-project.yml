@@ -94,18 +94,21 @@ jobs:
 
   deploy-vm:
     needs: build-docker
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' # Evita despliegues desde un Pull Request
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Desplegar en VM Oracle Linux
+      - name: Desplegar en AWS EC2 (Ubuntu)
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Matar procesos fantasma que ocupen puertos de la app (8080)
-            fuser -k 8080/tcp 2>/dev/null || true
-            cd /home/opc/Api-Project
+            cd /home/ubuntu/Api-Project
+            
             git pull
+            
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            docker compose pull
             docker compose up -d --build

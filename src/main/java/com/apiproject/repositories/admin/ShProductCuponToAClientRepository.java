@@ -1,6 +1,7 @@
 package com.apiproject.repositories.admin;
 
 import com.apiproject.entities.admin.ShProductCuponToAClient;
+import com.apiproject.repositories.projection.CouponAssignmentProjection;
 import com.apiproject.repositories.projection.ShProductCuponAssignmentProjection;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +19,7 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
     @Query(value = """
             SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,
                    spct.sh_cupons_id, sc.sh_cupon_code, sc.discount, sc.cupon_date_limit,
+                   spct.usage_limit AS usage_limit,
                    spct.sh_product_id, sp.name AS product_name
             FROM sh_product_cupo_to_a_client spct
                      JOIN clients c ON c.id = spct.client_id
@@ -32,6 +34,7 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
     @Query(value = """
             SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,
                    spct.sh_cupons_id, sc.sh_cupon_code, sc.discount, sc.cupon_date_limit,
+                   spct.usage_limit AS usage_limit,
                    spct.sh_product_id, sp.name AS product_name
             FROM sh_product_cupo_to_a_client spct
                      JOIN clients c ON c.id = spct.client_id
@@ -46,6 +49,7 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
     @Query(value = """
             SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,
                    spct.sh_cupons_id, sc.sh_cupon_code, sc.discount, sc.cupon_date_limit,
+                   spct.usage_limit AS usage_limit,
                    spct.sh_product_id, sp.name AS product_name
             FROM sh_product_cupo_to_a_client spct
                      JOIN clients c ON c.id = spct.client_id
@@ -56,11 +60,41 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
             """, nativeQuery = true)
     List<ShProductCuponAssignmentProjection> findByAdminAndCupon(@Param("adminId") Long adminId, @Param("cuponId") Long cuponId);
 
+    /** Asignaciones de un cupón SH del admin con usage_limit y usos reales por cliente (diálogo "Clientes"). */
+    @Query(value = """
+            SELECT spct.id,
+                   c.full_name AS client_name,
+                   c.email AS client_email,
+                   spct.usage_limit AS usage_limit,
+                   COALESCE(used.used_count, 0) AS used_count,
+                   sp.name AS product_name
+            FROM sh_product_cupo_to_a_client spct
+                     JOIN clients c ON c.id = spct.client_id
+                     JOIN secondhand_cupons sc ON sc.id = spct.sh_cupons_id
+                     JOIN secondhand_product sp ON sp.id = spct.sh_product_id
+                     LEFT JOIN (
+                        SELECT client_user, cupon_id, COUNT(*) AS used_count
+                        FROM sh_cupons_used_by_clients
+                        GROUP BY client_user, cupon_id
+                     ) used ON used.client_user = spct.client_id AND used.cupon_id = spct.sh_cupons_id
+            WHERE sc.user_id = :adminId AND spct.sh_cupons_id = :cuponId
+            ORDER BY spct.id DESC
+            """, nativeQuery = true)
+    List<CouponAssignmentProjection> findAssignmentsWithUsageByAdminAndCupon(
+            @Param("adminId") Long adminId,
+            @Param("cuponId") Long cuponId);
+
     /** Borra las asignaciones SH de un cupón completo. */
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM sh_product_cupo_to_a_client WHERE sh_cupons_id = :cuponId", nativeQuery = true)
     int deleteByCuponId(@Param("cuponId") Long cuponId);
+
+    /** Cambia el limite de usos de todas las asignaciones SH de un cupon (a todos los clientes). */
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE sh_product_cupo_to_a_client SET usage_limit = :usageLimit WHERE sh_cupons_id = :cuponId", nativeQuery = true)
+    int updateUsageLimitByCupon(@Param("cuponId") Long cuponId, @Param("usageLimit") Integer usageLimit);
 
     /** Borra las asignaciones SH de un cupón para un cliente concreto. */
     @Modifying
@@ -85,4 +119,32 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
             @Param("clientId") Long clientId,
             @Param("productId") Long productId,
             @Param("code") String code);
+
+    /** Limite de usos SH asignado a un cliente para un cupon concreto (NULL = ilimitado). */
+    @Query(value = """
+            SELECT usage_limit FROM sh_product_cupo_to_a_client
+            WHERE client_id = :clientId AND sh_cupons_id = :cuponId
+            LIMIT 1
+            """, nativeQuery = true)
+    java.util.Optional<Integer> findUsageLimitByClientAndCupon(
+            @Param("clientId") Long clientId,
+            @Param("cuponId") Long cuponId);
+
+    /** Fila de asignación SH de un cupón a un cliente y producto SH concreto (evita duplicados). */
+    @Query(value = """
+            SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,
+                   spct.sh_cupons_id, sc.sh_cupon_code, sc.discount, sc.cupon_date_limit,
+                   spct.usage_limit AS usage_limit,
+                   spct.sh_product_id, sp.name AS product_name
+            FROM sh_product_cupo_to_a_client spct
+                     JOIN clients c ON c.id = spct.client_id
+                     JOIN secondhand_cupons sc ON sc.id = spct.sh_cupons_id
+                     JOIN secondhand_product sp ON sp.id = spct.sh_product_id
+            WHERE sc.user_id = :adminId AND spct.client_id = :clientId AND spct.sh_product_id = :productId
+            LIMIT 1
+            """, nativeQuery = true)
+    java.util.Optional<ShProductCuponAssignmentProjection> findByAdminAndClientAndShProduct(
+            @Param("adminId") Long adminId,
+            @Param("clientId") Long clientId,
+            @Param("productId") Long productId);
 }

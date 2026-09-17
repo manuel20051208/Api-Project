@@ -3,6 +3,7 @@ package com.apiproject.services.admin;
 import com.apiproject.config.CacheConstants;
 import com.apiproject.DTOs.Admin.CouponAssignmentResponseDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentRequestDTO;
+import com.apiproject.DTOs.Admin.CuponAssignmentUpdateRequestDTO;
 import com.apiproject.DTOs.Admin.CuponRequestDTO;
 import com.apiproject.DTOs.Admin.CuponResponseDTO;
 import com.apiproject.DTOs.Admin.CuponSendRequestDTO;
@@ -508,6 +509,46 @@ public class CuponService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cupon not found: " + cuponId));
         requireOwner(cupon, adminId);
         productCuponToAClientRepository.deleteByCuponId(cuponId);
+    }
+
+    /** Edita el limite de usos de una asignacion puntual (por cliente). */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CUPON_ASSIGNMENTS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CLIENT_CUPONS, allEntries = true)
+    })
+    @Transactional
+    public ProductCuponToClientResponseDTO updateAssignment(Long assignmentId, CuponAssignmentUpdateRequestDTO request, Long adminId) {
+        validateUsageLimit(request);
+        ProductCuponToAClient assignment = productCuponToAClientRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentId));
+        requireOwner(assignment.getCupon(), adminId);
+        assignment.setUsageLimit(request.usageLimit());
+        productCuponToAClientRepository.save(assignment);
+        return toAssignmentDto(productCuponToAClientRepository.findByAdminAndClientAndProduct(
+                        adminId, assignment.getClient().getId(), assignment.getProduct().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentId)));
+    }
+
+    /** Edita el limite de usos de todas las asignaciones de un cupon (a todos los clientes). */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CUPON_ASSIGNMENTS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CLIENT_CUPONS, allEntries = true)
+    })
+    @Transactional
+    public List<ProductCuponToClientResponseDTO> updateAllByCupon(Long cuponId, CuponAssignmentUpdateRequestDTO request, Long adminId) {
+        validateUsageLimit(request);
+        Cupon cupon = cuponRepository.lockById(cuponId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cupon not found: " + cuponId));
+        requireOwner(cupon, adminId);
+        productCuponToAClientRepository.updateUsageLimitByCupon(cuponId, request.usageLimit());
+        return findAssignmentsByCupon(adminId, cuponId);
+    }
+
+    /** Valida el usageLimit de un request de actualizacion de asignaciones. */
+    private void validateUsageLimit(CuponAssignmentUpdateRequestDTO request) {
+        if (request == null || request.usageLimit() == null || request.usageLimit() <= 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "usageLimit es obligatorio y debe ser mayor a cero");
+        }
     }
 
     /** Proyección -> DTO de una asignación (sin casteo manual: ya viene tipada del SQL). */

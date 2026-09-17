@@ -1,6 +1,8 @@
 package com.apiproject.controllers.admin;
 
+import com.apiproject.DTOs.Admin.CouponAssignmentResponseDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentRequestDTO;
+import com.apiproject.DTOs.Admin.CuponAssignmentUpdateRequestDTO;
 import com.apiproject.DTOs.Admin.SecondHandCuponRequestDTO;
 import com.apiproject.DTOs.Admin.SecondHandCuponResponseDTO;
 import com.apiproject.DTOs.Admin.ShProductCuponToClientResponseDTO;
@@ -99,6 +101,15 @@ public class SecondHandCuponController {
         return secondHandCuponService.findAssignmentsByCupon(authenticatedUser.id(), cuponId);
     }
 
+    @Operation(summary = "Asignaciones de un cupón SH con usageLimit y usedCount (diálogo Clientes)")
+    @GetMapping("/{cuponId}/assignments")
+    public List<CouponAssignmentResponseDTO> findAssignmentsWithUsageByCupon(
+            @PathVariable Long cuponId,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return secondHandCuponService.findAssignmentsWithUsageByCupon(authenticatedUser.id(), cuponId);
+    }
+
     @Operation(summary = "Listar asignaciones de cupones SH para un cliente específico")
     @GetMapping("/assignments/client/{clientId}")
     public List<ShProductCuponToClientResponseDTO> findAssignmentsByClient(
@@ -116,6 +127,26 @@ public class SecondHandCuponController {
     ) {
         secondHandCuponService.removeAssignment(assignmentId, authenticatedUser.id());
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Editar el limite de uso de una asignación SH específica (por cliente) (ADMIN)")
+    @PatchMapping("/assignments/{assignmentId}")
+    public ShProductCuponToClientResponseDTO updateAssignment(
+            @PathVariable Long assignmentId,
+            @RequestBody CuponAssignmentUpdateRequestDTO request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return secondHandCuponService.updateAssignment(assignmentId, request, authenticatedUser.id());
+    }
+
+    @Operation(summary = "Editar el limite de uso de todas las asignaciones de un cupón SH (todos los clientes) (ADMIN)")
+    @PatchMapping("/assignments/cupon/{cuponId}")
+    public List<ShProductCuponToClientResponseDTO> updateAllByCupon(
+            @PathVariable Long cuponId,
+            @RequestBody CuponAssignmentUpdateRequestDTO request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return secondHandCuponService.updateAllByCupon(cuponId, request, authenticatedUser.id());
     }
 
     @Operation(summary = "Eliminar todas las asignaciones de un cupón SH")

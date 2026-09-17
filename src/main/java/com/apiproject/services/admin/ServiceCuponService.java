@@ -1,6 +1,7 @@
 package com.apiproject.services.admin;
 
 import com.apiproject.DTOs.Admin.CuponAssignmentRequestDTO;
+import com.apiproject.DTOs.Admin.CuponAssignmentUpdateRequestDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponRequestDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponResponseDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponToClientResponseDTO;
@@ -115,6 +116,9 @@ public class ServiceCuponService {
         if (request.serviceCuponCode().length() > 15) {
             throw new ResponseStatusException(BAD_REQUEST, "serviceCuponCode no puede superar 15 caracteres");
         }
+        if (!request.serviceCuponCode().matches("[A-Za-z0-9]+")) {
+            throw new ResponseStatusException(BAD_REQUEST, "serviceCuponCode solo puede contener letras y numeros");
+        }
         if (request.cuponDateLimit() == null || request.cuponDateLimit().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(BAD_REQUEST, "cuponDateLimit debe ser una fecha futura");
         }
@@ -145,6 +149,9 @@ public class ServiceCuponService {
     public List<ServiceCuponToClientResponseDTO> assignToClients(CuponAssignmentRequestDTO request, Long adminId) {
         if (request.cuponId() == null) {
             throw new ResponseStatusException(BAD_REQUEST, "cuponId es obligatorio");
+        }
+        if (request.usageLimit() == null || request.usageLimit() <= 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "usageLimit es obligatorio y debe ser mayor a cero");
         }
         ServiceCupon cupon = serviceCuponRepository.lockById(request.cuponId()) // LOCK contra duplicados
                 .orElseThrow(() -> new ResourceNotFoundException("Service cupon not found: " + request.cuponId()));
@@ -179,6 +186,7 @@ public class ServiceCuponService {
                 assignment.setClient(client);
                 assignment.setServiceCupon(cupon);
                 assignment.setService(service);
+                assignment.setUsageLimit(request.usageLimit());
                 assignments.add(assignment);
             }
         }
@@ -228,6 +236,38 @@ public class ServiceCuponService {
         serviceCuponToAClientRepository.deleteByCuponId(cuponId);
     }
 
+    /** Edita el limite de usos de una asignación de servicio puntual (por cliente). */
+    @Transactional
+    public ServiceCuponToClientResponseDTO updateAssignment(Long assignmentId, CuponAssignmentUpdateRequestDTO request, Long adminId) {
+        validateUsageLimit(request);
+        ServiceCuponToAClient assignment = serviceCuponToAClientRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentId));
+        requireOwner(assignment.getServiceCupon(), adminId);
+        assignment.setUsageLimit(request.usageLimit());
+        serviceCuponToAClientRepository.save(assignment);
+        return toAssignmentDto(serviceCuponToAClientRepository.findByAdminAndClientAndService(
+                        adminId, assignment.getClient().getId(), assignment.getService().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentId)));
+    }
+
+    /** Edita el limite de usos de todas las asignaciones de un cupón de servicio (a todos los clientes). */
+    @Transactional
+    public List<ServiceCuponToClientResponseDTO> updateAllByCupon(Long cuponId, CuponAssignmentUpdateRequestDTO request, Long adminId) {
+        validateUsageLimit(request);
+        ServiceCupon cupon = serviceCuponRepository.lockById(cuponId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service cupon not found: " + cuponId));
+        requireOwner(cupon, adminId);
+        serviceCuponToAClientRepository.updateUsageLimitByCupon(cuponId, request.usageLimit());
+        return findAssignmentsByCupon(adminId, cuponId);
+    }
+
+    /** Valida el usageLimit de un request de actualizacion de asignaciones. */
+    private void validateUsageLimit(CuponAssignmentUpdateRequestDTO request) {
+        if (request == null || request.usageLimit() == null || request.usageLimit() <= 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "usageLimit es obligatorio y debe ser mayor a cero");
+        }
+    }
+
     /** Proyección -> DTO de una asignación de servicio (sin casteo manual). */
     private ServiceCuponToClientResponseDTO toAssignmentDto(ServiceCuponAssignmentProjection p) {
         return new ServiceCuponToClientResponseDTO(
@@ -240,7 +280,8 @@ public class ServiceCuponService {
                 p.getDiscount(),
                 p.getCuponDateLimit(),
                 p.getServiceId(),
-                p.getServiceName()
+                p.getServiceName(),
+                p.getUsageLimit()
         );
     }
 }

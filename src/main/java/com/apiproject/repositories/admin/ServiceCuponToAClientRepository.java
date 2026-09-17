@@ -18,6 +18,7 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
     @Query(value = """
             SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,
                    sct.service_cupon_id, sc.service_cupon_code, sc.discount, sc.cupon_date_limit,
+                   sct.usage_limit AS usage_limit,
                    sct.service_id, so.name_of_service AS service_name
             FROM service_cupon_to_a_client sct
                      JOIN clients c ON c.id = sct.client_id
@@ -32,6 +33,7 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
     @Query(value = """
             SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,
                    sct.service_cupon_id, sc.service_cupon_code, sc.discount, sc.cupon_date_limit,
+                   sct.usage_limit AS usage_limit,
                    sct.service_id, so.name_of_service AS service_name
             FROM service_cupon_to_a_client sct
                      JOIN clients c ON c.id = sct.client_id
@@ -46,6 +48,7 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
     @Query(value = """
             SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,
                    sct.service_cupon_id, sc.service_cupon_code, sc.discount, sc.cupon_date_limit,
+                   sct.usage_limit AS usage_limit,
                    sct.service_id, so.name_of_service AS service_name
             FROM service_cupon_to_a_client sct
                      JOIN clients c ON c.id = sct.client_id
@@ -61,6 +64,12 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
     @Transactional
     @Query(value = "DELETE FROM service_cupon_to_a_client WHERE service_cupon_id = :cuponId", nativeQuery = true)
     int deleteByCuponId(@Param("cuponId") Long cuponId);
+
+    /** Cambia el limite de usos de todas las asignaciones de un cupón de servicio (a todos los clientes). */
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE service_cupon_to_a_client SET usage_limit = :usageLimit WHERE service_cupon_id = :cuponId", nativeQuery = true)
+    int updateUsageLimitByCupon(@Param("cuponId") Long cuponId, @Param("usageLimit") Integer usageLimit);
 
     /** Borra las asignaciones de un cupón de servicio para un cliente concreto. */
     @Modifying
@@ -85,4 +94,22 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
             @Param("clientId") Long clientId,
             @Param("serviceId") Long serviceId,
             @Param("code") String code);
+
+    /** Fila de asignación de servicio de un cupón a un cliente y servicio concreto (evita duplicados). */
+    @Query(value = """
+            SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,
+                   sct.service_cupon_id, sc.service_cupon_code, sc.discount, sc.cupon_date_limit,
+                   sct.usage_limit AS usage_limit,
+                   sct.service_id, so.name_of_service AS service_name
+            FROM service_cupon_to_a_client sct
+                     JOIN clients c ON c.id = sct.client_id
+                     JOIN services_cupon sc ON sc.id = sct.service_cupon_id
+                     JOIN services_offered so ON so.id = sct.service_id
+            WHERE sc.user_id = :adminId AND sct.client_id = :clientId AND sct.service_id = :serviceId
+            LIMIT 1
+            """, nativeQuery = true)
+    java.util.Optional<ServiceCuponAssignmentProjection> findByAdminAndClientAndService(
+            @Param("adminId") Long adminId,
+            @Param("clientId") Long clientId,
+            @Param("serviceId") Long serviceId);
 }

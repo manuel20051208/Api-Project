@@ -1,6 +1,7 @@
 package com.apiproject.controllers.admin;
 
 import com.apiproject.DTOs.Admin.CuponAssignmentRequestDTO;
+import com.apiproject.DTOs.Admin.CuponAssignmentUpdateRequestDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponRequestDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponResponseDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponToClientResponseDTO;
@@ -118,6 +119,26 @@ public class ServiceCuponController {
     ) {
         serviceCuponService.removeAssignment(assignmentId, authenticatedUser.id());
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Editar el limite de uso de una asignación de servicio específica (por cliente) (ADMIN)")
+    @PatchMapping("/assignments/{assignmentId}")
+    public ServiceCuponToClientResponseDTO updateAssignment(
+            @PathVariable Long assignmentId,
+            @RequestBody CuponAssignmentUpdateRequestDTO request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return serviceCuponService.updateAssignment(assignmentId, request, authenticatedUser.id());
+    }
+
+    @Operation(summary = "Editar el limite de uso de todas las asignaciones de un cupón de servicio (todos los clientes) (ADMIN)")
+    @PatchMapping("/assignments/cupon/{cuponId}")
+    public List<ServiceCuponToClientResponseDTO> updateAllByCupon(
+            @PathVariable Long cuponId,
+            @RequestBody CuponAssignmentUpdateRequestDTO request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return serviceCuponService.updateAllByCupon(cuponId, request, authenticatedUser.id());
     }
 
     @Operation(summary = "Eliminar todas las asignaciones de un cupón de servicio")

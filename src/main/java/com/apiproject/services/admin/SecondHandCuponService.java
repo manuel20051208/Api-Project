@@ -1,6 +1,8 @@
 package com.apiproject.services.admin;
 
+import com.apiproject.DTOs.Admin.CouponAssignmentResponseDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentRequestDTO;
+import com.apiproject.DTOs.Admin.CuponAssignmentUpdateRequestDTO;
 import com.apiproject.DTOs.Admin.CuponRequestDTO;
 import com.apiproject.DTOs.Admin.CuponResponseDTO;
 import com.apiproject.DTOs.Admin.SecondHandCuponRequestDTO;
@@ -21,6 +23,7 @@ import com.apiproject.repositories.admin.ShProductCuponToAClientRepository;
 import com.apiproject.repositories.admin.UserRepository;
 import com.apiproject.repositories.client.ClientRepository;
 import com.apiproject.repositories.general.SecondHandProductRepository;
+import com.apiproject.repositories.projection.CouponAssignmentProjection;
 import com.apiproject.repositories.projection.CuponAdminProjection;
 import com.apiproject.repositories.projection.ShProductCuponAssignmentProjection;
 import lombok.RequiredArgsConstructor;
@@ -148,7 +151,7 @@ public class SecondHandCuponService {
      * carrito de ese admin que esten vinculados; se permite carrito multi-vendedor.
      */
     @Transactional
-    public CouponResolution resolveForCart(String code, List<Long> shCarritoProductIds,
+    public CouponResolution resolveForCart(String code, Long clientId, List<Long> shCarritoProductIds,
                                            Function<Long, Long> shProductoOwnerFn) {
         // LOCK por código: evita canjear el mismo cupón dos veces en paralelo
         SecondHandCupon cupon = secondHandCuponRepository.lockByCode(code)
@@ -182,6 +185,13 @@ public class SecondHandCuponService {
         if (quantity != null && elegibles.size() > quantity) {
             elegibles = elegibles.subList(0, quantity);
         }
+
+        // 4) Limite de usos por cliente: la asignacion puede limitar cuantas veces lo usa el cliente
+        shProductCuponToAClientRepository.findUsageLimitByClientAndCupon(clientId, cupon.getId())
+                .filter(limit -> shCuponUsedByClientsRepository.countByCuponIdAndClientId(cupon.getId(), clientId) >= limit)
+                .ifPresent(limit -> {
+                    throw new ResponseStatusException(CONFLICT, "El cliente agoto sus usos del cupon");
+                });
 
         return new CouponResolution(cupon.getId(), cupon.getDiscount(), cuponOwnerId, elegibles);
     }
@@ -228,6 +238,9 @@ public class SecondHandCuponService {
         }
         if (request.shCuponCode().length() > 15) {
             throw new ResponseStatusException(BAD_REQUEST, "shCuponCode no puede superar 15 caracteres");
+        }
+        if (!request.shCuponCode().matches("[A-Za-z0-9]+")) {
+            throw new ResponseStatusException(BAD_REQUEST, "shCuponCode solo puede contener letras y numeros");
         }
         if (request.cuponDateLimit() == null || request.cuponDateLimit().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(BAD_REQUEST, "cuponDateLimit debe ser una fecha futura");
@@ -283,6 +296,9 @@ public class SecondHandCuponService {
         if (request.cuponId() == null) {
             throw new ResponseStatusException(BAD_REQUEST, "cuponId es obligatorio");
         }
+        if (request.usageLimit() == null || request.usageLimit() <= 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "usageLimit es obligatorio y debe ser mayor a cero");
+        }
         SecondHandCupon cupon = secondHandCuponRepository.lockById(request.cuponId()) // LOCK contra duplicados
                 .orElseThrow(() -> new ResourceNotFoundException("Second hand cupon not found: " + request.cuponId()));
         requireOwner(cupon, adminId);
@@ -315,6 +331,7 @@ public class SecondHandCuponService {
                 assignment.setClient(client);
                 assignment.setCupon(cupon);
                 assignment.setProduct(product);
+                assignment.setUsageLimit(request.usageLimit());
                 assignments.add(assignment);
             }
         }
@@ -346,6 +363,14 @@ public class SecondHandCuponService {
                 .toList();
     }
 
+    /** Asignaciones SH de un cupón con uso (usageLimit + usedCount) para el diálogo "Clientes" del admin. */
+    @Transactional(readOnly = true)
+    public List<CouponAssignmentResponseDTO> findAssignmentsWithUsageByCupon(Long adminId, Long cuponId) {
+        return shProductCuponToAClientRepository.findAssignmentsWithUsageByAdminAndCupon(adminId, cuponId).stream()
+                .map(this::toCouponAssignmentDto)
+                .toList();
+    }
+
     /** Elimina una asignación SH puntual (validando dueño del cupón). */
     @Transactional
     public void removeAssignment(Long assignmentId, Long adminId) {
@@ -364,6 +389,38 @@ public class SecondHandCuponService {
         shProductCuponToAClientRepository.deleteByCuponId(cuponId);
     }
 
+    /** Edita el limite de usos de una asignación SH puntual (por cliente). */
+    @Transactional
+    public ShProductCuponToClientResponseDTO updateAssignment(Long assignmentId, CuponAssignmentUpdateRequestDTO request, Long adminId) {
+        validateUsageLimit(request);
+        ShProductCuponToAClient assignment = shProductCuponToAClientRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentId));
+        requireOwner(assignment.getCupon(), adminId);
+        assignment.setUsageLimit(request.usageLimit());
+        shProductCuponToAClientRepository.save(assignment);
+        return toAssignmentDto(shProductCuponToAClientRepository.findByAdminAndClientAndShProduct(
+                        adminId, assignment.getClient().getId(), assignment.getProduct().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentId)));
+    }
+
+    /** Edita el limite de usos de todas las asignaciones de un cupón SH (a todos los clientes). */
+    @Transactional
+    public List<ShProductCuponToClientResponseDTO> updateAllByCupon(Long cuponId, CuponAssignmentUpdateRequestDTO request, Long adminId) {
+        validateUsageLimit(request);
+        SecondHandCupon cupon = secondHandCuponRepository.lockById(cuponId)
+                .orElseThrow(() -> new ResourceNotFoundException("Second hand cupon not found: " + cuponId));
+        requireOwner(cupon, adminId);
+        shProductCuponToAClientRepository.updateUsageLimitByCupon(cuponId, request.usageLimit());
+        return findAssignmentsByCupon(adminId, cuponId);
+    }
+
+    /** Valida el usageLimit de un request de actualizacion de asignaciones. */
+    private void validateUsageLimit(CuponAssignmentUpdateRequestDTO request) {
+        if (request == null || request.usageLimit() == null || request.usageLimit() <= 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "usageLimit es obligatorio y debe ser mayor a cero");
+        }
+    }
+
     /** Proyección -> DTO de una asignación SH (sin casteo manual). */
     private ShProductCuponToClientResponseDTO toAssignmentDto(ShProductCuponAssignmentProjection p) {
         return new ShProductCuponToClientResponseDTO(
@@ -376,6 +433,19 @@ public class SecondHandCuponService {
                 p.getDiscount(),
                 p.getCuponDateLimit(),
                 p.getShProductId(),
+                p.getProductName(),
+                p.getUsageLimit()
+        );
+    }
+
+    /** Proyección con uso -> DTO del diálogo "Clientes" SH (usageLimit nullable, usedCount siempre numérico). */
+    private CouponAssignmentResponseDTO toCouponAssignmentDto(CouponAssignmentProjection p) {
+        return new CouponAssignmentResponseDTO(
+                p.getId(),
+                p.getClientName(),
+                p.getClientEmail(),
+                p.getUsageLimit(),
+                p.getUsedCount(),
                 p.getProductName()
         );
     }

@@ -1,8 +1,11 @@
 package com.apiproject.controllers.admin;
 
+import com.apiproject.DTOs.Admin.CouponAssignmentResponseDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentRequestDTO;
+import com.apiproject.DTOs.Admin.CuponAssignmentUpdateRequestDTO;
 import com.apiproject.DTOs.Admin.CuponRequestDTO;
 import com.apiproject.DTOs.Admin.CuponResponseDTO;
+import com.apiproject.DTOs.Admin.CuponSendRequestDTO;
 import com.apiproject.DTOs.Admin.ProductCuponToClientResponseDTO;
 import com.apiproject.DTOs.General.CuponValidationResponseDTO;
 import com.apiproject.security.AuthenticatedUser;
@@ -84,6 +87,15 @@ public class CuponController {
         return cuponService.assignToClients(request, authenticatedUser.id());
     }
 
+    @Operation(summary = "Enviar un cupon ya creado a un cliente especifico (ADMIN)")
+    @PostMapping("/send")
+    public List<ProductCuponToClientResponseDTO> send(
+            @RequestBody CuponSendRequestDTO request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return cuponService.sendToClient(request, authenticatedUser.id());
+    }
+
     @Operation(summary = "Listar todas las asignaciones de cupones del admin")
     @GetMapping("/assignments")
     public List<ProductCuponToClientResponseDTO> findAllAssignments(
@@ -99,6 +111,15 @@ public class CuponController {
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
         return cuponService.findAssignmentsByCupon(authenticatedUser.id(), cuponId);
+    }
+
+    @Operation(summary = "Asignaciones de un cupón con usageLimit y usedCount (diálogo Clientes)")
+    @GetMapping("/{cuponId}/assignments")
+    public List<CouponAssignmentResponseDTO> findAssignmentsWithUsageByCupon(
+            @PathVariable Long cuponId,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return cuponService.findAssignmentsWithUsageByCupon(authenticatedUser.id(), cuponId);
     }
 
     @Operation(summary = "Listar asignaciones de cupones para un cliente específico")
@@ -126,6 +147,26 @@ public class CuponController {
     ) {
         cuponService.removeAssignment(assignmentId, authenticatedUser.id());
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Editar el limite de uso de una asignación específica (por cliente) (ADMIN)")
+    @PatchMapping("/assignments/{assignmentId}")
+    public ProductCuponToClientResponseDTO updateAssignment(
+            @PathVariable Long assignmentId,
+            @RequestBody CuponAssignmentUpdateRequestDTO request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return cuponService.updateAssignment(assignmentId, request, authenticatedUser.id());
+    }
+
+    @Operation(summary = "Editar el limite de uso de todas las asignaciones de un cupón (todos los clientes) (ADMIN)")
+    @PatchMapping("/assignments/cupon/{cuponId}")
+    public List<ProductCuponToClientResponseDTO> updateAllByCupon(
+            @PathVariable Long cuponId,
+            @RequestBody CuponAssignmentUpdateRequestDTO request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return cuponService.updateAllByCupon(cuponId, request, authenticatedUser.id());
     }
 
     @Operation(summary = "Eliminar todas las asignaciones de un cupón")

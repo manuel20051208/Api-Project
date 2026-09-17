@@ -14,7 +14,10 @@ public interface ClientHistoryProjection {
     String getProductCategory();
     Integer getQuantity();
     Double getUnitPrice();
+    Double getSubtotal();
     Double getTotalAmount();
+    Double getDiscount();
+    String getCuponCode();
     String getState();
     LocalDateTime getOccurredAt();
 }

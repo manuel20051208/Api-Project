@@ -34,4 +34,7 @@ public class ProductCuponToAClient {
     @JoinColumn(name = "product_id", nullable = false)
     @JsonIgnore
     private Product product;
+
+    @Column(name = "usage_limit")
+    private Integer usageLimit;
 }

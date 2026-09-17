@@ -9,5 +9,7 @@ public interface ClientSummaryProjection {
     String getEmail();
     Long getTotalQuantity();
     Double getTotalSpent();
+    Double getTotalDiscount();
+    Double getTotalSpentDiscount();
     LocalDateTime getLatestSale();
 }

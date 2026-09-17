@@ -2,6 +2,8 @@ package com.apiproject.repositories.client;
 
 import com.apiproject.entities.client.UserClient;
 import com.apiproject.repositories.projection.ClientHistoryProjection;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -36,5 +38,10 @@ public interface ClientRepository extends JpaRepository<UserClient, Long> {
 
     @Query(value = "SELECT * FROM view_of_client_history WHERE client_id = :clientId",nativeQuery = true)
     List<ClientHistoryProjection> showClientBuy(@Param("clientId") Long clientId);
+
+    @Query(value = "SELECT * FROM view_of_client_history WHERE client_id = :clientId",
+            countQuery = "SELECT count(*) FROM view_of_client_history WHERE client_id = :clientId",
+            nativeQuery = true)
+    Page<ClientHistoryProjection> showClientBuyPaginated(@Param("clientId") Long clientId, Pageable pageable);
 
 }

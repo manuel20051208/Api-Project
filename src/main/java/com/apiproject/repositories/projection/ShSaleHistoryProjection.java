@@ -10,6 +10,8 @@ public interface ShSaleHistoryProjection {
     Integer getQuantity();
     Double getUnitPrice();
     Double getSubtotal();
+    Double getDiscount();
+    String getCuponCode();
     String getState();
     LocalDateTime getDate();
 }

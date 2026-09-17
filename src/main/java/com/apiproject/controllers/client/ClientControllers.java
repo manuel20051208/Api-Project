@@ -17,12 +17,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Tag(name = "Client", description = "Endpoints for managing clients")
 @RestController
@@ -119,8 +125,31 @@ public class ClientControllers {
 
     @Operation(summary = "show client's history of buy")
     @GetMapping("/user-payments")
-    public List<ClientHistoryProjection> getClientHistory(
-            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        return clientService.showBuys(authenticatedUser.id());
+    public Page<ClientHistoryProjection> getClientHistory(
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "occurredAt,desc") String sort) {
+        if (size < 1 || size > 100) {
+            throw new ResponseStatusException(BAD_REQUEST, "size debe estar entre 1 y 100");
+        }
+        if (page < 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "page no puede ser negativo");
+        }
+        Sort orders = parseSort(sort);
+        return clientService.showBuysPaginated(authenticatedUser.id(), PageRequest.of(page, size, orders));
+    }
+
+    /** Convierte "occurredAt,desc" (convención Spring Data) al Column Sort sobre la vista. */
+    private Sort parseSort(String sort) {
+        String[] parts = sort.split(",");
+        String field = parts[0].trim();
+        boolean desc = parts.length > 1 && parts[1].trim().equalsIgnoreCase("desc");
+
+        if (field.equalsIgnoreCase("occurredAt") || field.equalsIgnoreCase("occurred_at")) {
+            return desc ? Sort.by(Sort.Direction.DESC, "occurred_at")
+                        : Sort.by(Sort.Direction.ASC, "occurred_at");
+        }
+        return Sort.by(Sort.Direction.DESC, "occurred_at"); // default DESC por si viene algo raro
     }
 }

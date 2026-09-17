@@ -20,11 +20,14 @@ public interface ShSaleItemRepository extends JpaRepository<ShSalesItem, Long> {
                    si.quantity,
                    sp.price AS unit_price,
                    (COALESCE(si.quantity, 0)::NUMERIC * COALESCE(sp.price, 0)::NUMERIC)::DOUBLE PRECISION AS subtotal,
+                   s.discount AS discount,
+                   cu.sh_cupon_code AS cupon_code,
                    si.state,
                    COALESCE(si.date, s.created_at) AS date
             FROM sh_sales_item si
                      JOIN sh_sales s ON s.id = si.sh_sale_id
                      LEFT JOIN secondhand_product sp ON sp.id = si.sh_product_id
+                     LEFT JOIN secondhand_cupons cu ON cu.id = s.cupon_id
             WHERE si.client_id = :clientId
             ORDER BY COALESCE(si.date, s.created_at) DESC, si.id DESC
             """, nativeQuery = true)
@@ -38,11 +41,14 @@ public interface ShSaleItemRepository extends JpaRepository<ShSalesItem, Long> {
                    si.quantity,
                    sp.price AS unit_price,
                    (COALESCE(si.quantity, 0)::NUMERIC * COALESCE(sp.price, 0)::NUMERIC)::DOUBLE PRECISION AS subtotal,
+                   s.discount AS discount,
+                   cu.sh_cupon_code AS cupon_code,
                    si.state,
                    COALESCE(si.date, s.created_at) AS date
             FROM sh_sales_item si
                      JOIN sh_sales s ON s.id = si.sh_sale_id
                      LEFT JOIN secondhand_product sp ON sp.id = si.sh_product_id
+                     LEFT JOIN secondhand_cupons cu ON cu.id = s.cupon_id
             WHERE s.user_id = :adminId
               AND (:clientId IS NULL OR si.client_id = :clientId)
             ORDER BY COALESCE(si.date, s.created_at) DESC, si.id DESC

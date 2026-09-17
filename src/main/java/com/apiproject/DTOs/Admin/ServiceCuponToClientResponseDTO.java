@@ -12,6 +12,7 @@ public record ServiceCuponToClientResponseDTO(
         Double discount,
         LocalDateTime cuponDateLimit,
         Long serviceId,
-        String serviceName
+        String serviceName,
+        Integer usageLimit
 ) {
 }

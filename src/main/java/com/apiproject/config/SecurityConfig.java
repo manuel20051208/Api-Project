@@ -144,8 +144,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/sh-sale/purchase").hasRole("CLIENT")
                         .requestMatchers(HttpMethod.GET, "/api/sh-sale/client").hasRole("CLIENT")
                         .requestMatchers("/api/sh-sale/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/notification/stream")
-                        .hasRole("ADMIN")
                         .anyRequest()
                         .authenticated()
                 )

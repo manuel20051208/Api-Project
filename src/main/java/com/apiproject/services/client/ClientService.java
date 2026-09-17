@@ -20,6 +20,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,12 @@ public class ClientService {
     @Cacheable(value = CacheConstants.CLIENT_HISTORY, key = "#userId", sync = true)
     public List<ClientHistoryProjection> showBuys(Long userId) {
         return clientRepository.showClientBuy(userId);
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstants.CLIENT_HISTORY, key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort", sync = true)
+    public Page<ClientHistoryProjection> showBuysPaginated(Long userId, Pageable pageable) {
+        return clientRepository.showClientBuyPaginated(userId, pageable);
     }
 
     @Transactional(readOnly = true)

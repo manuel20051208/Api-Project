@@ -5,6 +5,7 @@ import java.util.List;
 public record CuponAssignmentRequestDTO(
         Long cuponId,
         List<Long> clientIds,
-        boolean assignToAll
+        boolean assignToAll,
+        Integer usageLimit
 ) {
 }

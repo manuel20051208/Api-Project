@@ -13,4 +13,5 @@ public interface ProductCuponAssignmentProjection {
     LocalDateTime getCuponDateLimit();
     Long getProductId();
     String getProductName();
+    Integer getUsageLimit();
 }

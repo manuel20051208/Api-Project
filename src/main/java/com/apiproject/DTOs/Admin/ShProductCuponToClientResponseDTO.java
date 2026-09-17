@@ -12,6 +12,7 @@ public record ShProductCuponToClientResponseDTO(
         Double discount,
         LocalDateTime cuponDateLimit,
         Long productId,
-        String productName
+        String productName,
+        Integer usageLimit
 ) {
 }

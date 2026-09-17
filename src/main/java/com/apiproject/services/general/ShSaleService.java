@@ -1,6 +1,5 @@
 package com.apiproject.services.general;
 
-import com.apiproject.DTOs.Admin.NotificationEventDTO;
 import com.apiproject.DTOs.General.*;
 import com.apiproject.entities.admin.SecondHandCupon;
 import com.apiproject.entities.admin.ShCuponUsedByClients;
@@ -16,7 +15,6 @@ import com.apiproject.repositories.client.PaymentCardRepository;
 import com.apiproject.repositories.general.ShSaleItemRepository;
 import com.apiproject.repositories.general.ShSaleRepository;
 import com.apiproject.repositories.general.SecondHandProductRepository;
-import com.apiproject.services.admin.NotificationService;
 import com.apiproject.services.admin.SecondHandCuponService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,7 +33,6 @@ import static org.springframework.http.HttpStatus.*;
 @Service
 @RequiredArgsConstructor
 public class ShSaleService {
-    private final NotificationService notificationService;
     private final SecondHandProductRepository secondHandProductRepository;
     private final ShSaleRepository shSaleRepository;
     private final ShSaleItemRepository shSaleItemRepository;
@@ -96,22 +93,26 @@ public class ShSaleService {
                     .collect(Collectors.toMap(d -> d.product().getId(),
                             d -> d.owner() == null ? null : d.owner().getId(), (a, b) -> a));
             coupon = secondHandCuponService.resolveForCart(
-                    requestDTO.cuponCode(), productIds, ownerByProductId::get);
+                    requestDTO.cuponCode(), client.getId(), productIds, ownerByProductId::get);
         }
         Set<Long> elegibles = coupon == null
                 ? Set.of()
                 : new HashSet<>(coupon.elegibleProductIds());
 
         // Crea una venta individual por producto con el descuento proporcional si hay cupon.
+        SecondHandCupon cuponRef = coupon == null ? null : secondHandCuponRepository.getReferenceById(coupon.cuponId());
         List<ShSale> sales = new ArrayList<>(saleDrafts.size());
         for (ShSaleDraft draft : saleDrafts) {
             ShSale sale = new ShSale();
             sale.setUserClient(client);
             sale.setHora(now);
             sale.setUserAdmin(draft.owner());
-            sale.setTotalAmount(elegibles.contains(draft.product().getId())
+            boolean eligible = elegibles.contains(draft.product().getId());
+            sale.setTotalAmount(eligible
                     ? applyDiscount(draft.subtotal(), coupon)
                     : applyDiscount(draft.subtotal(), null));
+            sale.setDiscount(draft.subtotal().subtract(sale.getTotalAmount()));
+            sale.setCupon(eligible ? cuponRef : null);
             sales.add(sale);
         }
 
@@ -128,7 +129,6 @@ public class ShSaleService {
         if (coupon != null) {
             secondHandCuponService.redeem(coupon);
 
-            SecondHandCupon cuponRef = secondHandCuponRepository.getReferenceById(coupon.cuponId());
             ShCuponUsedByClients usage = new ShCuponUsedByClients();
             usage.setClientUser(client);
             usage.setSale(savedSales.getFirst());
@@ -145,23 +145,6 @@ public class ShSaleService {
                         unitPrice(draft.product()),
                         draft.subtotal()))
                 .toList();
-
-        // Notifica a cada admin afectado y avisa stock bajo.
-        for (ShSaleDraft draft : saleDrafts) {
-            Long ownerId = draft.owner().getId();
-            notificationService.push(ownerId, new NotificationEventDTO(
-                    "VENTA_NUEVA_SH",
-                    "Nueva venta segunda mano por $" + draft.subtotal(),
-                    ownerId
-            ));
-            if (draft.product().getStock() <= 5) {
-                notificationService.push(ownerId, new NotificationEventDTO(
-                        "STOCK_BAJO",
-                        "Stock bajo: " + draft.product().getName() + " (" + draft.product().getStock() + " restantes)",
-                        ownerId
-                ));
-            }
-        }
 
         List<Long> saleIds = savedSales.stream().map(ShSale::getId).toList();
         BigDecimal totalAmount = sales.stream()

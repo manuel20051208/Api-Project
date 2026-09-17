@@ -34,4 +34,7 @@ public class ShProductCuponToAClient {
     @JoinColumn(name = "sh_product_id", nullable = false)
     @JsonIgnore
     private SecondHandProduct product;
+
+    @Column(name = "usage_limit")
+    private Integer usageLimit;
 }

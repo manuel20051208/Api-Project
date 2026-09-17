@@ -1,6 +1,5 @@
 package com.apiproject.services.general;
 
-import com.apiproject.DTOs.Admin.NotificationEventDTO;
 import com.apiproject.DTOs.General.*;
 import com.apiproject.config.CacheConstants;
 import com.apiproject.entities.admin.Cupon;
@@ -18,7 +17,6 @@ import com.apiproject.repositories.general.ProductRepository;
 import com.apiproject.repositories.general.SaleItemRepository;
 import com.apiproject.repositories.general.SaleRepository;
 import com.apiproject.services.admin.CuponService;
-import com.apiproject.services.admin.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
@@ -39,7 +37,6 @@ import static org.springframework.http.HttpStatus.*;
 @Service
 @RequiredArgsConstructor
 public class SaleService {
-    private final NotificationService notificationService;
     private final SaleItemRepository saleItemRepository;
     private final ProductRepository productRepository;
     private final ClientRepository clientRepository;
@@ -51,7 +48,7 @@ public class SaleService {
 
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = CacheConstants.CLIENT_HISTORY, key = "#authenticatedClientId"),
+            @CacheEvict(value = CacheConstants.CLIENT_HISTORY, allEntries = true),
             @CacheEvict(value = CacheConstants.DASHBOARD, allEntries = true)
     })
     public PurchaseResponseDTO purchase(PurchaseRequestDTO requestDTO, Long authenticatedClientId) {
@@ -115,6 +112,7 @@ public class SaleService {
                     .collect(Collectors.toMap(d -> d.product().getId(), SaleDraft::adminId, (a, b) -> a));
             coupon = cuponService.resolveForCart(
                     requestDTO.cuponCode(),
+                    client.getId(),
                     productIds,
                     productOwnerByProductId::get);
         }
@@ -123,15 +121,19 @@ public class SaleService {
                 : new HashSet<>(coupon.elegibleProductIds());
 
         // Crea una venta individual por producto/admin con el descuento proporcional si hay cupon.
+        Cupon cuponRef = coupon == null ? null : cuponRepository.getReferenceById(coupon.cuponId());
         List<Sale> sales = new ArrayList<>(saleDrafts.size());
         for (SaleDraft draft : saleDrafts) {
             Sale sale = new Sale();
             sale.setUserClient(client);
             sale.setHora(now);
             sale.setUserAdmin(productOwner(draft));
-            sale.setTotalAmount(elegibles.contains(draft.product().getId())
+            boolean eligible = elegibles.contains(draft.product().getId());
+            sale.setTotalAmount(eligible
                     ? applyDiscount(draft.subtotal(), coupon)
                     : applyDiscount(draft.subtotal(), null));
+            sale.setDiscount(draft.subtotal().subtract(sale.getTotalAmount()));
+            sale.setCupon(eligible ? cuponRef : null);
             sales.add(sale);
         }
 
@@ -151,7 +153,6 @@ public class SaleService {
         if (coupon != null) {
             cuponService.redeem(coupon);
 
-            Cupon cuponRef = cuponRepository.getReferenceById(coupon.cuponId());
             couponApplied = CuponAppliedDTO.fromEntity(cuponRef);
 
             CuponUsedByClients usage = new CuponUsedByClients();
@@ -165,26 +166,6 @@ public class SaleService {
         List<PurchaseItemResponseDTO> responseItems = saleItems.stream()
                 .map(this::toPurchaseItemResponse)
                 .toList();
-
-        for (SaleDraft draft : saleDrafts) {
-            notificationService.push(draft.adminId(), new NotificationEventDTO(
-                    "VENTA_NUEVA",
-                    "Nueva venta por $" + draft.subtotal(),
-                    draft.adminId()
-            ));
-        }
-
-        // Notifica stock bajo al admin dueño del producto despues de descontar la compra.
-        for (SaleDraft draft : saleDrafts) {
-            Product product = draft.product();
-            if (product.getStock() <= 5) {
-                notificationService.push(draft.adminId(), new NotificationEventDTO(
-                        "STOCK_BAJO",
-                        "Stock bajo: " + product.getName() + " (" + product.getStock() + " restantes)",
-                        draft.adminId()
-                ));
-            }
-        }
 
         // Limpia las caches de cada admin afectado al final de la compra.
         affectedAdminIds.forEach(this::evictAdminCaches);

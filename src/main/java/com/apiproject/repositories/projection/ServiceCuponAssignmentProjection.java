@@ -13,4 +13,5 @@ public interface ServiceCuponAssignmentProjection {
     LocalDateTime getCuponDateLimit();
     Long getServiceId();
     String getServiceName();
+    Integer getUsageLimit();
 }

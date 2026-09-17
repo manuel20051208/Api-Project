@@ -1,7 +1,9 @@
 package com.apiproject.entities.general;
 
+import com.apiproject.entities.admin.SecondHandCupon;
 import com.apiproject.entities.admin.UserAdmin;
 import com.apiproject.entities.client.UserClient;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +35,14 @@ public class ShSale {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal discount = BigDecimal.ZERO;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cupon_id")
+    @JsonIgnore
+    private SecondHandCupon cupon;
 
     @Column(name = "created_at")
     private LocalDateTime hora;

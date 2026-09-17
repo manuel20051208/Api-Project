@@ -33,4 +33,7 @@ public class ServiceCuponToAClient {
     @JoinColumn(name = "service_id", nullable = false)
     @JsonIgnore
     private ServiceOffered service;
+
+    @Column(name = "usage_limit")
+    private Integer usageLimit;
 }

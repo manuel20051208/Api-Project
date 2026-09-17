@@ -280,8 +280,15 @@ public class SecondHandCuponService {
         return ids == null ? new LinkedHashSet<>() : new LinkedHashSet<>(ids);
     }
 
-    /** Persiste el uso de un cupón SH hecho durante una compra (lo invoca ShSaleService). */
+    /** Persiste el uso de un cupón SH hecho durante una compra (lo invoca ShSaleService).
+     * Incrementa el contador: filtra por id del cupón + id del cliente + admin dueño,
+     * toma el último valor acumulado y le suma 1. */
     public void registerUsage(ShCuponUsedByClients usage) {
+        Long cuponId = usage.getCupon().getId();
+        Long clientId = usage.getClientUser().getId();
+        Long adminId = usage.getCupon().getUserAdmin() != null ? usage.getCupon().getUserAdmin().getId() : null;
+        long used = shCuponUsedByClientsRepository.usageCountByCuponAndClient(cuponId, clientId, adminId);
+        usage.setUsageCount(Math.toIntExact(used + 1));
         shCuponUsedByClientsRepository.save(usage);
     }
 

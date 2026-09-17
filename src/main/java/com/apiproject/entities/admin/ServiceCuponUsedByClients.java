@@ -1,7 +1,6 @@
 package com.apiproject.entities.admin;
 
 import com.apiproject.entities.client.UserClient;
-import com.apiproject.entities.general.ShSale;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,8 +15,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "sh_cupons_used_by_clients")
-public class ShCuponUsedByClients {
+@Table(name = "services_cupons_used_by_clients")
+public class ServiceCuponUsedByClients {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,19 +27,14 @@ public class ShCuponUsedByClients {
     private UserClient clientUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sale_id")
+    @JoinColumn(name = "service_cupon_id", nullable = false)
     @JsonIgnore
-    private ShSale sale;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cupon_id", nullable = false)
-    @JsonIgnore
-    private SecondHandCupon cupon;
+    private ServiceCupon serviceCupon;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    /** Contador acumulado de usos del cliente con ese cupon (1..N), para el calculo final sin COUNT(*). */
+    /** Contador acumulado de usos del cliente con ese cupon de servicio (1..N). */
     @Column(name = "usage_count")
     private Integer usageCount;
 }

@@ -73,7 +73,7 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
                      JOIN secondhand_cupons sc ON sc.id = spct.sh_cupons_id
                      JOIN secondhand_product sp ON sp.id = spct.sh_product_id
                      LEFT JOIN (
-                        SELECT client_user, cupon_id, COUNT(*) AS used_count
+                        SELECT client_user, cupon_id, MAX(usage_count) AS used_count
                         FROM sh_cupons_used_by_clients
                         GROUP BY client_user, cupon_id
                      ) used ON used.client_user = spct.client_id AND used.cupon_id = spct.sh_cupons_id

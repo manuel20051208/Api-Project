@@ -1,5 +1,6 @@
 package com.apiproject.controllers.admin;
 
+import com.apiproject.DTOs.Admin.CouponAssignmentResponseDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentRequestDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentUpdateRequestDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponRequestDTO;
@@ -109,6 +110,15 @@ public class ServiceCuponController {
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
         return serviceCuponService.findAssignmentsByClient(authenticatedUser.id(), clientId);
+    }
+
+    @Operation(summary = "Asignaciones de un cupón de servicio con usageLimit y usedCount (diálogo Clientes)")
+    @GetMapping("/{cuponId}/assignments")
+    public List<CouponAssignmentResponseDTO> findAssignmentsWithUsageByCupon(
+            @PathVariable Long cuponId,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return serviceCuponService.findAssignmentsWithUsageByCupon(authenticatedUser.id(), cuponId);
     }
 
     @Operation(summary = "Eliminar una asignación de servicio específica")

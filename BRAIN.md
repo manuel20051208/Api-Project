@@ -13,7 +13,7 @@ API REST de **inventario y ventas** (`ApiJuegoInventario`) para una tienda con:
 - Compra con **tarjetas simuladas**.
 - **Dashboard de métricas** y **reportes Excel/PDF** por admin.
 - Autenticación **JWT** + **OAuth2 con Google**.
-- Notificaciones en tiempo real por **SSE**.
+- Caché de cupones y productos (SSE/notificaciones retirado temporalmente; se planea un servicio de notificaciones aparte).
 
 ## 2. Stack técnico
 
@@ -82,21 +82,21 @@ ApiProject/
 | `SecurityConfig` | Cadena de filtros, CORS (solo `http://localhost:3000`), reglas por ruta/rol, OAuth2 |
 | `CloudinaryConfig` | Bean Cloudinary |
 | `SwaggerConfig` | OpenAPI |
-| `CacheConstants` | Constantes de caché |
+| `CacheConstants` | Constantes de caché (incluye `CUPONS`, `CUPON_ASSIGNMENTS`, `CLIENT_CUPONS`) |
 
 ### controllers/
-- **admin/**: `DashboardController` (métricas + excel/pdf), `UserController` (login/register/admin/modify/upload-profile), `ProductImageController` (upload/list/delete imágenes), `NotificationController` (SSE stream), `ClientsSummaryViewController`, `SalesItemViewController`, `CuponController` (CRUD + validate cupones), `SecondHandCuponController` (CRUD + validate cupones SH), `ServiceOfferedController` (CRUD servicios), `ServiceCuponController` (CRUD cupones de servicios), `SecondHandProductImageController` (imágenes segunda mano).
+- **admin/**: `DashboardController` (métricas + excel/pdf), `UserController` (login/register/admin/modify/upload-profile), `ProductImageController` (upload/list/delete imágenes), `ClientsSummaryViewController`, `SalesItemViewController`, `CuponController` (CRUD + validate + assign + **send** cupones), `SecondHandCuponController` (CRUD + validate cupones SH), `ServiceOfferedController` (CRUD servicios), `ServiceCuponController` (CRUD cupones de servicios), `SecondHandProductImageController` (imágenes segunda mano).
 - **client/**: `ClientControllers` (login/register/modify/fotos/tarjetas/user-data/history).
 - **general/**: `ProductController` (catálogo + CRUD), `SaleController` (purchase con `cuponCode` opcional, refresh), `ShProductController` (catálogo + CRUD segunda mano), `ShSaleController` (purchase segunda mano + historiales client/admin).
 
 ### services/
-- **admin/**: `UserServiceTest`, `DashboardService`, `ProductImageService`, `NotificationService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`, `CuponService` (CRUD + `resolveForCart`/`redeem`/`registerUsage`), `SecondHandCuponService` (espejo SH), `ServiceOfferedService`, `ServiceCuponService`, `SecondHandProductImageService`.
+- **admin/**: `UserServiceTest`, `DashboardService`, `ProductImageService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`, `CuponService` (CRUD + `resolveForCart`/`redeem`/`registerUsage` + asignación y **send a cliente**), `SecondHandCuponService` (espejo SH), `ServiceOfferedService`, `ServiceCuponService`, `SecondHandProductImageService`.
 - **client/**: `ClientService`.
 - **general/**: `ProductService`, `SaleService`, `SaleItemService`, `SecondHandProductService`, `ShSaleService`.
 - **reportGenerator/**: `ReportService` (interfaz), `ExcelService`, `PdfService`.
 
 ### entities/
-- **admin/**: `UserAdmin` → tabla `users`; `ProductImage` → `product_image`; `ReportDashboard` (vista `report_view_dashboard`); `Cupon` → `cupons`; `ProductCuponApplied` → `product_cupons_applied`; `CuponUsedByClients` → `cupons_used_by_clients`; `SecondHandCupon` → `secondhand_cupons`; `SecondHandProductCuponsApplied` → `secondhand_product_cupons_applied`; `ShCuponUsedByClients` → `sh_cupons_used_by_clients`; `SecondHandProductImage` → `secondhand_product_images`; `ServiceOffered` → `services_offered`; `ServiceCupon` → `services_cupon`.
+- **admin/**: `UserAdmin` → tabla `users`; `ProductImage` → `product_image`; `ReportDashboard` (vista `report_view_dashboard`); `Cupon` → `cupons`; `ProductCuponApplied` → `product_cupons_applied`; `CuponUsedByClients` → `cupons_used_by_clients`; `SecondHandCupon` → `secondhand_cupons`; `SecondHandProductCuponsApplied` → `secondhand_product_cupons_applied`; `ShCuponUsedByClients` → `sh_cupons_used_by_clients`; `ServiceCuponUsedByClients` → `services_cupons_used_by_clients`; `SecondHandProductImage` → `secondhand_product_images`; `ServiceOffered` → `services_offered`; `ServiceCupon` → `services_cupon`.
 - **client/**: `UserClient` → `clients`; `PaymentCard` → `payment_cards`.
 - **general/**: `Product` → `products`; `Sale` → `sales`; `SalesItem` → `sale_items`; `SecondHandProduct` → `secondhand_product`; `ShSale` → `sh_sales`; `ShSalesItem` → `sh_sales_item`.
 
@@ -145,13 +145,15 @@ Base `/api` (salvo dashboard). Auth: `Authorization: Bearer <token>`.
 | `GET /dashboard-controller/excel` · `/pdf` | ADMIN | Reportes |
 | `GET /sales-items/show-with-no-restrinction` · `/show-with-limits` · `/client` · `/product/` | ADMIN | Historial ventas |
 | `GET /client-show-summary/getNames/{userId}` · `/name/{userId}` · `/email/{userId}` | ADMIN | Resumen clientes |
-| `GET /notification/stream` | ADMIN | SSE notificaciones |
+| `GET /notification/stream` ~~SSE~~ | Retirado (se reemplazará por servicio de notificaciones) |
 | `POST/GET/PUT/DELETE /cupons` + `/cupons/my` | ADMIN | CRUD cupones (request: `{cuponCode, cuponDateLimit, discount, quantity, productIds[]}`) |
+| `POST /cupons/assign` | ADMIN | Asignar cupón a clientes o a todos (`{cuponId, clientIds[], assignToAll, usageLimit}`; `usageLimit` obligatorio > 0) |
+| `POST /cupons/send` | ADMIN | Enviar cupón ya creado a **un** cliente (`{clientId, cuponId, usageLimit}`); crea la asignación cupón×producto×cliente |
 | `GET /cupons/validate?code=&productId=` | Auth | Validar cupón para un producto |
 | `POST/GET/PUT/DELETE /sh-cupons` + `validate?code=&productId=` | ADMIN/Auth | Ídem para segunda mano (`shCuponCode`, `shProductIds[]`) |
 | `POST /services` · `/services/my` · `PUT/DELETE /services/{id}` | ADMIN | CRUD servicios ofrecidos (`{nameOfService, valueOfService, descriptionOfService}`) |
 | `GET /services/catalog/{ownerId}?search=` | Auth | Catálogo público de servicios de una tienda |
-| `POST/GET/PUT/DELETE /services-cupons` + `GET /services-cupons/validate/{ownerId}?code=` | ADMIN/Auth | Cupones de servicio (`serviceCuponCode`) |
+| `POST/GET/PUT/DELETE /services-cupons` + `GET /services-cupons/validate/{ownerId}?code=` + `GET /services-cupons/{cuponId}/assignments` | ADMIN/Auth | Cupones de servicio (`serviceCuponCode`); asignaciones con usageLimit+usedCount |
 | `GET /sh-product/search/active?category=&search=` | Público | Catálogo SH (tarjetas con ownerName + primera imagen) |
 | `GET /sh-product/my` · `GET /sh-product/{id}` | ADMIN | Productos SH propios |
 | `POST /sh-product/saveShProduct` · `/deleteSafe` · `PUT /update/{id}` | ADMIN | CRUD SH (body = entidad; response DTO) |
@@ -184,7 +186,7 @@ response: `{ saleId, saleIds, clientId, totalAmount, createdAt, items:[{ product
 
 ## 7. Base de datos (PostgreSQL)
 
-El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones versionadas en `src/main/resources/db/migration/` (V1__schema_inicial.sql = tablas+índices+vistas; V2__add_color_config.sql = enum `color_types` + `color_config` en `users`/`clients`). Modelo visual en `db/schema.dbml` (solo referencia, no ejecutable).
+El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones versionadas en `src/main/resources/db/migration/` (V1__schema_inicial.sql = tablas+índices+vistas; V2__add_color_config.sql = enum `color_types` + `color_config` en `users`/`clients`; V4__add_discount_and_coupon_on_sales.sql = `discount`+`cupon_id` FK en `sales`/`sh_sales`, `usage_limit` en tablas de asignación de cupones, recrea `view_of_client_history`; V5__add_discount_columns_to_clients_summary.sql = `clients_summary` con `total_discount` + `total_spent_discount`; V6__rebuild_client_history_from_sales.sql = `view_of_client_history` desde `sales` con `subtotal`, `total_amount` real, `discount` y `cupon_code`; V7__add_usage_count_on_cupons_used.sql = `usage_count` en `cupons_used_by_clients`/`sh_cupons_used_by_clients` (contador acumulado) + tabla espejo `services_cupons_used_by_clients`). Modelo visual en `db/schema.dbml` (solo referencia, no ejecutable).
 
 - `spring.jpa.hibernate.ddl-auto=validate` — Hibernate solo valida; cualquier cambio se hace con una migración nueva (nunca tocar migraciones ya aplicadas).
 - En BD ya existente (p.ej. la de Render): `baseline-on-migrate=true` + `baseline-version=0` hace que Flyway cree `flyway_schema_history` y ejecute **todas** las migraciones pendientes (V1 es idempotente/no destructivo).
@@ -201,7 +203,8 @@ El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones ver
 | `sale_items` | FKs `sales` CASCADE; `state IN ('COMPLETED','HANGING','CANCELLED')`, `quantity > 0` |
 | `cupons` | Cupón por % de descuento; FK `users`; `quantity NULL = ilimitado` |
 | `product_cupons_applied` | N:M `cupons`↔`products`, UNIQUE(cupons_id, product_id) |
-| `cupons_used_by_clients` | Uso real: FK `clients`, `sales`, `cupons`; se registra 1 fila por compra con cupón |
+| `cupons_used_by_clients` | Uso real: FK `clients`, `sales`, `cupons`; 1 fila por compra con cupón; `usage_count` acumulado (1..N) por cupón+cliente desde V7 |
+| `services_cupons_used_by_clients` | Espejo de usos de cupones de servicio (V7): FK `clients`, `services_cupon`; `usage_count` acumulado |
 | `secondhand_product` | Espejo de products + `time_of_use TIMESTAMP`, `level_of_secondhand_product BIGINT` |
 | `secondhand_product_images` | Como product_image + `url TEXT` y `user_id` (paridad con la tabla real) |
 | `secondhand_cupons` | Igual que cupons pero `sh_cupon_code`; aplica a productos SH |
@@ -251,6 +254,7 @@ El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones ver
 - `PurchaseRequestDTO` tiene `clientId`, `userId` (lista, sin uso actual), `items` y `cuponCode` (opcional).
 - **Regla de cupones en compra** (normal y SH): si se envía `cuponCode`, el cupón debe estar vigente (`cupon_date_limit`) y tener usos disponibles (`quantity`, `NULL` = ilimitado). El cupón pertenece a un **solo admin** y aplica descuento **únicamente a los productos del carrito de ese admin** que estén vinculados al cupón (`product_cupons_applied`); se **permite carrito multi-vendedor** (los productos de otros admins se cobran completos). `quantity` es el **nº de productos que cubre por compra**; si el carrito trae más elegibles que `quantity`, solo se descuentan los primeros `quantity`. Se bloquea con `FOR UPDATE`, se descuenta 1 uso por compra (`redeem`) y se registra la fila en `*_used_by_clients`. El descuento es un porcentaje sobre cada subtotal elegible.
 - **Consultas nuevas siempre native query**; respuestas con DTO o projection (nunca `Object[]` — las asignaciones de cupones usan proyecciones de interfaz). Bloqueos de stock/cupones SH con `FOR UPDATE`.
+- **BD real vs migraciones**: en la BD desplegada las FKs de normales `product_cupon_to_a_client` (`fk_product_client_cupon`) y `cupons_used_by_clients` (`fk_used_cupon`) **no tienen `ON DELETE CASCADE`** (constraints legacy de un esquema previo; el V1 sí lo declara). Por eso `CuponService.delete` borra explícitamente asignaciones (`deleteByCuponId`), usos (`CuponUsedByClientsRepository.deleteByCuponId`) y enlaces N:M antes de borrar el cupón. SH y servicios sí cascadean en la BD real.
 - **Flyway como única fuente de verdad del esquema**. Nunca editar una migración ya aplicada; añadir una nueva `V<n>__descripcion.sql`. `color_config` en `users`/`clients` es enum nativo `color_types` (`@JdbcTypeCode(SqlTypes.NAMED_ENUM)`).
 - Puertos: DB host `5433` (mapeado a `5432` en el contenedor), API `8080`.
 - CORS solo para localhost:3000.

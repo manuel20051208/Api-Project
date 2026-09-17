@@ -322,8 +322,15 @@ public class CuponService {
         return ids == null ? new LinkedHashSet<>() : new LinkedHashSet<>(ids);
     }
 
-    /** Persiste un uso real del cupón realizado durante una compra (lo invoca SaleService). */
+    /** Persiste un uso real del cupón realizado durante una compra (lo invoca SaleService).
+     * Incrementa el contador: filtra por id del cupón + id del cliente + admin dueño,
+     * toma el último valor acumulado y le suma 1. */
     public void registerUsage(CuponUsedByClients usage) {
+        Long cuponId = usage.getCupon().getId();
+        Long clientId = usage.getClientUser().getId();
+        Long adminId = usage.getCupon().getUserAdmin() != null ? usage.getCupon().getUserAdmin().getId() : null;
+        long used = cuponUsedByClientsRepository.usageCountByCuponAndClient(cuponId, clientId, adminId);
+        usage.setUsageCount(Math.toIntExact(used + 1));
         cuponUsedByClientsRepository.save(usage);
     }
 

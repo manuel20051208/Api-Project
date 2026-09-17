@@ -1,5 +1,6 @@
 package com.apiproject.services.admin;
 
+import com.apiproject.DTOs.Admin.CouponAssignmentResponseDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentRequestDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentUpdateRequestDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponRequestDTO;
@@ -8,14 +9,17 @@ import com.apiproject.DTOs.Admin.ServiceCuponToClientResponseDTO;
 import com.apiproject.DTOs.General.CuponValidationResponseDTO;
 import com.apiproject.entities.admin.ServiceCupon;
 import com.apiproject.entities.admin.ServiceCuponToAClient;
+import com.apiproject.entities.admin.ServiceCuponUsedByClients;
 import com.apiproject.entities.admin.ServiceOffered;
 import com.apiproject.entities.client.UserClient;
 import com.apiproject.exceptions.ResourceNotFoundException;
 import com.apiproject.repositories.admin.ServiceCuponRepository;
 import com.apiproject.repositories.admin.ServiceCuponToAClientRepository;
+import com.apiproject.repositories.admin.ServiceCuponUsedByClientsRepository;
 import com.apiproject.repositories.admin.ServiceOfferedRepository;
 import com.apiproject.repositories.admin.UserRepository;
 import com.apiproject.repositories.client.ClientRepository;
+import com.apiproject.repositories.projection.CouponAssignmentProjection;
 import com.apiproject.repositories.projection.ServiceCuponAssignmentProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,6 +43,7 @@ import static org.springframework.http.HttpStatus.*;
 public class ServiceCuponService {
     private final ServiceCuponRepository serviceCuponRepository;
     private final ServiceCuponToAClientRepository serviceCuponToAClientRepository;
+    private final ServiceCuponUsedByClientsRepository serviceCuponUsedByClientsRepository;
     private final ServiceOfferedRepository serviceOfferedRepository;
     private final UserRepository userRepository;
     private final ClientRepository clientRepository;
@@ -283,5 +288,36 @@ public class ServiceCuponService {
                 p.getServiceName(),
                 p.getUsageLimit()
         );
+    }
+
+    /** Asignaciones de un cupón de servicio con uso (usageLimit + usedCount) para el diálogo "Clientes" del admin. */
+    @Transactional(readOnly = true)
+    public List<CouponAssignmentResponseDTO> findAssignmentsWithUsageByCupon(Long adminId, Long cuponId) {
+        return serviceCuponToAClientRepository.findAssignmentsWithUsageByAdminAndCupon(adminId, cuponId).stream()
+                .map(this::toCouponAssignmentDto)
+                .toList();
+    }
+
+    /** Proyección con uso -> DTO del diálogo "Clientes" de servicios (usageLimit nullable, usedCount siempre numérico). */
+    private CouponAssignmentResponseDTO toCouponAssignmentDto(CouponAssignmentProjection p) {
+        return new CouponAssignmentResponseDTO(
+                p.getId(),
+                p.getClientName(),
+                p.getClientEmail(),
+                p.getUsageLimit(),
+                p.getUsedCount(),
+                p.getProductName()
+        );
+    }
+
+    /** Persiste un uso real de un cupón de servicio (espejo de normal/SH).
+     * Incrementa el contador: filtra por id del cupón + id del cliente + admin dueño. */
+    public void registerUsage(ServiceCuponUsedByClients usage) {
+        Long cuponId = usage.getServiceCupon().getId();
+        Long clientId = usage.getClientUser().getId();
+        Long adminId = usage.getServiceCupon().getUserAdmin() != null ? usage.getServiceCupon().getUserAdmin().getId() : null;
+        long used = serviceCuponUsedByClientsRepository.usageCountByCuponAndClient(cuponId, clientId, adminId);
+        usage.setUsageCount(Math.toIntExact(used + 1));
+        serviceCuponUsedByClientsRepository.save(usage);
     }
 }

@@ -73,7 +73,7 @@ public interface ProductCuponToAClientRepository extends JpaRepository<ProductCu
                      JOIN cupons ct ON ct.id = pct.cupon_id
                      JOIN products p ON p.id = pct.product_id
                      LEFT JOIN (
-                        SELECT client_user, cupon_id, COUNT(*) AS used_count
+                        SELECT client_user, cupon_id, MAX(usage_count) AS used_count
                         FROM cupons_used_by_clients
                         GROUP BY client_user, cupon_id
                      ) used ON used.client_user = pct.client_id AND used.cupon_id = pct.cupon_id

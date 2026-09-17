@@ -39,4 +39,8 @@ public class CuponUsedByClients {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    /** Contador acumulado de usos del cliente con ese cupon (1..N), para el calculo final sin COUNT(*). */
+    @Column(name = "usage_count")
+    private Integer usageCount;
 }

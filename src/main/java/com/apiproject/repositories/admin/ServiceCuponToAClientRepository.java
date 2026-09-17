@@ -1,6 +1,7 @@
 package com.apiproject.repositories.admin;
 
 import com.apiproject.entities.admin.ServiceCuponToAClient;
+import com.apiproject.repositories.projection.CouponAssignmentProjection;
 import com.apiproject.repositories.projection.ServiceCuponAssignmentProjection;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -112,4 +113,28 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
             @Param("adminId") Long adminId,
             @Param("clientId") Long clientId,
             @Param("serviceId") Long serviceId);
+
+    /** Asignaciones de un cupón de servicio del admin con usage_limit y usos reales por cliente (diálogo "Clientes"). */
+    @Query(value = """
+            SELECT sct.id,
+                   c.full_name AS client_name,
+                   c.email AS client_email,
+                   sct.usage_limit AS usage_limit,
+                   COALESCE(used.used_count, 0) AS used_count,
+                   so.name_of_service AS product_name
+            FROM service_cupon_to_a_client sct
+                     JOIN clients c ON c.id = sct.client_id
+                     JOIN services_cupon sc ON sc.id = sct.service_cupon_id
+                     JOIN services_offered so ON so.id = sct.service_id
+                     LEFT JOIN (
+                        SELECT client_user, service_cupon_id, MAX(usage_count) AS used_count
+                        FROM services_cupons_used_by_clients
+                        GROUP BY client_user, service_cupon_id
+                     ) used ON used.client_user = sct.client_id AND used.service_cupon_id = sct.service_cupon_id
+            WHERE sc.user_id = :adminId AND sct.service_cupon_id = :cuponId
+            ORDER BY sct.id DESC
+            """, nativeQuery = true)
+    List<CouponAssignmentProjection> findAssignmentsWithUsageByAdminAndCupon(
+            @Param("adminId") Long adminId,
+            @Param("cuponId") Long cuponId);
 }

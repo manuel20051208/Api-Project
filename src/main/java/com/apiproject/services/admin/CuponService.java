@@ -1,8 +1,11 @@
 package com.apiproject.services.admin;
 
+import com.apiproject.config.CacheConstants;
+import com.apiproject.DTOs.Admin.CouponAssignmentResponseDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentRequestDTO;
 import com.apiproject.DTOs.Admin.CuponRequestDTO;
 import com.apiproject.DTOs.Admin.CuponResponseDTO;
+import com.apiproject.DTOs.Admin.CuponSendRequestDTO;
 import com.apiproject.DTOs.Admin.ProductCuponToClientResponseDTO;
 import com.apiproject.DTOs.General.CuponValidationResponseDTO;
 import com.apiproject.entities.admin.Cupon;
@@ -15,9 +18,13 @@ import com.apiproject.exceptions.ResourceNotFoundException;
 import com.apiproject.repositories.admin.*;
 import com.apiproject.repositories.client.ClientRepository;
 import com.apiproject.repositories.general.ProductRepository;
+import com.apiproject.repositories.projection.CouponAssignmentProjection;
 import com.apiproject.repositories.projection.CuponAdminProjection;
 import com.apiproject.repositories.projection.ProductCuponAssignmentProjection;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -55,6 +62,15 @@ public class CuponService {
      * Primero valida el request y que el admin sea dueño de todos los productos;
      * luego guarda el cupón y persiste los enlaces N:M (product_cupons_applied).
      */
+    /**
+     * Crea un cupón del admin autenticado y lo vincula a sus productos.
+     * Primero valida el request y que el admin sea dueño de todos los productos;
+     * luego guarda el cupón y persiste los enlaces N:M (product_cupons_applied).
+     */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CUPONS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CUPON_ASSIGNMENTS, allEntries = true)
+    })
     @Transactional
     public CuponResponseDTO create(CuponRequestDTO request, Long adminId) {
         validateRequest(request);
@@ -74,6 +90,7 @@ public class CuponService {
 
     /** Lista los cupones del admin con los ids de productos aplicados (agregados con string_agg en SQL). */
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstants.CUPONS, key = "#adminId", sync = true)
     public List<CuponResponseDTO> findAllByOwner(Long adminId) {
         return cuponRepository.findAllByOwner(adminId).stream()
                 .map(this::toDto) // projection -> DTO, parseando el CSV de productIds
@@ -84,6 +101,11 @@ public class CuponService {
      * Actualiza un cupón propio. Usa LOCK (FOR UPDATE) para evitar ediciones en paralelo;
      * si el request trae productIds, reemplaza por completo los enlaces de productos.
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CUPONS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CUPON_ASSIGNMENTS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CLIENT_CUPONS, allEntries = true)
+    })
     @Transactional
     public CuponResponseDTO update(Long id, CuponRequestDTO request, Long adminId) {
         validateRequest(request);
@@ -104,13 +126,22 @@ public class CuponService {
                 productCuponRepository.findProductIdsByCuponId(cupon.getId()));
     }
 
-    /** Borra el cupón junto con sus enlaces a productos (previo chequeo de dueño). */
+    /** Borra el cupón junto con todas sus dependencias (asignaciones a clientes, usos y enlaces N:M). */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CUPONS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CUPON_ASSIGNMENTS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CLIENT_CUPONS, allEntries = true)
+    })
     @Transactional
     public void delete(Long id, Long adminId) {
         Cupon cupon = cuponRepository.lockById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cupon not found: " + id));
         requireOwner(cupon, adminId);
-        productCuponRepository.deleteByCuponId(id); // borra la N:M antes por la FK
+        // La BD real no tiene ON DELETE CASCADE en product_cupon_to_a_client ni
+        // cupons_used_by_clients: se limpia cada dependencia antes de borrar el cupón.
+        productCuponToAClientRepository.deleteByCuponId(id); // asignaciones cupón -> cliente
+        cuponUsedByClientsRepository.deleteByCuponId(id);    // usos reales del cupón
+        productCuponRepository.deleteByCuponId(id);          // enlaces N:M cupón <-> producto (FK cascade)
         cuponRepository.delete(cupon);
     }
 
@@ -139,12 +170,13 @@ public class CuponService {
      * admins (o no vinculados) se cobran completos. Bloquea la fila (FOR UPDATE).
      *
      * @param code              codigo del cupon
+     * @param clientId          id del cliente que canjea (para validar su limite de usos)
      * @param carritoProductIds ids de todos los productos del carrito
      * @param productoOwnerFn   funcion (productId -> adminId) que devuelve el dueño de cada producto
      * @return la resolucion con los ids de productos elegibles para descuento
      */
     @Transactional
-    public CouponResolution resolveForCart(String code, List<Long> carritoProductIds,
+    public CouponResolution resolveForCart(String code, Long clientId, List<Long> carritoProductIds,
                                            Function<Long, Long> productoOwnerFn) {
         // LOCK por código: dos compras simultáneas no pueden canjear el mismo cupón
         Cupon cupon = cuponRepository.lockByCode(code)
@@ -178,6 +210,13 @@ public class CuponService {
         if (quantity != null && elegibles.size() > quantity) {
             elegibles = elegibles.subList(0, quantity);
         }
+
+        // 4) Limite de usos por cliente: la asignacion puede limitar cuantas veces lo usa el cliente
+        productCuponToAClientRepository.findUsageLimitByClientAndCupon(clientId, cupon.getId())
+                .filter(limit -> cuponUsedByClientsRepository.countByCuponIdAndClientId(cupon.getId(), clientId) >= limit)
+                .ifPresent(limit -> {
+                    throw new ResponseStatusException(CONFLICT, "El cliente agoto sus usos del cupon");
+                });
 
         return new CouponResolution(cupon.getId(), cupon.getDiscount(), cuponOwnerId, elegibles);
     }
@@ -229,6 +268,9 @@ public class CuponService {
         }
         if (request.cuponCode().length() > 15) {
             throw new ResponseStatusException(BAD_REQUEST, "cuponCode no puede superar 15 caracteres");
+        }
+        if (!request.cuponCode().matches("[A-Za-z0-9]+")) {
+            throw new ResponseStatusException(BAD_REQUEST, "cuponCode solo puede contener letras y numeros");
         }
         if (request.cuponDateLimit() == null || request.cuponDateLimit().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(BAD_REQUEST, "cuponDateLimit debe ser una fecha futura");
@@ -291,10 +333,18 @@ public class CuponService {
      * Genera la combinación cupón x producto x cliente en product_cupon_to_a_client
      * y devuelve el listado completo de asignaciones del admin.
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CUPONS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CUPON_ASSIGNMENTS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CLIENT_CUPONS, allEntries = true)
+    })
     @Transactional
     public List<ProductCuponToClientResponseDTO> assignToClients(CuponAssignmentRequestDTO request, Long adminId) {
         if (request.cuponId() == null) {
             throw new ResponseStatusException(BAD_REQUEST, "cuponId es obligatorio");
+        }
+        if (request.usageLimit() == null || request.usageLimit() <= 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "usageLimit es obligatorio y debe ser mayor a cero");
         }
         Cupon cupon = cuponRepository.lockById(request.cuponId()) // LOCK para no duplicar asignaciones en paralelo
                 .orElseThrow(() -> new ResourceNotFoundException("Cupon not found: " + request.cuponId()));
@@ -328,6 +378,7 @@ public class CuponService {
                 assignment.setClient(client);
                 assignment.setCupon(cupon);
                 assignment.setProduct(product);
+                assignment.setUsageLimit(request.usageLimit());
                 assignments.add(assignment);
             }
         }
@@ -337,6 +388,7 @@ public class CuponService {
 
     /** Todas las asignaciones de los cupones del admin (para la vista de admin). */
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstants.CUPON_ASSIGNMENTS, key = "#adminId", sync = true)
     public List<ProductCuponToClientResponseDTO> findAllAssignmentsByAdmin(Long adminId) {
         return productCuponToAClientRepository.findAllByAdmin(adminId).stream()
                 .map(this::toAssignmentDto)
@@ -345,6 +397,7 @@ public class CuponService {
 
     /** Asignaciones del admin hacia un cliente concreto. */
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstants.CUPON_ASSIGNMENTS, key = "#adminId + '-' + #clientId", sync = true)
     public List<ProductCuponToClientResponseDTO> findAssignmentsByClient(Long adminId, Long clientId) {
         return productCuponToAClientRepository.findByAdminAndClient(adminId, clientId).stream()
                 .map(this::toAssignmentDto)
@@ -353,6 +406,7 @@ public class CuponService {
 
     /** Cupones asignados al cliente autenticado (para la app del cliente). */
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstants.CLIENT_CUPONS, key = "#clientId", sync = true)
     public List<ProductCuponToClientResponseDTO> findMyAssignments(Long clientId) {
         return productCuponToAClientRepository.findAllByClient(clientId).stream()
                 .map(this::toAssignmentDto)
@@ -361,13 +415,80 @@ public class CuponService {
 
     /** Asignaciones de un cupón concreto del admin. */
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstants.CUPON_ASSIGNMENTS, key = "#adminId + '-cupon-' + #cuponId", sync = true)
     public List<ProductCuponToClientResponseDTO> findAssignmentsByCupon(Long adminId, Long cuponId) {
         return productCuponToAClientRepository.findByAdminAndCupon(adminId, cuponId).stream()
                 .map(this::toAssignmentDto)
                 .toList();
     }
 
+    /** Asignaciones de un cupón con uso (usageLimit + usedCount) para el diálogo "Clientes" del admin. */
+    @Transactional(readOnly = true)
+    public List<CouponAssignmentResponseDTO> findAssignmentsWithUsageByCupon(Long adminId, Long cuponId) {
+        return productCuponToAClientRepository.findAssignmentsWithUsageByAdminAndCupon(adminId, cuponId).stream()
+                .map(this::toCouponAssignmentDto)
+                .toList();
+    }
+
+    /**
+     * Botón "enviar cupon": el admin manda un cupón ya creado a un cliente concreto.
+     * Crea la asignación cupón x producto x cliente (solo para ese cliente) y evita
+     * duplicados re-utilizando la fila existente para el mismo cupón y cliente.
+     */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CUPON_ASSIGNMENTS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CLIENT_CUPONS, key = "#requestDTO.clientId()")
+    })
+    @Transactional
+    public List<ProductCuponToClientResponseDTO> sendToClient(CuponSendRequestDTO requestDTO, Long adminId) {
+        if (requestDTO == null || requestDTO.clientId() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "El cliente es obligatorio para enviar el cupon");
+        }
+        if (requestDTO.cuponId() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "El cupon es obligatorio para enviarlo");
+        }
+        if (requestDTO.usageLimit() == null || requestDTO.usageLimit() <= 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "usageLimit es obligatorio y debe ser mayor a cero");
+        }
+
+        Cupon cupon = cuponRepository.lockById(requestDTO.cuponId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cupon not found: " + requestDTO.cuponId()));
+        requireOwner(cupon, adminId);
+
+        List<Long> productIds = productCuponRepository.findProductIdsByCuponId(cupon.getId());
+        if (productIds.isEmpty()) {
+            throw new ResponseStatusException(CONFLICT, "El cupon no tiene productos asociados");
+        }
+
+        UserClient client = clientRepository.getReferenceById(requestDTO.clientId());
+
+        // Re-uso: si el cupon ya estaba asignado a ese cliente, no se duplica la fila.
+        for (Long productId : productIds) {
+            boolean alreadyAssigned = productCuponToAClientRepository
+                    .findByAdminAndClientAndProduct(adminId, client.getId(), productId)
+                    .isPresent();
+            if (alreadyAssigned) {
+                continue;
+            }
+            ProductCuponToAClient assignment = new ProductCuponToAClient();
+            assignment.setClient(client);
+            assignment.setCupon(cupon);
+            assignment.setProduct(productRepository.getReferenceById(productId));
+            assignment.setUsageLimit(requestDTO.usageLimit());
+            productCuponToAClientRepository.save(assignment);
+        }
+
+        return productCuponToAClientRepository.findByAdminAndClient(adminId, client.getId()).stream()
+                .filter(p -> p.getCuponId().equals(cupon.getId()))
+                .map(this::toAssignmentDto)
+                .toList();
+    }
+
     /** Elimina una asignación puntual (previendo que el admin sea dueño del cupón). */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CUPON_ASSIGNMENTS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CLIENT_CUPONS, allEntries = true)
+    })
     @Transactional
     public void removeAssignment(Long assignmentId, Long adminId) {
         ProductCuponToAClient assignment = productCuponToAClientRepository.findById(assignmentId)
@@ -377,6 +498,10 @@ public class CuponService {
     }
 
     /** Elimina todas las asignaciones de un cupón (validando dueño). */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CUPON_ASSIGNMENTS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CLIENT_CUPONS, allEntries = true)
+    })
     @Transactional
     public void removeAllByCupon(Long cuponId, Long adminId) {
         Cupon cupon = cuponRepository.lockById(cuponId)
@@ -397,6 +522,19 @@ public class CuponService {
                 p.getDiscount(),
                 p.getCuponDateLimit(),
                 p.getProductId(),
+                p.getProductName(),
+                p.getUsageLimit()
+        );
+    }
+
+    /** Proyección con uso -> DTO del diálogo "Clientes" (usageLimit nullable, usedCount siempre numérico). */
+    private CouponAssignmentResponseDTO toCouponAssignmentDto(CouponAssignmentProjection p) {
+        return new CouponAssignmentResponseDTO(
+                p.getId(),
+                p.getClientName(),
+                p.getClientEmail(),
+                p.getUsageLimit(),
+                p.getUsedCount(),
                 p.getProductName()
         );
     }

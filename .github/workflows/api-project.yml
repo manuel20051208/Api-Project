@@ -107,7 +107,10 @@ jobs:
             set -e
             cd /home/ubuntu/Api-Project
 
-            git pull --ff-only
+            # La VM es un deploy point estatico: sincroniza forzado contra main.
+            # .env y uploads/ estan gitignored y no se tocan con reset --hard.
+            git fetch origin
+            git reset --hard origin/main
 
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 

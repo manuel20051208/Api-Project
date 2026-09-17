@@ -583,6 +583,7 @@ public class CuponService {
                 p.getClientEmail(),
                 p.getUsageLimit(),
                 p.getUsedCount(),
+                p.getUsageLimit() == null ? null : Math.max(0, p.getUsageLimit() - p.getUsedCount().intValue()),
                 p.getProductName()
         );
     }

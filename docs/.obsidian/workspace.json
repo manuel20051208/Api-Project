@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "c42f889160018563",
+        "id": "6a035ce832b0d08f",
         "type": "tabs",
         "children": [
           {
-            "id": "1f9227edb38c9521",
+            "id": "f0693517e0425afe",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Vista gráfica"
+              "type": "markdown",
+              "state": {
+                "file": "POR IMPLEMENTAR.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "POR IMPLEMENTAR"
             }
           }
         ]
@@ -181,13 +185,14 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "1f9227edb38c9521",
+  "active": "adbe7a15b7d9f112",
   "lastOpenFiles": [
-    "Endpoints API.md",
-    "Configuración.md",
-    "Arquitectura del Código.md",
-    "Sin nombre",
+    "diagrams/secuencia-reportes-factory.svg",
     "PROJECT_STRUCTURE.md",
-    "Esquema de Base de Datos.md"
+    "Configuración.md",
+    "Esquema de Base de Datos.md",
+    "Arquitectura del Código.md",
+    "Endpoints API.md",
+    "Sin nombre"
   ]
 }

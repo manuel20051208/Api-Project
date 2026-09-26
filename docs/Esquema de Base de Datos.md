@@ -2,7 +2,7 @@
 
 > Nota: [[PROJECT_STRUCTURE]] · Entidades en [[Arquitectura del Código#entities/]] · Consumida por [[Endpoints API]]
 
-PostgreSQL. El esquema se gestiona con **Flyway**: migraciones versionadas en `src/main/resources/db/migration/` (`V1__schema_inicial.sql` = tablas + índices + vistas; `V2__add_color_config.sql` = enum `color_types` + columna `color_config`). Modelo DBML (solo referencia visual): `src/main/resources/db/schema.dbml`. Configuración del datasource en [[Configuración]].
+PostgreSQL. El esquema se gestiona con **Flyway**: migraciones versionadas en `src/main/resources/db/migration/` (`V1__schema_inicial.sql` = tablas + índices + vistas; `V2__add_color_config.sql` = enum `color_types` + columna `color_config`; `V3__rankings_materialized_views.sql`; `V4__add_discount_and_coupon_on_sales.sql` = `discount` + `cupon_id` FK en `sales`/`sh_sales`, `usage_limit` en tablas de asignación de cupones y recreación de `view_of_client_history`; `V5__add_discount_columns_to_clients_summary.sql` = `clients_summary` con `total_discount` + `total_spent_discount`; `V6__rebuild_client_history_from_sales.sql` = `view_of_client_history` desde `sales` con `subtotal` + `total_amount` real + `discount` + `cupon_code`). Modelo DBML (solo referencia visual): `src/main/resources/db/schema.dbml`. Configuración del datasource en [[Configuración]].
 
 ## Tablas
 
@@ -13,7 +13,7 @@ PostgreSQL. El esquema se gestiona con **Flyway**: migraciones versionadas en `s
 | `payment_cards` | `id BIGSERIAL PK`, `client_id`, `card_holder_name`, `brand`, `last_four`, `active`, `created_at` | FK `client_id → clients(id) ON DELETE CASCADE`; `CHECK last_four ~ '^[0-9]{4}$'` |
 | `products` | `id BIGSERIAL PK`, `name`, `price DOUBLE`, `stock`, `category`, `description`, `active`, `id_users` | FK `id_users → users(id) ON DELETE SET NULL` |
 | `product_image` | `id BIGSERIAL PK`, `file_name`, `file_path`, `url TEXT`, `display_order`, `product_id`, `user_id` | FK `product_id → products(id) ON DELETE CASCADE`; FK `user_id → users(id) SET NULL`; `UNIQUE(product_id, display_order)` |
-| `sales` | `id BIGSERIAL PK`, `client_id`, `user_id`, `total_amount NUMERIC(10,2)`, `created_at` | FK `client_id → clients(id)`, FK `user_id → users(id)`, ambos `SET NULL` |
+| `sales` | `id BIGSERIAL PK`, `client_id`, `user_id`, `total_amount NUMERIC(10,2)`, `discount NUMERIC(10,2) DEFAULT 0`, `cupon_id`, `created_at` | FK `client_id → clients(id)`, FK `user_id → users(id)`, ambos `SET NULL`; FK `cupon_id → cupons(id) SET NULL` (nullable, cupón aplicado) |
 | `sale_items` | `id BIGSERIAL PK`, `sale_id`, `product_id`, `quantity`, `client_id`, `state`, `date` | FKs `sale_id → sales(id) CASCADE`, `product_id → products(id)`, `client_id → clients(id)`; `CHECK state IN ('COMPLETED','HANGING','CANCELLED')`, `CHECK quantity > 0` |
 
 Relaciones principales:
@@ -41,7 +41,7 @@ Agregadas en las migraciones Flyway. Todas las consultas JPA sobre estas tablas 
 | `secondhand_product_images` | `file_name`, `file_path`, `url TEXT`, `display_order`, `product_id`, `user_id` | FK `secondhand_product CASCADE`; `UNIQUE(product_id, display_order)` |
 | `secondhand_cupons` | igual que `cupons` pero código en `sh_cupon_code` | aplica solo a productos SH vía tabla de enlace |
 | `secondhand_product_cupons_applied` | `sh_cupons_id`, `sh_product_id` | `UNIQUE(sh_cupons_id, sh_product_id)` |
-| `sh_sales` / `sh_sales_item` | espejo de `sales` / `sale_items` | una venta por producto; items `COMPLETED` |
+| `sh_sales` / `sh_sales_item` | espejo de `sales` / `sale_items` | una venta por producto; items `COMPLETED`; `discount NUMERIC(10,2) DEFAULT 0`; FK `cupon_id → secondhand_cupons(id) SET NULL` |
 | `sh_cupons_used_by_clients` | igual estructura que `cupons_used_by_clients` | ⚠️ **FKs corregidas vs DBML**: `sale_id → sh_sales(id)`, `cupon_id → secondhand_cupons(id)` |
 
 ### Servicios ofrecidos
@@ -87,8 +87,8 @@ Se refrescan con `REFRESH MATERIALIZED VIEW CONCURRENTLY` (un `execute` por vist
 |---|---|---|
 | `view_of_sales` | Ventas detalladas (usuario, cliente, producto, cantidad, total calculado, estado, fecha) | [[Endpoints API#Historial de ventas (ADMIN)]] |
 | `view_of_dashboard` | Métricas mensuales del año actual por admin: `month_number`, `month_name`, `monthly_total`, `number_of_products`, `count_clients` | [[Endpoints API#Panel de administración (ADMIN)]] |
-| `clients_summary` | Resumen por cliente: `total_quantity`, `total_spent`, `latest_sale` | [[Endpoints API#Resumen de clientes (ADMIN)]] |
-| `view_of_client_history` | Historial de compras por cliente (nombre, email, dirección, producto, cantidad, total, estado, fecha) | [[Endpoints API#GET /client/user-payments — Historial de compras del cliente (CLIENT)]] |
+| `clients_summary` | Resumen por cliente: `total_quantity`, `total_spent`, `total_discount`, `total_spent_discount` (neto), `latest_sale` | [[Endpoints API#Resumen de clientes (ADMIN)]] |
+| `view_of_client_history` | Historial de compras por cliente (nombre, email, dirección, producto, cantidad, total, `discount`, `cupon_code` NULL si sin cupón, estado, fecha) | [[Endpoints API#GET /client/user-payments — Historial de compras del cliente (CLIENT)]] |
 | `report_view_dashboard` | Datos para reportes Excel/PDF del dashboard (cliente, producto, cantidad, total, estado, fecha, monto actual) | [[Endpoints API#GET /dashboard-controller/excel — Reporte en Excel (adjunto .xlsx)]] |
 
 Los índices `idx_sale_items_client_date` y `idx_sale_items_product_date` están pensados para que la paginación por cliente + fecha sea rápida; las vistas los aprovechan directamente.

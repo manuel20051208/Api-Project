@@ -143,17 +143,24 @@ Response `ClientResponseDTO`:
 ```
 
 ### GET /client/user-payments — Historial de compras del cliente (CLIENT)
-Response: `List<ClientHistoryProjection>` (vista `view_of_client_history` → [[Esquema de Base de Datos#Vistas]]):
+Query params: `page` (default `0`), `size` (default `10`, tope 100), `sort` (default `occurredAt,desc`).
+`sort` acepta `occurredAt,asc|desc` (o `occurred_at`) y ordena por la columna `occurred_at` de la vista.
+
+Response: `Page<ClientHistoryProjection>` (vista `view_of_client_history` → [[Esquema de Base de Datos#Vistas]]):
 ```json
-[
-  {
-    "saleItemId": 1, "clientId": 1, "clientName": "Juan Perez",
-    "clientEmail": "juan@mail.com", "saleId": 100, "userId": 1,
-    "productId": 10, "productName": "Mouse Gamer", "productCategory": "Perifericos",
-    "quantity": 2, "unitPrice": 25000.0, "totalAmount": 50000.0,
-    "state": "COMPLETED", "occurredAt": "2026-05-25T01:10:00"
-  }
-]
+{
+  "content": [
+    {
+      "saleItemId": 1, "clientId": 1, "clientName": "Juan Perez",
+      "clientEmail": "juan@mail.com", "saleId": 100, "userId": 1,
+      "productId": 10, "productName": "Mouse Gamer", "productCategory": "Perifericos",
+      "quantity": 2, "unitPrice": 25000.0, "totalAmount": 50000.0,
+      "state": "COMPLETED", "occurredAt": "2026-05-25T01:10:00"
+    }
+  ],
+  "totalElements": 87, "totalPages": 2, "number": 0, "size": 50,
+  "first": true, "last": false, "empty": false
+}
 ```
 
 ### PATCH `/client/modify` — Modificar datos del cliente (CLIENT)
@@ -326,6 +333,9 @@ Común a cupones normales, SH y de servicios:
 3. Usos disponibles: `quantity` > 0 (`NULL` = ilimitado).
 4. Se bloquea con `FOR UPDATE`, se descuenta 1 uso por compra (`redeem`) y se registra la fila en `cupons_used_by_clients` / `sh_cupons_used_by_clients`.
 5. El descuento es un **porcentaje** sobre cada subtotal.
+6. El código solo admite **letras y números** (`^[A-Za-z0-9]+$`, máx. 15).
+7. **Límite por cliente**: si la asignación define `usageLimit` (NULL = ilimitado) y ya se alcanzó (`COUNT` en `*_cupons_used_by_clients` por cliente), la compra falla con `409`.
+8. Al comprar con cupón, `sales`/`sh_sales` persiste `discount` (monto descontado) y `cupon_id`; el historial del cliente expone `discount` y `cuponCode` (NULL si no había cupón).
 
 ## Cupones de productos
 

@@ -1,7 +1,7 @@
 {
   ".opencode/opencode.json": {
-    "mtime": 1789173733.079895,
-    "ast_hash": "5a39a458b2f497582aba7f97eea21c1c",
+    "mtime": 1789322650.5853899,
+    "ast_hash": "67e385b45f7dabd4d75196f52248e3da",
     "semantic_hash": ""
   },
   ".opencode/plugins/graphify.js": {
@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1789170575.4119873,
-    "ast_hash": "545cb161e4d5d950935d262b59a3b1f7",
+    "mtime": 1789542982.2908325,
+    "ast_hash": "bc2bd79c82729b447e507ca6d132d7f3",
     "semantic_hash": ""
   },
   "API_FRONTEND_CONSUMPTION.txt": {
@@ -37,11 +37,6 @@
   "src/main/java/com/apiproject/DTOs/Admin/DashboardDTO.java": {
     "mtime": 1786300724.2031565,
     "ast_hash": "fa9857334d93688fc38fdfae91ec3c00",
-    "semantic_hash": ""
-  },
-  "src/main/java/com/apiproject/DTOs/Admin/NotificationEventDTO.java": {
-    "mtime": 1786300724.2041526,
-    "ast_hash": "fc4800a5a3c03372f549290428edbeae",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/DTOs/Admin/ProductImageDTO.java": {
@@ -145,8 +140,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/config/CacheConstants.java": {
-    "mtime": 1789170627.2666552,
-    "ast_hash": "de9e7d9b52845a358e4f6c66184ce046",
+    "mtime": 1789526691.7767043,
+    "ast_hash": "eb73f7f6a1270eaecda44196a9e8a5dc",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/config/CloudinaryConfig.java": {
@@ -155,8 +150,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/config/SecurityConfig.java": {
-    "mtime": 1789175119.723,
-    "ast_hash": "14f1387ce4540ea96de53722c7a524f4",
+    "mtime": 1789526883.165611,
+    "ast_hash": "127c5673058aafe5233c6677e4e0ac8c",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/config/SwaggerConfig.java": {
@@ -165,18 +160,13 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/ClientsSummaryViewController.java": {
-    "mtime": 1786300724.234329,
-    "ast_hash": "bc7a5f3d56d457ad7d1f82fa3e85182d",
+    "mtime": 1789534979.8097966,
+    "ast_hash": "a7ca46057dd93cba3cd0a13a444b3acc",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/DashboardController.java": {
     "mtime": 1789170627.2726853,
     "ast_hash": "5d9906b6d375d7a80928619d17993cfa",
-    "semantic_hash": ""
-  },
-  "src/main/java/com/apiproject/controllers/admin/NotificationController.java": {
-    "mtime": 1786300724.236607,
-    "ast_hash": "cca06c8001fede257b0f361961879116",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/ProductImageController.java": {
@@ -185,8 +175,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/SalesItemViewController.java": {
-    "mtime": 1786300724.2386224,
-    "ast_hash": "a1c41fece611c62eece9684f4161a6a1",
+    "mtime": 1789534970.849419,
+    "ast_hash": "6a07fa51104495b4e290b86536a7bb97",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/UserController.java": {
@@ -195,8 +185,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/client/ClientControllers.java": {
-    "mtime": 1786300724.2406235,
-    "ast_hash": "810285b95951f09697c766b846fec207",
+    "mtime": 1789582360.5825026,
+    "ast_hash": "34a2c6b05b47b9fd56829f3ce9a6c411",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/general/ProductController.java": {
@@ -240,8 +230,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/entities/general/Sale.java": {
-    "mtime": 1786455790.3858771,
-    "ast_hash": "309ee3cdbd90adaa359fdc8754f9c3d5",
+    "mtime": 1789536977.4599612,
+    "ast_hash": "57ef51676ab0beaa12c1067305f57afb",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/entities/general/SalesItem.java": {
@@ -305,8 +295,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/client/ClientRepository.java": {
-    "mtime": 1786300724.2659354,
-    "ast_hash": "f3c0de4c7898d29c2455aa3aa3c235c4",
+    "mtime": 1789534590.053801,
+    "ast_hash": "10fe97a0a3f8130bcf2ca6fcf95f82f2",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/client/PaymentCardRepository.java": {
@@ -315,7 +305,7 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/general/ProductRepository.java": {
-    "mtime": 1786300724.2682476,
+    "mtime": 1789276872.495,
     "ast_hash": "80140116f3432e06acbafdd8433d540f",
     "semantic_hash": ""
   },
@@ -330,8 +320,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/projection/ClientHistoryProjection.java": {
-    "mtime": 1786300724.2713284,
-    "ast_hash": "4dfdb630ffcd5a01564003398fcf1731",
+    "mtime": 1789543112.689563,
+    "ast_hash": "3517bf9bf5cbc1b28832895999426b07",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/projection/ClientLoginProjection.java": {
@@ -340,8 +330,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/projection/ClientSummaryProjection.java": {
-    "mtime": 1786300724.2743723,
-    "ast_hash": "d8da035b0c935d89b59bb09a2cb2fdfc",
+    "mtime": 1789541267.3979454,
+    "ast_hash": "d26907a92e39c78bbf9af2edac987b6a",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/projection/DashboardProjection.java": {
@@ -375,8 +365,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/security/JwtAuthenticationFilter.java": {
-    "mtime": 1786300724.2802525,
-    "ast_hash": "d0119b965736ff2d219cca2621693ab6",
+    "mtime": 1789357657.733214,
+    "ast_hash": "8dbe2a7267e32b28b3aac1247aa93a38",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/security/JwtService.java": {
@@ -397,11 +387,6 @@
   "src/main/java/com/apiproject/services/admin/DashboardService.java": {
     "mtime": 1789170627.3362699,
     "ast_hash": "2ebff568ac7768ae62fbed9e072684c2",
-    "semantic_hash": ""
-  },
-  "src/main/java/com/apiproject/services/admin/NotificationService.java": {
-    "mtime": 1786300724.2884495,
-    "ast_hash": "f90efc41e07bd92a6cf553ef3c85bc6e",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/ProductImageService.java": {
@@ -425,13 +410,13 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/client/ClientService.java": {
-    "mtime": 1789170627.347481,
-    "ast_hash": "69e770f98b8e68fc046e63705d10e7d6",
+    "mtime": 1789582368.8879075,
+    "ast_hash": "f07dc03fa0aedbc64e79a14aeb18b583",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/general/ProductService.java": {
-    "mtime": 1789170627.3507307,
-    "ast_hash": "22d9227985247064704333a8f5f371ed",
+    "mtime": 1789316687.073,
+    "ast_hash": "253f05668e71551b1a9bde3ecbc5d4b9",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/general/SaleItemService.java": {
@@ -440,8 +425,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/general/SaleService.java": {
-    "mtime": 1789170627.3531396,
-    "ast_hash": "c88edeac6014572f17b07e1b98b30bdd",
+    "mtime": 1789538570.232081,
+    "ast_hash": "4f8ad2d3c0e05d704e1318a57c97afc2",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/reportGenerator/ExcelService.java": {
@@ -465,8 +450,8 @@
     "semantic_hash": ""
   },
   "docker-compose.yml": {
-    "mtime": 1789188496.4680185,
-    "ast_hash": "ac08efb9e4af1b9c1d358354be4e6cff",
+    "mtime": 1789488254.978,
+    "ast_hash": "c3e38308b124823e699b4730bf38f992",
     "semantic_hash": ""
   },
   ".dbdiagram/settings.json": {
@@ -475,23 +460,23 @@
     "semantic_hash": ""
   },
   ".obsidian/app.json": {
-    "mtime": 1789170575.3978748,
+    "mtime": 1789543398.82973,
     "ast_hash": "99914b932bd37a50b983c5e7c90ae93b",
     "semantic_hash": ""
   },
   ".obsidian/appearance.json": {
-    "mtime": 1789170575.3978748,
+    "mtime": 1789543398.831191,
     "ast_hash": "99914b932bd37a50b983c5e7c90ae93b",
     "semantic_hash": ""
   },
   ".obsidian/core-plugins.json": {
-    "mtime": 1789170575.4028277,
-    "ast_hash": "5281aaad2c47e82830f5d93c3386a615",
+    "mtime": 1789543398.4026084,
+    "ast_hash": "7c877bea49eaeabb100563bd157b9051",
     "semantic_hash": ""
   },
   ".obsidian/workspace.json": {
-    "mtime": 1789170575.408591,
-    "ast_hash": "5df77802131dafd575d5a2d3eee998cf",
+    "mtime": 1789543497.2229967,
+    "ast_hash": "da922cd6b8fbdfb93e62e01d580e9752",
     "semantic_hash": ""
   },
   "docs/.obsidian/.obsidian/app.json": {
@@ -515,28 +500,28 @@
     "semantic_hash": ""
   },
   "docs/.obsidian/app.json": {
-    "mtime": 1789170575.428042,
+    "mtime": 1789543510.4084945,
     "ast_hash": "99914b932bd37a50b983c5e7c90ae93b",
     "semantic_hash": ""
   },
   "docs/.obsidian/appearance.json": {
-    "mtime": 1789170575.428042,
+    "mtime": 1789543510.411266,
     "ast_hash": "99914b932bd37a50b983c5e7c90ae93b",
     "semantic_hash": ""
   },
   "docs/.obsidian/core-plugins.json": {
-    "mtime": 1789170575.4300642,
-    "ast_hash": "5281aaad2c47e82830f5d93c3386a615",
+    "mtime": 1789543509.989639,
+    "ast_hash": "7c877bea49eaeabb100563bd157b9051",
     "semantic_hash": ""
   },
   "docs/.obsidian/graph.json": {
-    "mtime": 1789170575.4320793,
-    "ast_hash": "098dc4e64624a36866d05dfc35c0d56c",
+    "mtime": 1789537540.114,
+    "ast_hash": "da0efe3df3594d4c3a95e40c4565aa18",
     "semantic_hash": ""
   },
   "docs/.obsidian/workspace.json": {
-    "mtime": 1789170626.805747,
-    "ast_hash": "ebb9a463490f25c8c00048c194162cc4",
+    "mtime": 1789543516.3908162,
+    "ast_hash": "a40f6430322533a2620efec7cfdfb9b8",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/DTOs/Admin/CuponRequestDTO.java": {
@@ -620,13 +605,13 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/CuponController.java": {
-    "mtime": 1789170627.2706676,
-    "ast_hash": "415284814c8917858b27598a4a31cc39",
+    "mtime": 1789609747.312,
+    "ast_hash": "8b1dd7e3855bf03f90054bc5d124d59b",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/SecondHandCuponController.java": {
-    "mtime": 1789170627.2746868,
-    "ast_hash": "58d6727c469aed493304ed77ee110e6e",
+    "mtime": 1789609828.3768146,
+    "ast_hash": "726edecc85f6212c6a976e6226fbb581",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/SecondHandProductImageController.java": {
@@ -635,8 +620,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/ServiceCuponController.java": {
-    "mtime": 1789170627.2776856,
-    "ast_hash": "25fab438611a017d947e1a71378cc39d",
+    "mtime": 1789611228.3647854,
+    "ast_hash": "1619110b073e016aadfd3d0a9c16f35b",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/controllers/admin/ServiceOfferedController.java": {
@@ -660,8 +645,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/entities/admin/CuponUsedByClients.java": {
-    "mtime": 1789170627.2846022,
-    "ast_hash": "3ed0137ac7ff089834c118513e61ebab",
+    "mtime": 1789611051.5319602,
+    "ast_hash": "5d69348accf2466a4abfd371f3d46fef",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/entities/admin/ProductCuponApplied.java": {
@@ -695,8 +680,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/entities/admin/ShCuponUsedByClients.java": {
-    "mtime": 1789170627.2916148,
-    "ast_hash": "47615b56b12b28bdfd6f49021246073a",
+    "mtime": 1789611056.370107,
+    "ast_hash": "6ff74c73b2b9bd2e8122a92f3f669d8e",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/entities/general/SecondHandProduct.java": {
@@ -705,8 +690,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/entities/general/ShSale.java": {
-    "mtime": 1789170627.299091,
-    "ast_hash": "12b4a84155327a5f9c4909fc57dd0eef",
+    "mtime": 1789536983.1562781,
+    "ast_hash": "5b3ccdd42e5065620f6041917c6f4c57",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/entities/general/ShSalesItem.java": {
@@ -720,8 +705,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/CuponUsedByClientsRepository.java": {
-    "mtime": 1789170627.3054867,
-    "ast_hash": "42a716b42310bec34727cf9e948bccee",
+    "mtime": 1789611067.1274705,
+    "ast_hash": "6716ef224446c04063bb30d75182a811",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ProductCuponRepository.java": {
@@ -755,8 +740,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ShCuponUsedByClientsRepository.java": {
-    "mtime": 1789170627.3169677,
-    "ast_hash": "d9779f8d734d8f1d269a35b9c245b7b5",
+    "mtime": 1789611073.004474,
+    "ast_hash": "bec007b8b583c6ef107e1a949259d8a1",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/general/SecondHandProductRepository.java": {
@@ -765,8 +750,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/general/ShSaleItemRepository.java": {
-    "mtime": 1789170627.3216157,
-    "ast_hash": "d5d04c797eece369b0f19541c2ca9a63",
+    "mtime": 1789537253.4858327,
+    "ast_hash": "f4e8211223e88924a2e4ec17863f2dfb",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/general/ShSaleRepository.java": {
@@ -790,18 +775,18 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/projection/ShSaleHistoryProjection.java": {
-    "mtime": 1789170627.3281283,
-    "ast_hash": "62e3abb05760f55040c14a51f2cc7659",
+    "mtime": 1789537244.2486236,
+    "ast_hash": "a10d944a3026493da692e219123f1813",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/CuponService.java": {
-    "mtime": 1789170627.33427,
-    "ast_hash": "554827f0f96b4d122eee68f22d7ff258",
+    "mtime": 1789611135.9334705,
+    "ast_hash": "68d30b0a1951d967701e7ed40992ce16",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/SecondHandCuponService.java": {
-    "mtime": 1789170627.3386369,
-    "ast_hash": "46405ab7e4a39cc25edc33339c187913",
+    "mtime": 1789611140.6561415,
+    "ast_hash": "e96ce1b43640b8e6315e5d27d14ede81",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/SecondHandProductImageService.java": {
@@ -810,8 +795,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/ServiceCuponService.java": {
-    "mtime": 1789170627.3416057,
-    "ast_hash": "e97c17f57cebfeedc75d995c1afd8561",
+    "mtime": 1789611214.212939,
+    "ast_hash": "10e4088d967de1710b5f69f1153fb9a7",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/ServiceOfferedService.java": {
@@ -825,13 +810,13 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/general/ShSaleService.java": {
-    "mtime": 1789170627.3561397,
-    "ast_hash": "6d68030ae8378886a162771f0f1ef865",
+    "mtime": 1789537453.8801622,
+    "ast_hash": "e932468e86395535917d7b34d472d414",
     "semantic_hash": ""
   },
   "BRAIN.md": {
-    "mtime": 1789227321.43,
-    "ast_hash": "6892d30fe4e92de7ca669b87e8d41116",
+    "mtime": 1789611367.589772,
+    "ast_hash": "0f1167c41071d17b2161b74d2db7c0cc",
     "semantic_hash": ""
   },
   "README.md": {
@@ -840,28 +825,28 @@
     "semantic_hash": ""
   },
   "docs/Arquitectura del C\u00f3digo.md": {
-    "mtime": 1789227321.109,
-    "ast_hash": "1f20140424dc2a773204ae0d25749d0f",
+    "mtime": 1789527212.1458497,
+    "ast_hash": "a82bcaf026c0f55878b7b5bd9c4770fe",
     "semantic_hash": ""
   },
   "docs/Configuraci\u00f3n.md": {
-    "mtime": 1789191414.6145694,
-    "ast_hash": "d58d47c6233dd2f3e2d89f602d3d4393",
+    "mtime": 1789279067.1543946,
+    "ast_hash": "5fb5de7049ffe73764ae40085b1ca3f5",
     "semantic_hash": ""
   },
   "docs/Endpoints API.md": {
-    "mtime": 1789170626.811742,
-    "ast_hash": "b97d5313ae2e332003cb6dffb2faa303",
+    "mtime": 1789582447.5226102,
+    "ast_hash": "067946eb8b61de170c23b94d77cbb9c2",
     "semantic_hash": ""
   },
   "docs/Esquema de Base de Datos.md": {
-    "mtime": 1789188576.9139037,
-    "ast_hash": "b884c6badbcda9c584c0b07b15e7994b",
+    "mtime": 1789543210.0318584,
+    "ast_hash": "5a8bbc1999a703ff293b465d64b09c32",
     "semantic_hash": ""
   },
   "docs/PROJECT_STRUCTURE.md": {
-    "mtime": 1789170626.8157418,
-    "ast_hash": "ef47f4c406ce9978f23ad1ca5fd1c704",
+    "mtime": 1789542976.8190958,
+    "ast_hash": "afc47469cab14cb76bb79cd9b3ce53d0",
     "semantic_hash": ""
   },
   "docs/diagrams/authentication.html": {
@@ -880,23 +865,23 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/DTOs/Admin/CuponAssignmentRequestDTO.java": {
-    "mtime": 1789170627.2366464,
-    "ast_hash": "3eded765caa23a9ef83ebd2bce3393e2",
+    "mtime": 1789586687.031896,
+    "ast_hash": "d36875e1577e6e007376dc453a161ec7",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/DTOs/Admin/ProductCuponToClientResponseDTO.java": {
-    "mtime": 1789170627.239642,
-    "ast_hash": "2757bd7c2cc2f06afd0c88a6d3606e87",
+    "mtime": 1789586725.062318,
+    "ast_hash": "83a6459712cd315fe483b44d19f45587",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/DTOs/Admin/ServiceCuponToClientResponseDTO.java": {
-    "mtime": 1789170627.2436407,
-    "ast_hash": "d8182fa934a4309634ba6fbd13bb1aaa",
+    "mtime": 1789586727.0576227,
+    "ast_hash": "a0f537cf88ea56c5a7e3181893fce1ac",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/DTOs/Admin/ShProductCuponToClientResponseDTO.java": {
-    "mtime": 1789170627.2466402,
-    "ast_hash": "18d17de7e07d69446e1c21af944af398",
+    "mtime": 1789586726.0553527,
+    "ast_hash": "bfb617c95a9e09701f1dbf464a6f4e9f",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/DTOs/General/TheThreeBestClients.java": {
@@ -915,18 +900,18 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/entities/admin/ProductCuponToAClient.java": {
-    "mtime": 1789170627.286618,
-    "ast_hash": "92e7341d35d295c323840c4ff3f23e9a",
+    "mtime": 1789536988.0752666,
+    "ast_hash": "bda535c3b0c3bc578d2d8ec8d11d606f",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/entities/admin/ServiceCuponToAClient.java": {
-    "mtime": 1789170627.2906137,
-    "ast_hash": "2250c72490f384461541d3588ba9647e",
+    "mtime": 1789536990.3460765,
+    "ast_hash": "5fffbf686f4f40a76c11994e3651cc53",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/entities/admin/ShProductCuponToAClient.java": {
-    "mtime": 1789170627.2926161,
-    "ast_hash": "d21be3b2c8e40ff6086271b6d1363ab1",
+    "mtime": 1789536988.6854641,
+    "ast_hash": "925aa0fa7742d34f3ba5ada09ef88434",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/enums/ColorTypes.java": {
@@ -935,8 +920,8 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ProductCuponToAClientRepository.java": {
-    "mtime": 1789170627.307479,
-    "ast_hash": "0fe98e7986a4b9be3d9a933cdedf7b30",
+    "mtime": 1789611151.3032424,
+    "ast_hash": "4f54cf77fd840b2ac19d8c77a4ce2cbd",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/RankingsRepository.java": {
@@ -945,13 +930,13 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ServiceCuponToAClientRepository.java": {
-    "mtime": 1789170627.3159597,
-    "ast_hash": "e7389dad659ed5d9ad144d4adaf4addd",
+    "mtime": 1789611182.6102266,
+    "ast_hash": "ddc72c3f2e6c4f07600bf0024942fc06",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/admin/ShProductCuponToAClientRepository.java": {
-    "mtime": 1789170627.3187826,
-    "ast_hash": "33397c89dc7db9d74d360e88e905ae34",
+    "mtime": 1789611155.6632779,
+    "ast_hash": "50d3feab6a5f6fb2695c27b11b4ff3df",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/services/admin/RankingsService.java": {
@@ -970,18 +955,18 @@
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/projection/ProductCuponAssignmentProjection.java": {
-    "mtime": 1789170627.3251276,
-    "ast_hash": "254901b92e0cbb989c7d0657fb9f67ef",
+    "mtime": 1789586732.6170926,
+    "ast_hash": "875608f5a74275b6eb7f3246df63b62e",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/projection/ServiceCuponAssignmentProjection.java": {
-    "mtime": 1789170627.326125,
-    "ast_hash": "fcd95a7e8ff2a851381a73fb4e7bc5d5",
+    "mtime": 1789586734.143538,
+    "ast_hash": "14b9a070af67ea546056067ec52e606b",
     "semantic_hash": ""
   },
   "src/main/java/com/apiproject/repositories/projection/ShProductCuponAssignmentProjection.java": {
-    "mtime": 1789170627.3281283,
-    "ast_hash": "5b1aa1207fa4b96cf9392a15fcdbab42",
+    "mtime": 1789586733.4361892,
+    "ast_hash": "045d5cdc279b619ee264facfb0f71ba6",
     "semantic_hash": ""
   },
   "docs/diagrams/secuencia-catalogo-filtros.html": {
@@ -1005,8 +990,8 @@
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V1__schema_inicial.sql": {
-    "mtime": 1789240304.3350277,
-    "ast_hash": "e48473f4bc2bec31c8befe5d011c367b",
+    "mtime": 1789246127.1854408,
+    "ast_hash": "cfeeba7b885e27c8699c28bd589caec8",
     "semantic_hash": ""
   },
   "src/main/resources/db/migration/V2__add_color_config.sql": {
@@ -1020,13 +1005,13 @@
     "semantic_hash": ""
   },
   "src/test/java/com/apiproject/services/UserServiceTest.java": {
-    "mtime": 1789232396.614,
-    "ast_hash": "ea4959c1c501966f9bc8e96a9e7cd016",
+    "mtime": 1789255308.735,
+    "ast_hash": "5d3977b1ff3383321aa878b793cb85f4",
     "semantic_hash": ""
   },
   ".github/workflows/api-project.yml": {
-    "mtime": 1789240516.8421447,
-    "ast_hash": "5172f5cd076e2cca4602c060d4b970be",
+    "mtime": 1789482419.566,
+    "ast_hash": "e329d69facb13022b1c0ef5009b60f01",
     "semantic_hash": ""
   },
   "qodana.yaml": {
@@ -1037,6 +1022,61 @@
   "render.yaml": {
     "mtime": 1789188501.4165778,
     "ast_hash": "042d9d211278a517e303ac0cd5357b43",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/apiproject/DTOs/Admin/CuponSendRequestDTO.java": {
+    "mtime": 1789586687.697613,
+    "ast_hash": "50c49725744eaf2263ee931c3f8cefc5",
+    "semantic_hash": ""
+  },
+  "src/main/resources/db/migration/V4__add_discount_and_coupon_on_sales.sql": {
+    "mtime": 1789536971.6448967,
+    "ast_hash": "db1b7d44388ffdef9993b597bd9954d0",
+    "semantic_hash": ""
+  },
+  "src/main/resources/db/migration/V5__add_discount_columns_to_clients_summary.sql": {
+    "mtime": 1789541259.5477128,
+    "ast_hash": "72cc7a5ecf7e56795f4ea5c00df155c8",
+    "semantic_hash": ""
+  },
+  "src/main/resources/db/migration/V6__rebuild_client_history_from_sales.sql": {
+    "mtime": 1789543085.5976598,
+    "ast_hash": "27d2d37e2fcd16257ab3ef2b33eb6cb5",
+    "semantic_hash": ""
+  },
+  "docs/POR IMPLEMENTAR.md": {
+    "mtime": 1789586914.5409656,
+    "ast_hash": "87f2dd0debf58e9696aad8a64cdb2e6d",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/apiproject/DTOs/Admin/CouponAssignmentResponseDTO.java": {
+    "mtime": 1789581496.893043,
+    "ast_hash": "603b78ce751a6640af190b32f59a3e14",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/apiproject/repositories/projection/CouponAssignmentProjection.java": {
+    "mtime": 1789581495.8812819,
+    "ast_hash": "14cc860a5205012deae4524bf1c487a5",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/apiproject/DTOs/Admin/CuponAssignmentUpdateRequestDTO.java": {
+    "mtime": 1789609707.724664,
+    "ast_hash": "cd49c2e816f1def273b42e94dc3626b0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/apiproject/entities/admin/ServiceCuponUsedByClients.java": {
+    "mtime": 1789611061.7987523,
+    "ast_hash": "49a9c9479374df4edb51560b9bb310f4",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/apiproject/repositories/admin/ServiceCuponUsedByClientsRepository.java": {
+    "mtime": 1789611080.470505,
+    "ast_hash": "9645d0f5af7ed38a92ba81abc2fdac3b",
+    "semantic_hash": ""
+  },
+  "src/main/resources/db/migration/V7__add_usage_count_on_cupons_used.sql": {
+    "mtime": 1789611046.8687046,
+    "ast_hash": "cba2ad706a584e6e293afd05e7a3b12b",
     "semantic_hash": ""
   }
 }

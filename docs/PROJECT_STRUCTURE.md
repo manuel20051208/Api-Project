@@ -8,6 +8,7 @@ API de inventario y ventas (`ApiJuegoInventario`) construida con Spring Boot 3.5
 
 | Nota | Contenido |
 |---|---|
+| [[POR IMPLEMENTAR]] | Checklist de tareas y deuda técnica pendiente (revisar en cada sesión) |
 | [[Arquitectura del Código]] | Capas del código: config, controllers, entities, DTOs, repos, services, security |
 | [[Endpoints API]] | Todas las rutas con payloads de request/response |
 | [[Esquema de Base de Datos]] | Tablas, índices y vistas SQL |

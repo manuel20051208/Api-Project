@@ -19,7 +19,7 @@ Paquete base: `src/main/java/com/apiproject`. La API expuesta se documenta en [[
 ## controllers/
 | Paquete | Controladores |
 |---|---|
-| `admin/` | `DashboardController`, `UserController`, `ProductImageController`, `NotificationController` (SSE), `ClientsSummaryViewController`, `SalesItemViewController`, `CuponController`, `SecondHandCuponController`, `ServiceOfferedController`, `ServiceCuponController`, `SecondHandProductImageController`, `RankingsController` (`/api/rankings/*` con `best-clients` y `best-products`) |
+| `admin/` | `DashboardController`, `UserController`, `ProductImageController`, `ClientsSummaryViewController`, `SalesItemViewController`, `CuponController`, `SecondHandCuponController`, `ServiceOfferedController`, `ServiceCuponController`, `SecondHandProductImageController`, `RankingsController` (`/api/rankings/*` con `best-clients` y `best-products`) |
 | `client/` | `ClientControllers` |
 | `general/` | `ProductController`, `SaleController`, `ShProductController`, `ShSaleController` |
 
@@ -38,7 +38,7 @@ Las entidades mapean las tablas de [[Esquema de Base de Datos]].
 | Paquete | DTOs |
 |---|---|
 | `Auth/` | Login/Register (admin y client) con sus respuestas |
-| `Admin/` | `DashboardDTO`, `NotificationEventDTO`, `ProductImageDTO`, `SaleItemResponseDTO`, `SaleResponseDato`, `UserAdminDTO`, `UserResponseDTO`, `CuponRequestDTO`, `CuponResponseDTO`, `SecondHandCuponRequestDTO`, `SecondHandCuponResponseDTO`, `ServiceRequestDTO`, `ServiceResponseDTO`, `ServiceCuponRequestDTO`, `ServiceCuponResponseDTO`, `ShProductImageDTO` |
+| `Admin/` | `DashboardDTO`, `ProductImageDTO`, `SaleItemResponseDTO`, `SaleResponseDato`, `UserAdminDTO`, `UserResponseDTO`, `CuponRequestDTO`, `CuponResponseDTO`, `CuponSendRequestDTO`, `SecondHandCuponRequestDTO`, `SecondHandCuponResponseDTO`, `ServiceRequestDTO`, `ServiceResponseDTO`, `ServiceCuponRequestDTO`, `ServiceCuponResponseDTO`, `ShProductImageDTO` |
 | `Client/` | `ClientResponseDTO`, `ClientDescriptionAboutUsersDTO`, `PaymentCardRequestDTO`, `PaymentCardResponseDTO` |
 | `General/` | `ProductResponseDTO`, `PurchaseRequestDTO` (ahora con `cuponCode` opcional), `PurchaseResponseDTO` (con `originalTotal`/`discountApplied`), `PurchaseItemRequestDTO/ResponseDTO`, `ShProductResponseDTO`, `ShProductCardResponseDTO`, `ShPurchaseRequestDTO`, `ShPurchaseItemRequestDTO`, `ShPurchaseResponseDTO`, `ShPurchaseItemResponseDTO`, `CuponValidationResponseDTO`, `TheThreeBestClients`, `TheThreeBestProducts` |
 
@@ -63,7 +63,7 @@ Los repos consultan las vistas de [[Esquema de Base de Datos#Vistas]]. **Convenc
 ## services/
 | Paquete | Servicios |
 |---|---|
-| `admin/` | `UserServiceTest`, `DashboardService` (ahora delega en `RankingsService` para top clientes/productos), `ProductImageService`, `NotificationService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`, `CuponService`, `SecondHandCuponService`, `ServiceOfferedService`, `ServiceCuponService`, `SecondHandProductImageService`, `RankingsService` |
+| `admin/` | `UserServiceTest`, `DashboardService` (ahora delega en `RankingsService` para top clientes/productos), `ProductImageService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`, `CuponService` (CRUD + asignación + `send` a cliente), `SecondHandCuponService`, `ServiceOfferedService`, `ServiceCuponService`, `SecondHandProductImageService`, `RankingsService` |
 | `client/` | `ClientService` |
 | `general/` | `ProductService`, `SaleService` (ahora integra cupones en `purchase`), `SaleItemService`, `SecondHandProductService`, `ShSaleService` |
 | `reportGenerator/` | `ReportService`, `ExcelService`, `PdfService` |

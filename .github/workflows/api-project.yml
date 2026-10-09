@@ -39,10 +39,10 @@ jobs:
       URL_FOR_REQUESTING_AND_RESPONSIVES: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
-      - name: Configurar java 21
+      - name: Configurar java 25
         uses: actions/setup-java@v4
         with:
-          java-version: 21
+          java-version: 25
           distribution: 'temurin'
           cache: 'maven'
       - name: Correr tests
@@ -58,10 +58,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configurar Java 21
+      - name: Configurar Java 25
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
 

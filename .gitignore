@@ -36,3 +36,6 @@ build/
 .env
 uploads/products
 uploads/perfiles
+
+### Knowledge graph (artefacto generado por graphify; no versionar) ###
+graphify-out/

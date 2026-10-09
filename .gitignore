@@ -3,6 +3,7 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+.gitignore
 
 ### STS ###
 .apt_generated
@@ -39,3 +40,13 @@ uploads/perfiles
 
 ### Knowledge graph (artefacto generado por graphify; no versionar) ###
 graphify-out/
+
+### Editor / herramientas locales (no versionar) ###
+.obsidian/
+.dbdiagram/
+.opencode/
+qodana.yaml
+
+### Documentacion local (vault Obsidian; no versionar) ###
+docs/
+API_FRONTEND_CONSUMPTION.txt

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---------- Build ----------
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM maven:3-eclipse-temurin-25 AS build
 WORKDIR /build
 COPY pom.xml .
 # cache mount: reutiliza ~/.m2 entre builds -> Maven no re-descarga dependencias
@@ -10,13 +10,13 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn -B package -DskipTests
 
 # ---------- Extraer capas (mejor caché en builds posteriores) ----------
-FROM eclipse-temurin:21-jre-alpine AS extract
+FROM eclipse-temurin:25-jre-alpine AS extract
 WORKDIR /workspace
 COPY --from=build /build/target/ApiProject-0.0.1-SNAPSHOT.jar app.jar
 RUN java -Djarmode=layertools -jar app.jar extract
 
 # ---------- Runtime ----------
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 RUN apk add --no-cache curl postgresql-client \
     && addgroup -S app && adduser -S -G app app
 

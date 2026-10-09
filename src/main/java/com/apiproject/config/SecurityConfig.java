@@ -4,7 +4,6 @@ import com.apiproject.security.JwtAuthenticationFilter;
 import com.apiproject.security.OAuth2SuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +29,6 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
-@Slf4j
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
@@ -56,103 +54,99 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
-                            log.warn("401: endpoint sin autenticacion -> method={} uri={} msg={}",
-                                    request.getMethod(), request.getRequestURI(), authException.getMessage());
                             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token requerido o invalido");
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            log.warn("403: acceso denegado -> method={} uri={} msg={}",
-                                    request.getMethod(), request.getRequestURI(), accessDeniedException.getMessage());
                             response.sendError(HttpServletResponse.SC_FORBIDDEN, "No tienes permisos para este recurso");
                         })
                 )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html",
-                                "/actuator/health",
-                                "/oauth2/**",
-                                "/login/oauth2/**"
-                        ).permitAll()
-                        .requestMatchers(HttpMethod.POST,
-                                "/api/user/login",
-                                "/api/user/register",
-                                "/api/client/login",
-                                "/api/client/register"
-                        ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user/*/admin").permitAll()
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/product/search/active-with-images",
-                                "/api/product/search/id/**",
-                                "/api/product/search/category/**",
-                                "/api/product/search/name/**",
-                                "/api/product/activeProducts",
-                                "/api/product/*/admin"
-                        ).authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/product-images/**").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/api/user/upload-profile").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/client/upload-profile").hasRole("CLIENT")
-                        .requestMatchers(HttpMethod.GET, "/api/client/profile-photo").hasRole("CLIENT")
-                        .requestMatchers(HttpMethod.POST, "/api/product-images/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/product-images/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/sale/purchase").hasRole("CLIENT")
-                        .requestMatchers("/api/client/**")
-                        .hasRole("CLIENT")
-                        .requestMatchers(
-                                "/api/user/**",
-                                "/dashboard-controller/**",
-                                "/api/sales-items/**",
-                                "/api/client-show-summary/**",
-                                "/api/rankings/**"
-                        ).hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/product/search",
-                                "/api/product/search/with-images"
-                        ).hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST,
-                                "/api/product/saveProduct",
-                                "/api/product/deleteSafe"
-                        ).hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/product/update/**").hasRole("ADMIN")
-                        .requestMatchers("/api/product/**").hasRole("ADMIN")
-                        .requestMatchers("/api/sale/**").hasRole("ADMIN")
-                        // ===== Cupones (validaciones accesibles a clientes, gestion solo ADMIN) =====
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/cupons/validate",
-                                "/api/cupons/assignments/my",
-                                "/api/sh-cupons/validate"
-                        ).authenticated()
-                        .requestMatchers(
-                                "/api/cupons/**",
-                                "/api/sh-cupons/**",
-                                "/api/services-cupons/**"
-                        ).hasRole("ADMIN")
-                        // ===== Servicios ofrecidos =====
-                        .requestMatchers(HttpMethod.GET, "/api/services/catalog/*").authenticated()
-                        .requestMatchers("/api/services/**").hasRole("ADMIN")
-                        // ===== Productos de segunda mano =====
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/sh-product/search/active",
-                                "/api/sh-product-images/**"
-                        ).permitAll()
-                        .requestMatchers("/api/sh-product/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/sh-product-images/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/sh-product-images/**").hasRole("ADMIN")
-                        // ===== Ventas de segunda mano =====
-                        .requestMatchers(HttpMethod.POST, "/api/sh-sale/purchase").hasRole("CLIENT")
-                        .requestMatchers(HttpMethod.GET, "/api/sh-sale/client").hasRole("CLIENT")
-                        .requestMatchers("/api/sh-sale/**").hasRole("ADMIN")
-                        .anyRequest()
-                        .authenticated()
+                // sirve para empezar a validar el acceso a cada endpoint dependiendo del role, si esta autenticado
+                // o si puede acceder quien quiera
+                .authorizeHttpRequests(auth ->
+                        auth
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers(
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui.html",
+                                        "/actuator/health",
+                                        "/oauth2/**",
+                                        "/login/oauth2/**"
+                                ).permitAll()
+                                .requestMatchers(HttpMethod.POST,
+                                        "/api/user/login",
+                                        "/api/user/register",
+                                        "/api/client/login",
+                                        "/api/client/register"
+                                ).permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/user/*/admin").permitAll()
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/product/search/active-with-images",
+                                        "/api/product/search/id/**",
+                                        "/api/product/search/category/**",
+                                        "/api/product/search/name/**",
+                                        "/api/product/activeProducts",
+                                        "/api/product/*/admin"
+                                ).authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/product-images/**").permitAll()
+                                .requestMatchers(HttpMethod.PATCH, "/api/user/upload-profile").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PATCH, "/api/client/upload-profile").hasRole("CLIENT")
+                                .requestMatchers(HttpMethod.GET, "/api/client/profile-photo").hasRole("CLIENT")
+                                .requestMatchers(HttpMethod.POST, "/api/product-images/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/product-images/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/sale/purchase").hasRole("CLIENT")
+                                .requestMatchers("/api/client/**").hasRole("CLIENT")
+                                .requestMatchers(
+                                        "/api/user/**",
+                                        "/dashboard-controller/**",
+                                        "/api/sales-items/**",
+                                        "/api/client-show-summary/**",
+                                        "/api/rankings/**"
+                                ).hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/product/search",
+                                        "/api/product/search/with-images"
+                                ).hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST,
+                                        "/api/product/saveProduct",
+                                        "/api/product/deleteSafe"
+                                ).hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/product/update/**").hasRole("ADMIN")
+                                .requestMatchers("/api/product/**").hasRole("ADMIN")
+                                .requestMatchers("/api/sale/**").hasRole("ADMIN")
+                                // ===== Cupones (validaciones accesibles a clientes, gestion solo ADMIN) =====
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/cupons/validate",
+                                        "/api/cupons/assignments/my",
+                                        "/api/sh-cupons/validate"
+                                ).authenticated()
+                                .requestMatchers(
+                                        "/api/cupons/**",
+                                        "/api/sh-cupons/**",
+                                        "/api/services-cupons/**"
+                                ).hasRole("ADMIN")
+                                // ===== Servicios ofrecidos =====
+                                .requestMatchers(HttpMethod.GET, "/api/services/catalog/*").authenticated()
+                                .requestMatchers("/api/services/**").hasRole("ADMIN")
+                                // ===== Productos de segunda mano =====
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/sh-product/search/active",
+                                        "/api/sh-product-images/**"
+                                ).permitAll()
+                                .requestMatchers("/api/sh-product/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/sh-product-images/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/sh-product-images/**").hasRole("ADMIN")
+                                // ===== Ventas de segunda mano =====
+                                .requestMatchers(HttpMethod.POST, "/api/sh-sale/purchase").hasRole("CLIENT")
+                                .requestMatchers(HttpMethod.GET, "/api/sh-sale/client").hasRole("CLIENT")
+                                .requestMatchers("/api/sh-sale/**").hasRole("ADMIN")
+                                .anyRequest()
+                                .authenticated()
                 )
                 .oauth2Login(oauth2 ->
                         oauth2
                                 .successHandler(oAuth2SuccessHandler)
                                 .failureHandler((request, response, exception) -> {
-                                    log.error("301/302->frontend: fallo login google, uri={} msg={}",
-                                            request.getRequestURI(), exception.getMessage(), exception);
                                     String target = UriComponentsBuilder.fromUriString(URL)
                                             .queryParam("error", "google_login_failed")
                                             .queryParam("message", exception.getMessage() != null

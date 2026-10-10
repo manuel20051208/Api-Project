@@ -1,3 +1,12 @@
+# =====================================================================
+# NOTA DE USO ACTUALIZADA
+# Este archivo se usaba ANTES para hacer despliegue automatico en Render
+# (una nube). HOY el proyecto se despliega en una maquina virtual (EC2 de
+# AWS) via el workflow .github/workflows/api-project.yml + docker-compose.
+# Lo dejamos como referencia/Segunda opcion: si algun dia queres volver
+# a Render, este blueprint sigue siendo la forma de hacerlo (Render
+# Dashboard -> "New +" -> "Blueprint").
+# =====================================================================
 # Render Blueprint: despliega la base PostgreSQL y la API en un solo clic.
 # Crea las dos instancias desde Render Dashboard -> "New +" -> "Blueprint".
 databases:

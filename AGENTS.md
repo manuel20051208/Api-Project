@@ -8,9 +8,13 @@ Read `BRAIN.md` before answering any codebase question or making changes. It con
 
 Read `docs/POR IMPLEMENTAR.md` at the START of every session and remind the user which items are still pending. Update it as tasks get done (mark `- [x]`).
 
+> `docs/` está **gitignored** (vault solo local): si la carpeta no existe (p. ej. tras clonar), crearla a mano con su `POR IMPLEMENTAR.md`.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+> `graphify-out/` está **gitignored** (artefacto local, NO se versiona). Si no existe (tras clonar/borrarse), generarlo con `graphify update .`. Contenido "dirty" dentro de esa carpeta es esperable y no se commitea.
 
 When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
 
@@ -23,7 +27,7 @@ Rules:
 
 ## Obsidian docs
 
-`docs/` holds the human-readable Obsidian vault (MOC in `docs/PROJECT_STRUCTURE.md`). Keep it in sync with structural changes.
+`docs/` holds the human-readable Obsidian vault (MOC in `docs/PROJECT_STRUCTURE.md`). Está **gitignored (solo local)** — no se sube a GitHub; mantenerlo en sync local cuando cambie la estructura. Los **diagramas versionados** viven en `diagrams/` (antes `docs/diagrams/`).
 
 ## Arbol de estructura (navegacion directa)
 
@@ -102,6 +106,8 @@ Nota: OJO con nombre real `SaleItemViewRepository` y `SaleItemViewService` (NO S
 
 ## Git flow
 
-- Siempre ejecutar los tests antes de commitear.
+- Siempre ejecutar los tests antes de commitear. Requieren **Java 25+** (el enforcer del `pom.xml` exige `[25,)`); local hay JDK 26 (`mvn -B test`). El CI los corre con temurin 25 + Postgres 16 de servicio.
 - Si los tests pasan: hacer commit en `main` y hacer `git push origin main` automáticamente.
 - No commitear ni pushear si los tests fallan.
+- Push a `main` dispara **CI/CD**: GitHub Actions testea → construye la imagen Docker → GHCR → SSH a la VM (EC2) (`git reset --hard origin/main` + `docker compose pull/up`). `render.yaml` es la **segunda opción** (deploy en nube Render, ya no activo).
+- `graphify-out/`, `docs/` y `API_FRONTEND_CONSUMPTION.txt` están en `.gitignore`: NO se commitean. `diagrams/` SÍ se versiona.

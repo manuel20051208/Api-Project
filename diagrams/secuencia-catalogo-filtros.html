@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Secuencia · Catálogo y búsqueda</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>:root{--paper:#f5f5f5;--ink:#2d3142;--muted:#4f5d75;--soft:#7a8399;--rule:rgba(45,49,66,.16);--accent:#eb6c36;--tint:rgba(235,108,54,.08);--link:#2e5aa8}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Geist,sans-serif;padding:32px 36px}main{max-width:1180px;margin:auto}.eyebrow{font:500 8px 'Geist Mono',monospace;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin:0 0 12px}h1{font:400 40px 'Instrument Serif',serif;margin:0 0 8px}.sub{color:var(--muted);font-size:16px;margin:0 0 24px;line-height:1.5}.figure{overflow:auto}svg{min-width:1040px;width:100%;height:auto;display:block}.footer{border-top:1px solid var(--rule);margin-top:20px;padding-top:12px;color:var(--soft);font:400 8px 'Geist Mono',monospace;letter-spacing:.08em}</style>
+</head>
+<body><main><p class="eyebrow">SEQUENCE · CATALOG & FILTERS</p><h1>Catálogo y búsqueda de productos</h1><p class="sub">Cada consulta pasa por una capa de caché por clave. El endpoint paginado usa un patrón de dos pasos: primero IDs, luego imágenes — evita N+1.</p><div class="figure">
+<svg viewBox="0 0 1040 800" role="img" aria-labelledby="catalog-title catalog-desc" style="background:#f5f5f5"><title id="catalog-title">Secuencia de catálogo y búsqueda de productos</title><desc id="catalog-desc">Diagrama de secuencia que muestra cómo el frontend consulta productos activos, filtra por categoría y busca por nombre, con caché por clave en cada camino.</desc>
+<defs><marker id="c" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#2e5aa8"/></marker><marker id="r" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#4f5d75"/></marker><marker id="s" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#eb6c36"/></marker></defs>
+
+<!-- Actors -->
+<rect x="48" y="52" width="152" height="48" rx="6" fill="rgba(45,49,66,.10)" stroke="rgba(122,131,153,.50)"/><text x="124" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">Client</text><text x="124" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">FRONTEND</text>
+<rect x="248" y="52" width="176" height="48" rx="6" fill="var(--tint)" stroke="var(--accent)" stroke-width="1.2"/><text x="336" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">ProductController</text><text x="336" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">/product/*</text>
+<rect x="480" y="52" width="176" height="48" rx="6" fill="#fff" stroke="#2d3142"/><text x="568" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">ProductService</text><text x="568" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">@Cacheable</text>
+<rect x="712" y="52" width="176" height="48" rx="6" fill="rgba(45,49,66,.05)" stroke="#4f5d75"/><text x="800" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">PostgreSQL</text><text x="800" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">native queries</text>
+
+<!-- Lifelines -->
+<line x1="124" y1="100" x2="124" y2="728" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
+<line x1="336" y1="100" x2="336" y2="728" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
+<line x1="568" y1="100" x2="568" y2="728" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
+<line x1="800" y1="100" x2="800" y2="728" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
+
+<!-- Activation bars -->
+<rect x="332" y="132" width="8" height="440" fill="rgba(45,49,66,.08)" stroke="var(--muted)"/>
+<rect x="564" y="196" width="8" height="164" fill="rgba(45,49,66,.08)" stroke="var(--muted)"/>
+<rect x="796" y="260" width="8" height="36" fill="rgba(45,49,66,.08)" stroke="var(--muted)"/>
+<rect x="564" y="380" width="8" height="116" fill="rgba(45,49,66,.08)" stroke="var(--muted)"/>
+<rect x="796" y="412" width="8" height="36" fill="rgba(45,49,66,.08)" stroke="var(--muted)"/>
+
+<!-- PATH 1: Paginated catalog (two-step) -->
+<line x1="124" y1="148" x2="336" y2="148" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="230" y="136" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">GET /product/activeProducts?sizePage=6</text>
+<line x1="336" y1="212" x2="568" y2="212" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="452" y="200" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">findByActiveTrue(sizePage)</text>
+<line x1="568" y1="276" x2="800" y2="276" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="684" y="264" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">findActiveProductIds(Pageable)</text>
+<line x1="800" y1="316" x2="568" y2="316" stroke="var(--muted)" stroke-dasharray="5,4" marker-end="url(#r)"/>
+<text x="684" y="304" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">Page&lt;Long&gt; ids</text>
+<line x1="568" y1="340" x2="800" y2="340" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="684" y="328" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">findAllWithImagesByIdIn(ids)</text>
+<line x1="800" y1="356" x2="568" y2="356" stroke="var(--muted)" stroke-dasharray="5,4" marker-end="url(#r)"/>
+<text x="684" y="344" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">products + images</text>
+
+<!-- PATH 2: Category filter -->
+<line x1="124" y1="428" x2="336" y2="428" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="230" y="416" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">GET /product/search/category/{cat}</text>
+<line x1="336" y1="444" x2="568" y2="444" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="452" y="432" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">findAllByCategoryIgnoreCase(cat)</text>
+<line x1="568" y1="476" x2="800" y2="476" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="684" y="464" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">findAllByCategoryIgnoreCaseWithImages()</text>
+<line x1="800" y1="492" x2="568" y2="492" stroke="var(--muted)" stroke-dasharray="5,4" marker-end="url(#r)"/>
+<text x="684" y="480" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">products + images</text>
+
+<!-- Self: map to ProductResponseDTO -->
+<line x1="576" y1="540" x2="576" y2="564" stroke="var(--muted)"/><line x1="576" y1="564" x2="592" y2="564" stroke="var(--muted)"/><line x1="592" y1="564" x2="592" y2="540" stroke="var(--muted)" marker-end="url(#r)"/>
+<text x="612" y="556" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">map → DTO + cache</text>
+
+<!-- Return to controller -->
+<line x1="568" y1="588" x2="336" y2="588" stroke="var(--muted)" stroke-dasharray="5,4" marker-end="url(#r)"/>
+<text x="452" y="576" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">List&lt;ProductResponseDTO&gt;</text>
+
+<!-- Return to client -->
+<line x1="336" y1="620" x2="124" y2="620" stroke="var(--accent)" stroke-width="1.2" marker-end="url(#s)"/>
+<text x="230" y="608" text-anchor="middle" font-size="8" fill="var(--accent)" font-family="'Geist Mono'">200 OK · products[] + images</text>
+
+<!-- Cache note: annotation callout -->
+<rect x="44" y="660" width="320" height="48" rx="4" fill="rgba(235,108,54,.04)" stroke="rgba(235,108,54,.25)" stroke-width="0.8"/>
+<text x="60" y="680" font-size="8" fill="var(--accent)" font-family="'Geist Mono'" font-style="italic" letter-spacing=".06em">PRODUCTS_ACTIVE_PAGE · key=pageSize</text>
+<text x="60" y="696" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">Cada endpoint tiene su propia key de caché — cache evict al escribir</text>
+
+<!-- Legend -->
+<line x1="48" y1="744" x2="992" y2="744" stroke="var(--rule)"/>
+<text x="48" y="772" font-size="8" fill="var(--soft)" font-family="'Geist Mono'" letter-spacing=".12em">LEGEND</text>
+<line x1="120" y1="768" x2="160" y2="768" stroke="var(--link)" marker-end="url(#c)"/><text x="172" y="772" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">CALL</text>
+<line x1="240" y1="768" x2="280" y2="768" stroke="var(--muted)" stroke-dasharray="5,4" marker-end="url(#r)"/><text x="292" y="772" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">RETURN</text>
+<rect x="360" y="760" width="12" height="12" rx="2" fill="var(--tint)" stroke="var(--accent)"/><text x="384" y="772" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">FOCAL</text>
+<rect x="456" y="760" width="12" height="12" rx="4" fill="rgba(235,108,54,.04)" stroke="rgba(235,108,54,.25)"/><text x="480" y="772" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">CACHE NOTE</text>
+</svg></div><div class="footer">ApiProject · GET /api/product/* · @Cacheable con sync=true · Paginación en dos pasos (IDs → imágenes)</div></main></body></html>

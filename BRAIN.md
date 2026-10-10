@@ -19,16 +19,16 @@ API REST de **inventario y ventas** (`ApiJuegoInventario`) para una tienda con:
 
 | Capa | Tecnología |
 |---|---|
-| Lenguaje | Java 21 |
-| Framework | Spring Boot 3.5 (Web, Data JPA, Security, OAuth2, Actuator) |
+| Lenguaje | Java 25 |
+| Framework | Spring Boot 4.1.0 (Web MVC, Validation, Data JPA, Security, OAuth2, Cache, Actuator, Flyway starter) |
 | Base de datos | PostgreSQL 16 (dialecto PostgreSQL, vistas SQL) |
 | Seguridad | JWT (`jjwt 0.13.0`) + OAuth2 Google (dos registrations: `google-admin`, `google-client`) |
-| Docs | springdoc OpenAPI → Swagger UI en `/swagger-ui.html` |
+| Docs | springdoc OpenAPI (`springdoc-openapi-starter-webmvc-ui 3.1.1` → Swagger UI en `/swagger-ui.html`) |
 | Imágenes | Cloudinary (`cloudinary-http45`) |
 | Reportes | Apache POI (Excel) + OpenPDF (PDF) vía `ReportServiceFactory` |
-| Extras | Lombok, spring-dotenv (carga `.env`), caché (`@EnableCaching`) |
-| Build | Maven (enforcer: Java 21, Maven >= 3.8; perfil `security` con dependency-check) |
-| Deploy | Docker (`docker-compose` + multi-stage Dockerfile) |
+| Extras | Lombok, caché (`@EnableCaching`), `spring-boot-properties-migrator` (runtime) |
+| Build | Maven (enforcer: **Java 25+**, Maven >= 3.8; perfil `security` con dependency-check) |
+| Deploy | Docker multi-stage (Java 25) + **GitHub Actions** (test → imagen GHCR → deploy en EC2/VM). `render.yaml` = segunda opción (nube Render, ya no activo) |
 
 ## 3. Estructura de carpetas
 
@@ -52,10 +52,11 @@ ApiProject/
 │       └── schema.dbml # Modelo visual (diagrama)
 ├── src/test/java/     # ApiProjectApplicationTests, JwtServiceTest
 ├── uploads/           # perfiles/ y products/ (local, antes de Cloudinary)
-├── graphify-out/      # Knowledge graph (graph.json, GRAPH_REPORT.md)
-├── docs/              # Notas Obsidian conectadas ([[]]) — documentación visual
+├── graphify-out/      # Knowledge graph (graph.json, GRAPH_REPORT.md) — SOLO LOCAL, no versionado
+├── docs/              # Notas Obsidian ([[]]) — SOLO LOCAL, no versionado
+├── diagrams/          # Diagramas HTML/SVG versionados (antes en docs/diagrams/)
 ├── docker-compose.yml # Postgres (5433) + app (8080)
-├── Dockerfile         # maven build → temurin jre
+├── Dockerfile         # maven (Java 25) build → temurin 25 jre
 ├── pom.xml            # Dependencias y build
 └── AGENTS.md          # Instrucciones para agentes (este protocolo)
 ```
@@ -232,20 +233,23 @@ El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones ver
 
 ## 8. Configuración
 
-- `application.properties` → `spring.profiles.active=dev`.
-- Datasource: `jdbc:postgresql://localhost:5432/apiproject`; JPA show-sql + batch 50 + **`ddl-auto=validate`**; **Flyway** (`locations=classpath:db/migration`, `baseline-on-migrate=true`, `baseline-version=0`); multipart 30MB, OAuth2 Google (admin/client), Swagger on.
-- Variables `.env` (vía spring-dotenv): `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET_KEY`, `JWT_EXPIRATION_MS`, `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET`, `BASIC_AUTH_USERNAME/PASSWORD`, `GOOGLE_CLIENT_ID/SECRET`.
+- `application.properties` es la única fuente de config (sin perfiles adicionales versionados).
+- Datasource: `jdbc:postgresql://localhost:5432/apiproject` (en contenedor se inyecta `DB_URL`); JPA show-sql + batch 50 + **`ddl-auto=validate`**; **Flyway** (`locations=classpath:db/migration`, `baseline-on-migrate=true`, `baseline-version=0`); multipart 30MB, OAuth2 Google (admin/client), Swagger on.
+- Variables de entorno (locales: `.env` la lee `docker-compose`/shell; en CI y VM se inyectan directo; ya no hay spring-dotenv): `DB_URL` (`DB_HOST`+`DB_PORT`+`DB_NAME`), `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET_KEY`, `JWT_EXPIRATION_MS`, `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET`, `BASIC_AUTH_USERNAME/PASSWORD`, `GOOGLE_CLIENT_ID/SECRET`, `URL_FOR_REQUESTING_AND_RESPONSIVES` (CORS), `DB_SSLMODE`.
 
 ## 9. Docker
 
 - **docker-compose**: `db` postgres:16-alpine en `5433:5432` + `app` en `8080` (espera healthcheck de la DB, env desde `.env`). El esquema lo crea **Flyway** al arrancar la app (ya no hay initdb.d ni entrypoint con SQL).
-- **Dockerfile**: build `maven:3.9-eclipse-temurin-21` (`mvn package -DskipTests`) → runtime `eclipse-temurin:21-jre`. Las migraciones viajan dentro del jar (`db/migration`).
-- **entrypoint.sh**: solo espera a PostgreSQL, construye `DB_URL` y arranca la app.
+- **Dockerfile**: build `maven:3-eclipse-temurin-25` (`mvn package -DskipTests`) → runtime `eclipse-temurin:25-jre-alpine`. Las migraciones viajan dentro del jar (`db/migration`).
+- **entrypoint.sh**: espera a PostgreSQL, construye `DB_URL` y arranca la app (con comentarios en español).
+- **Despliegue real (VM)**: el workflow `.github/workflows/api-project.yml` corre en cada push a `main`: tests (Java 25) → `mvn package` → imagen Docker → GHCR → SSH a la EC2 (`git reset --hard origin/main` + `docker compose pull/up`). `render.yaml` es la segunda opción (nube Render) y ya no se usa.
 
 ## 10. Tests
 
-- `ApiProjectApplicationTests` — smoke de contexto.
+- `ApiProjectApplicationTests` — smoke de contexto (requiere Postgres).
 - `security/JwtServiceTest` — pruebas del JWT.
+- `services/UserServiceTest` — pruebas del UserService.
+- **Requisito**: Java 25+ (el enforcer exige `[25,)`; local hay JDK 26). El CI los corre con temurin 25 + Postgres 16 de servicio.
 
 ## 11. Convenciones y gotchas
 
@@ -258,10 +262,12 @@ El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones ver
 - **Flyway como única fuente de verdad del esquema**. Nunca editar una migración ya aplicada; añadir una nueva `V<n>__descripcion.sql`. `color_config` en `users`/`clients` es enum nativo `color_types` (`@JdbcTypeCode(SqlTypes.NAMED_ENUM)`).
 - Puertos: DB host `5433` (mapeado a `5432` en el contenedor), API `8080`.
 - CORS solo para localhost:3000.
-- Mantén el grafo actualizado tras cambios de código: `graphify update .`
+- Mantén el grafo **local** actualizado tras cambios de código: `graphify update .` (`graphify-out/` NO se versiona).
+- `docs/` y `API_FRONTEND_CONSUMPTION.txt` están **gitignored** (solo local). Los **diagramas** sí se versionan, en `diagrams/` (ver `.gitattributes`).
+- El deploy activo es la VM vía GitHub Actions; `render.yaml` es referencia (segunda opción, nube Render).
 
 ## 12. Referencias
 
 - Swagger: `http://localhost:8080/swagger-ui.html` · Health: `/actuator/health`
-- Notas Obsidian: `docs/` · Grafo: `graphify-out/` (`graphify query/path/explain`)
-- Frontend: `API_FRONTEND_CONSUMPTION.txt`
+- Notas Obsidian: `docs/` (solo local) · Grafo: `graphify-out/` (solo local; `graphify query/path/explain`) · Diagramas: `diagrams/`
+- Frontend: `API_FRONTEND_CONSUMPTION.txt` (solo local)

@@ -2,7 +2,7 @@
 
 API REST para gestionar el inventario, catálogo y ventas de una tienda. El proyecto permite administrar productos, recibir compras de clientes, consultar métricas y generar reportes en Excel o PDF.
 
-Construido con Java 21, Spring Boot 3.5 y PostgreSQL 16.
+Construido con Java 25, Spring Boot 4.1.0 y PostgreSQL 16.
 
 ## Funcionalidades
 
@@ -50,15 +50,15 @@ ReportServiceFactory.getService(type)
         +--> PdfService   --> reporte_usuarios.pdf
 ```
 
-Diagrama completo: [secuencia-reportes-factory.html](docs/diagrams/secuencia-reportes-factory.html)
+Diagrama completo: [secuencia-reportes-factory.html](diagrams/secuencia-reportes-factory.html)
 
 ## Stack tecnológico
 
 | Área | Tecnología |
 |---|---|
-| Lenguaje | Java 21 |
-| Framework | Spring Boot 3.5.16 |
-| API | Spring Web |
+| Lenguaje | Java 25 |
+| Framework | Spring Boot 4.1.0 |
+| API | Spring Web MVC |
 | Persistencia | Spring Data JPA / Hibernate |
 | Base de datos | PostgreSQL 16 |
 | Seguridad | Spring Security, JWT y OAuth2 Google |
@@ -71,7 +71,7 @@ Diagrama completo: [secuencia-reportes-factory.html](docs/diagrams/secuencia-rep
 
 ## Requisitos
 
-- Java 21
+- Java 25
 - Docker Desktop, recomendado para ejecutar la base de datos y la API
 - Maven 3.8 o superior si no se usa el wrapper
 - Credenciales de Cloudinary y Google OAuth2 para activar esas integraciones
@@ -155,7 +155,7 @@ Ejecutar pruebas:
 ./mvnw test
 ```
 
-El proyecto requiere Java 21 y Maven 3.8 o superior; estas versiones se validan automáticamente durante el build.
+El proyecto requiere Java 25 y Maven 3.8 o superior; estas versiones se validan automáticamente durante el build.
 
 ## Endpoints principales
 
@@ -179,7 +179,7 @@ Authorization: Bearer <jwt>
 | Ventas | `GET /api/sales-items/show-with-limits` | ADMIN | Consultar ventas paginadas |
 | Tiempo real | `GET /api/notification/stream` | ADMIN | Stream SSE de notificaciones |
 
-La lista completa de endpoints y payloads está en [API_FRONTEND_CONSUMPTION.txt](API_FRONTEND_CONSUMPTION.txt) y en Swagger.
+La lista completa de endpoints y payloads está en Swagger (y en el archivo local `API_FRONTEND_CONSUMPTION.txt`, que no se versiona).
 
 ## Flujo de compra
 
@@ -193,9 +193,9 @@ El endpoint `POST /api/sale/purchase` gestiona la compra completa de un cliente:
 6. **Notificaciones SSE**: envía `VENTA_NUEVA` y `STOCK_BAJO` (si stock ≤ 5) al admin afectado.
 7. **Evicción de caché**: limpia las claves de dashboard, ventas y historial del cliente.
 
-![Flujo de compra de productos](docs/diagrams/secuencia-compra.svg)
+![Flujo de compra de productos](diagrams/secuencia-compra.svg)
 
-Diagrama interactivo: [secuencia-compra.html](docs/diagrams/secuencia-compra.html)
+Diagrama interactivo: [secuencia-compra.html](diagrams/secuencia-compra.html)
 
 ## Catálogo y búsqueda de productos
 
@@ -213,9 +213,9 @@ El endpoint paginado usa un patrón de dos pasos: primero obtiene los IDs con `P
 
 Las escrituras (crear, actualizar, borrado suave) invalidan todas las claves de caché de productos.
 
-![Catálogo y búsqueda de productos](docs/diagrams/secuencia-catalogo-filtros.svg)
+![Catálogo y búsqueda de productos](diagrams/secuencia-catalogo-filtros.svg)
 
-Diagrama interactivo: [secuencia-catalogo-filtros.html](docs/diagrams/secuencia-catalogo-filtros.html)
+Diagrama interactivo: [secuencia-catalogo-filtros.html](diagrams/secuencia-catalogo-filtros.html)
 
 ## Reportes
 
@@ -226,13 +226,13 @@ Los reportes consultan la vista SQL `report_view_dashboard` y comparten la inter
 - `ReportServiceFactory` decide qué implementación utilizar.
 - Ambos formatos devuelven una respuesta HTTP con `Content-Disposition: attachment`.
 
-![Secuencia de generación de reportes con ReportServiceFactory](docs/diagrams/secuencia-reportes-factory.svg)
+![Secuencia de generación de reportes con ReportServiceFactory](diagrams/secuencia-reportes-factory.svg)
 
-Diagrama interactivo: [secuencia-reportes-factory.html](docs/diagrams/secuencia-reportes-factory.html)
+Diagrama interactivo: [secuencia-reportes-factory.html](diagrams/secuencia-reportes-factory.html)
 
 ## Base de datos
 
-El esquema se encuentra en [schema-postgres.sql](src/main/resources/db/schema-postgres.sql) e incluye tablas y vistas para:
+El esquema se versiona con **Flyway** en [src/main/resources/db/migration](src/main/resources/db/migration) (migraciones `V1__…` → `V7__…`) y el modelo visual está en [schema.dbml](src/main/resources/db/schema.dbml). Incluye tablas y vistas para:
 
 - Usuarios administradores.
 - Clientes y tarjetas de pago simuladas.
@@ -264,21 +264,24 @@ src/main/java/com/apiproject/
 
 src/main/resources/
 ├── application.properties
-├── application-dev.properties
-└── db/schema-postgres.sql
+└── db/
+    ├── migration/       Migraciones Flyway (V1__… → V7__…)
+    └── schema.dbml      Modelo visual
 ```
 
 ## Documentación adicional
+
+> Las notas del vault `docs/` son **locales** (no se versionan en GitHub); los diagramas sí están versionados en `diagrams/`.
 
 - [Estructura del proyecto](docs/PROJECT_STRUCTURE.md)
 - [Arquitectura del código](docs/Arquitectura%20del%20Código.md)
 - [Endpoints de la API](docs/Endpoints%20API.md)
 - [Configuración](docs/Configuración.md)
 - [Esquema de base de datos](docs/Esquema%20de%20Base%20de%20Datos.md)
-- [Diagrama de autenticación](docs/diagrams/authentication.html)
-- [Diagrama de flujo de compra](docs/diagrams/secuencia-compra.html)
-- [Diagrama de catálogo y filtros](docs/diagrams/secuencia-catalogo-filtros.html)
-- [Diagrama de reportes con Factory](docs/diagrams/secuencia-reportes-factory.html)
+- [Diagrama de autenticación](diagrams/authentication.html) · [SVG](diagrams/authentication.svg)
+- [Diagrama de flujo de compra](diagrams/secuencia-compra.html) · [SVG](diagrams/secuencia-compra.svg)
+- [Diagrama de catálogo y filtros](diagrams/secuencia-catalogo-filtros.html) · [SVG](diagrams/secuencia-catalogo-filtros.svg)
+- [Diagrama de reportes con Factory](diagrams/secuencia-reportes-factory.html) · [SVG](diagrams/secuencia-reportes-factory.svg)
 
 ## Seguridad
 

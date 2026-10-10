@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Secuencia · Flujo de Compra</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>:root{--paper:#f5f5f5;--ink:#2d3142;--muted:#4f5d75;--soft:#7a8399;--rule:rgba(45,49,66,.16);--accent:#eb6c36;--tint:rgba(235,108,54,.08);--link:#2e5aa8}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Geist,sans-serif;padding:32px 36px}main{max-width:1180px;margin:auto}.eyebrow{font:500 8px 'Geist Mono',monospace;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin:0 0 12px}h1{font:400 40px 'Instrument Serif',serif;margin:0 0 8px}.sub{color:var(--muted);font-size:16px;margin:0 0 24px;line-height:1.5}.figure{overflow:auto}svg{min-width:1040px;width:100%;height:auto;display:block}.footer{border-top:1px solid var(--rule);margin-top:20px;padding-top:12px;color:var(--soft);font:400 8px 'Geist Mono',monospace;letter-spacing:.08em}</style>
+</head>
+<body><main><p class="eyebrow">SEQUENCE · PURCHASE FLOW</p><h1>Flujo de compra de productos</h1><p class="sub">Un cliente envía artículos (y opcionalmente un cupón). El servicio valida stock, bloquea filas con <code>FOR UPDATE</code>, aplica descuento si corresponde y notifica al admin vía SSE.</p><div class="figure">
+<svg viewBox="0 0 1280 1100" role="img" aria-labelledby="purchase-title purchase-desc" style="background:#f5f5f5"><title id="purchase-title">Secuencia de compra de productos</title><desc id="purchase-desc">Diagrama de secuencia del flujo completo de compra: validación, bloqueo de stock, persistencia, cupón opcional y notificación SSE al admin.</desc>
+<defs><marker id="c" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#2e5aa8"/></marker><marker id="r" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#4f5d75"/></marker><marker id="s" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#eb6c36"/></marker></defs>
+
+<!-- Actors -->
+<rect x="48" y="52" width="176" height="48" rx="6" fill="rgba(45,49,66,.10)" stroke="rgba(122,131,153,.50)"/><text x="136" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">Client</text><text x="136" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">FRONTEND</text>
+<rect x="280" y="52" width="176" height="48" rx="6" fill="var(--tint)" stroke="var(--accent)" stroke-width="1.2"/><text x="368" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">SaleController</text><text x="368" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">/sale/purchase</text>
+<rect x="512" y="52" width="176" height="48" rx="6" fill="#fff" stroke="#2d3142"/><text x="600" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">SaleService</text><text x="600" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">@Transactional</text>
+<rect x="744" y="52" width="176" height="48" rx="6" fill="rgba(45,49,66,.05)" stroke="#4f5d75"/><text x="832" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">PostgreSQL</text><text x="832" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">FOR UPDATE</text>
+<rect x="976" y="52" width="176" height="48" rx="6" fill="rgba(45,49,66,.03)" stroke="rgba(45,49,66,.30)"/><text x="1064" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">NotificationService</text><text x="1064" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">SSE · push()</text>
+
+<!-- Lifelines -->
+<line x1="136" y1="100" x2="136" y2="1028" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
+<line x1="368" y1="100" x2="368" y2="1028" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
+<line x1="600" y1="100" x2="600" y2="1028" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
+<line x1="832" y1="100" x2="832" y2="1028" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
+<line x1="1064" y1="100" x2="1064" y2="1028" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
+
+<!-- Activation bars -->
+<rect x="364" y="148" width="8" height="588" fill="rgba(45,49,66,.08)" stroke="var(--muted)"/>
+<rect x="596" y="196" width="8" height="516" fill="rgba(45,49,66,.08)" stroke="var(--muted)"/>
+<rect x="828" y="292" width="8" height="236" fill="rgba(45,49,66,.08)" stroke="var(--muted)"/>
+<rect x="1060" y="868" width="8" height="52" fill="rgba(45,49,66,.08)" stroke="var(--muted)"/>
+
+<!-- 1. Client → Controller: POST /sale/purchase -->
+<line x1="136" y1="164" x2="368" y2="164" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="252" y="152" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">POST /sale/purchase + JWT</text>
+
+<!-- 2. Controller → Service -->
+<line x1="368" y1="212" x2="600" y2="212" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="484" y="200" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">purchase(request, clientId)</text>
+
+<!-- 3. Service → DB: verify client + active card -->
+<line x1="600" y1="308" x2="832" y2="308" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="716" y="296" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">findClient + hasActiveCard</text>
+
+<!-- 4. DB → Service: client + card=true -->
+<line x1="832" y1="356" x2="600" y2="356" stroke="var(--muted)" stroke-dasharray="5,4" marker-end="url(#r)"/>
+<text x="716" y="344" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">client + true</text>
+
+<!-- 5. Service → DB: lock products -->
+<line x1="600" y1="404" x2="832" y2="404" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="716" y="392" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">findAllByIdInForUpdate(ids)</text>
+
+<!-- 6. DB → Service: locked rows -->
+<line x1="832" y1="452" x2="600" y2="452" stroke="var(--muted)" stroke-dasharray="5,4" marker-end="url(#r)"/>
+<text x="716" y="440" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">products (locked)</text>
+
+<!-- Self-message: validate + deduct stock + calc subtotal -->
+<line x1="608" y1="500" x2="608" y2="548" stroke="var(--muted)"/><line x1="608" y1="548" x2="624" y2="548" stroke="var(--muted)"/><line x1="624" y1="548" x2="624" y2="500" stroke="var(--muted)" marker-end="url(#r)"/>
+<text x="644" y="528" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">validate + deduct stock</text>
+
+<!-- ALT fragment: optional coupon -->
+<rect x="564" y="572" width="500" height="140" rx="4" fill="rgba(45,49,66,.02)" stroke="rgba(45,49,66,.22)"/>
+<rect x="564" y="572" width="40" height="16" rx="2" fill="var(--paper)" stroke="rgba(45,49,66,.22)"/><text x="584" y="584" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'" letter-spacing=".12em">ALT</text>
+<text x="616" y="600" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">[cuponCode presente]</text>
+<line x1="572" y1="648" x2="1056" y2="648" stroke="rgba(45,49,66,.20)" stroke-dasharray="4,3"/>
+<text x="616" y="684" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">[sin cupón]</text>
+<!-- Coupon resolve -->
+<line x1="600" y1="628" x2="832" y2="628" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="716" y="616" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">resolveForCart + redeem</text>
+
+<!-- 7. Service → DB: save sales + items -->
+<line x1="600" y1="740" x2="832" y2="740" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="716" y="728" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">saveAll(sales + saleItems)</text>
+
+<!-- 8. DB → Service: saved -->
+<line x1="832" y1="788" x2="600" y2="788" stroke="var(--muted)" stroke-dasharray="5,4" marker-end="url(#r)"/>
+<text x="716" y="776" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">ids generated</text>
+
+<!-- 9. Service → Notification: push VENTA_NUEVA -->
+<line x1="600" y1="836" x2="1064" y2="836" stroke="var(--link)" marker-end="url(#c)"/>
+<text x="832" y="824" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">push(VENTA_NUEVA)</text>
+
+<!-- 10. Service → Notification: push STOCK_BAJO (if stock <= 5) -->
+<line x1="600" y1="884" x2="1064" y2="884" stroke="var(--link)" stroke-dasharray="4,3" marker-end="url(#c)"/>
+<text x="832" y="872" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">push(STOCK_BAJO) si ≤5</text>
+
+<!-- Self: evict caches -->
+<line x1="608" y1="916" x2="608" y2="940" stroke="var(--muted)"/><line x1="608" y1="940" x2="624" y2="940" stroke="var(--muted)"/><line x1="624" y1="940" x2="624" y2="916" stroke="var(--muted)" marker-end="url(#r)"/>
+<text x="644" y="932" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">evict DASHBOARD + SALES</text>
+
+<!-- 11. Service → Controller: PurchaseResponseDTO -->
+<line x1="600" y1="972" x2="368" y2="972" stroke="var(--muted)" stroke-dasharray="5,4" marker-end="url(#r)"/>
+<text x="484" y="960" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">PurchaseResponseDTO</text>
+
+<!-- 12. Controller → Client: 200 OK -->
+<line x1="368" y1="1004" x2="136" y2="1004" stroke="var(--accent)" stroke-width="1.2" marker-end="url(#s)"/>
+<text x="252" y="992" text-anchor="middle" font-size="8" fill="var(--accent)" font-family="'Geist Mono'">200 OK · saleId + items</text>
+
+<!-- Legend -->
+<line x1="48" y1="1060" x2="1232" y2="1060" stroke="var(--rule)"/>
+<text x="48" y="1088" font-size="8" fill="var(--soft)" font-family="'Geist Mono'" letter-spacing=".12em">LEGEND</text>
+<line x1="120" y1="1084" x2="160" y2="1084" stroke="var(--link)" marker-end="url(#c)"/><text x="172" y="1088" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">CALL</text>
+<line x1="240" y1="1084" x2="280" y2="1084" stroke="var(--muted)" stroke-dasharray="5,4" marker-end="url(#r)"/><text x="292" y="1088" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">RETURN</text>
+<rect x="376" y="1076" width="12" height="12" rx="2" fill="var(--tint)" stroke="var(--accent)"/><text x="400" y="1088" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">FOCAL</text>
+<line x1="472" y1="1084" x2="512" y2="1084" stroke="var(--link)" stroke-dasharray="4,3" marker-end="url(#c)"/><text x="524" y="1088" font-size="8" fill="var(--muted)" font-family="'Geist Mono'">OPTIONAL</text>
+</svg></div><div class="footer">ApiProject · POST /api/sale/purchase · FOR UPDATE para concurrencia · SSE para notificaciones al admin</div></main></body></html>

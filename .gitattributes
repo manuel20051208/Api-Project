@@ -1,0 +1,4 @@
+/mvnw text eol=lf
+*.cmd text eol=crlf
+diagrams/*.html linguist-generated=true
+diagrams/*.svg linguist-generated=true

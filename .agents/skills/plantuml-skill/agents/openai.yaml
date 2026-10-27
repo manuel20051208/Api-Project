@@ -1,0 +1,4 @@
+interface:
+  display_name: "PlantUML Diagrams"
+  short_description: "Create polished, validated local-first PlantUML diagrams"
+  default_prompt: "Use $plantuml-skill to create and locally render a polished, readable architecture diagram for this system."

@@ -1,0 +1,61 @@
+@startuml
+!theme plain
+skinparam backgroundColor #F8FAFC
+skinparam shadowing false
+skinparam roundCorner 10
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 13
+skinparam defaultFontColor #0F172A
+skinparam ArrowColor #64748B
+skinparam ArrowFontColor #475569
+skinparam ArrowFontSize 12
+skinparam ArrowThickness 1.1
+skinparam TitleFontColor #0F172A
+skinparam TitleFontSize 20
+skinparam TitleFontStyle bold
+skinparam componentStyle rectangle
+skinparam rectangleBackgroundColor #FFFFFF
+skinparam rectangleBorderColor #CBD5E1
+skinparam rectangleFontColor #334155
+skinparam componentBackgroundColor #EFF6FF
+skinparam componentBorderColor #2563EB
+skinparam componentFontColor #1E3A8A
+skinparam databaseBackgroundColor #ECFDF5
+skinparam databaseBorderColor #0F766E
+skinparam databaseFontColor #134E4A
+skinparam cloudBackgroundColor #FFF7ED
+skinparam cloudBorderColor #C2410C
+skinparam cloudFontColor #7C2D12
+skinparam actorBackgroundColor #EFF6FF
+skinparam actorBorderColor #2563EB
+skinparam actorFontColor #1E3A8A
+skinparam nodesep 45
+skinparam ranksep 40
+
+top to bottom direction
+
+actor "Agent user" as user
+
+title Local-first PlantUML rendering
+
+rectangle "plantuml-skill" as skill {
+  component "Author .puml" as puml
+  component "Sandboxed local\nrender helper" as helper
+  component "PlantUML CLI" as cli
+  component "Configured plantuml.jar" as jar
+  component "Syntax + artifact\nvalidation" as validate #ECFDF5
+  database "Local files\n.puml + PNG/SVG" as output
+}
+cloud "Public Kroki\nexplicit approval only" as kroki
+
+user --> puml : asks for diagram
+puml --> helper : render locally
+helper --> cli : prefer
+helper --> jar : configured fallback
+cli --> validate
+jar --> validate
+validate --> output : atomic write
+puml ..> kroki : optional upload\nafter approval
+kroki ..> validate : validate response
+
+@enduml

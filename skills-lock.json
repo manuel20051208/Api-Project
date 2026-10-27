@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "plantuml-skill": {
+      "source": "DoubleMice/plantuml-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "f776185332fbb509ed6726e8fdabaeafa5f17c37dc8b8278a49ebf2908adb909"
+    }
+  }
+}

@@ -21,7 +21,8 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -54,9 +55,11 @@ public class ClientService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConstants.CLIENT_HISTORY, key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort", sync = true)
-    public Page<ClientHistoryProjection> showBuysPaginated(Long userId, Pageable pageable) {
-        return clientRepository.showClientBuyPaginated(userId, pageable);
+    @Cacheable(value = CacheConstants.CLIENT_HISTORY,
+            key = "#userId + '-' + #page + '-' + #size + '-' + #sort", sync = true)
+    public Page<ClientHistoryProjection> showBuysPaginated(Long userId, int page, int size, String sort) {
+        validateHistoryPagination(page, size);
+        return clientRepository.showClientBuyPaginated(userId, PageRequest.of(page, size, resolveHistorySort(sort)));
     }
 
     @Transactional(readOnly = true)
@@ -326,6 +329,31 @@ public class ClientService {
         }
 
         return StringUtils.stripFilenameExtension(publicPath);
+    }
+
+    private void validateHistoryPagination(int page, int size) {
+        if (size < 1 || size > 100) {
+            throw new ResponseStatusException(BAD_REQUEST, "size debe estar entre 1 y 100");
+        }
+        if (page < 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "page no puede ser negativo");
+        }
+    }
+
+    /**
+     * Convierte "occurredAt,desc" (convención Spring Data) al Sort sobre la vista de historial.
+     * Cualquier campo distinto de occurredAt cae al orden por defecto (fecha DESC), igual que antes.
+     */
+    private Sort resolveHistorySort(String sort) {
+        String[] parts = sort.split(",");
+        String field = parts[0].trim();
+        boolean desc = parts.length > 1 && parts[1].trim().equalsIgnoreCase("desc");
+
+        if (field.equalsIgnoreCase("occurredAt") || field.equalsIgnoreCase("occurred_at")) {
+            return desc ? Sort.by(Sort.Direction.DESC, "occurred_at")
+                        : Sort.by(Sort.Direction.ASC, "occurred_at");
+        }
+        return Sort.by(Sort.Direction.DESC, "occurred_at");
     }
 
     private void validateAuthenticatedClient(Long authenticatedClientId) {

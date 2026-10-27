@@ -60,4 +60,4 @@ echo "[entrypoint] PostgreSQL listo."
 # ---- Migración delegada a Flyway (arranque de Spring Boot) ----
 
 # ---- Arrancar la aplicación ----
-exec java $JAVA_OPTS -Dserver.port="${PORT:-8080}" -jar application.jar
+exec java $JAVA_OPTS -Dserver.port="${PORT:-8080}" -jar app.jar

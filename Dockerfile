@@ -22,10 +22,7 @@ RUN apk add --no-cache curl postgresql-client \
 
 WORKDIR /app
 
-COPY --from=extract --chown=app:app /workspace/extracted/dependencies/ ./
-COPY --from=extract --chown=app:app /workspace/extracted/spring-boot-loader/ ./
-COPY --from=extract --chown=app:app /workspace/extracted/snapshot-dependencies/ ./
-COPY --from=extract --chown=app:app /workspace/extracted/application/ ./
+COPY --from=build --chown=app:app /build/target/ApiProject-0.0.1-SNAPSHOT.jar app.jar
 
 # Las migraciones de BD viajan dentro del jar (src/main/resources/db/migration)
 # y las aplica Flyway al arrancar la aplicacion.

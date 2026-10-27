@@ -9,7 +9,7 @@ set -eu
 # Entrypoint del contenedor de ApiProject.
 # 1) Construye DB_URL (JDBC) desde variables granulares.
 # 2) Espera a que PostgreSQL esté listo.
-# 3) Arranca la aplicación Spring Boot (JarLauncher).
+# 3) Arranca la aplicación Spring Boot desde el JAR extraído.
 # Las migraciones de base de datos las ejecuta FLYWAY al iniciar Spring.
 # ---------------------------------------------------------------
 
@@ -60,4 +60,4 @@ echo "[entrypoint] PostgreSQL listo."
 # ---- Migración delegada a Flyway (arranque de Spring Boot) ----
 
 # ---- Arrancar la aplicación ----
-exec java $JAVA_OPTS -Dserver.port="${PORT:-8080}" org.springframework.boot.loader.launch.JarLauncher
+exec java $JAVA_OPTS -Dserver.port="${PORT:-8080}" -jar application.jar

@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B package -DskipTests
 FROM eclipse-temurin:25-jre-alpine AS extract
 WORKDIR /workspace
 COPY --from=build /build/target/ApiProject-0.0.1-SNAPSHOT.jar app.jar
-RUN java -Djarmode=layertools -jar app.jar extract
+RUN java -Djarmode=tools -jar app.jar extract --layers --destination extracted
 
 # ---------- Runtime ----------
 FROM eclipse-temurin:25-jre-alpine AS runtime
@@ -22,10 +22,10 @@ RUN apk add --no-cache curl postgresql-client \
 
 WORKDIR /app
 
-COPY --from=extract --chown=app:app /workspace/dependencies/ ./
-COPY --from=extract --chown=app:app /workspace/spring-boot-loader/ ./
-COPY --from=extract --chown=app:app /workspace/snapshot-dependencies/ ./
-COPY --from=extract --chown=app:app /workspace/application/ ./
+COPY --from=extract --chown=app:app /workspace/extracted/dependencies/ ./
+COPY --from=extract --chown=app:app /workspace/extracted/spring-boot-loader/ ./
+COPY --from=extract --chown=app:app /workspace/extracted/snapshot-dependencies/ ./
+COPY --from=extract --chown=app:app /workspace/extracted/application/ ./
 
 # Las migraciones de BD viajan dentro del jar (src/main/resources/db/migration)
 # y las aplica Flyway al arrancar la aplicacion.

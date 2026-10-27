@@ -1,98 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1100" role="img" aria-labelledby="purchase-title purchase-desc" style="background:#ffffff"><title id="purchase-title">Secuencia de compra de productos</title><desc id="purchase-desc">Diagrama de secuencia del flujo completo de compra: validación, bloqueo de stock, persistencia, cupón opcional y notificación SSE al admin.</desc>
-<defs><marker id="c" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#2e5aa8"/></marker><marker id="r" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#4f5d75"/></marker><marker id="s" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#eb6c36"/></marker></defs>
-
-<!-- Actors -->
-<rect x="48" y="52" width="176" height="48" rx="6" fill="rgba(45,49,66,.10)" stroke="rgba(122,131,153,.50)"/><text x="136" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">Client</text><text x="136" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">FRONTEND</text>
-<rect x="280" y="52" width="176" height="48" rx="6" fill="rgba(235,108,54,.08)" stroke="#eb6c36" stroke-width="1.2"/><text x="368" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">SaleController</text><text x="368" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">/sale/purchase</text>
-<rect x="512" y="52" width="176" height="48" rx="6" fill="#fff" stroke="#2d3142"/><text x="600" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">SaleService</text><text x="600" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">@Transactional</text>
-<rect x="744" y="52" width="176" height="48" rx="6" fill="rgba(45,49,66,.05)" stroke="#4f5d75"/><text x="832" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">PostgreSQL</text><text x="832" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">FOR UPDATE</text>
-<rect x="976" y="52" width="176" height="48" rx="6" fill="rgba(45,49,66,.03)" stroke="rgba(45,49,66,.30)"/><text x="1064" y="78" text-anchor="middle" font-size="12" font-weight="600" font-family="Geist,sans-serif">NotificationService</text><text x="1064" y="92" text-anchor="middle" font-size="8" fill="#7a8399" font-family="'Geist Mono'">SSE · push()</text>
-
-<!-- Lifelines -->
-<line x1="136" y1="100" x2="136" y2="1028" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
-<line x1="368" y1="100" x2="368" y2="1028" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
-<line x1="600" y1="100" x2="600" y2="1028" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
-<line x1="832" y1="100" x2="832" y2="1028" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
-<line x1="1064" y1="100" x2="1064" y2="1028" stroke="rgba(45,49,66,.20)" stroke-dasharray="3,3"/>
-
-<!-- Activation bars -->
-<rect x="364" y="148" width="8" height="588" fill="rgba(45,49,66,.08)" stroke="#4f5d75"/>
-<rect x="596" y="196" width="8" height="516" fill="rgba(45,49,66,.08)" stroke="#4f5d75"/>
-<rect x="828" y="292" width="8" height="236" fill="rgba(45,49,66,.08)" stroke="#4f5d75"/>
-<rect x="1060" y="868" width="8" height="52" fill="rgba(45,49,66,.08)" stroke="#4f5d75"/>
-
-<!-- 1. Client → Controller: POST /sale/purchase -->
-<line x1="136" y1="164" x2="368" y2="164" stroke="#2e5aa8" marker-end="url(#c)"/>
-<text x="252" y="152" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">POST /sale/purchase + JWT</text>
-
-<!-- 2. Controller → Service -->
-<line x1="368" y1="212" x2="600" y2="212" stroke="#2e5aa8" marker-end="url(#c)"/>
-<text x="484" y="200" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">purchase(request, clientId)</text>
-
-<!-- 3. Service → DB: verify client + active card -->
-<line x1="600" y1="308" x2="832" y2="308" stroke="#2e5aa8" marker-end="url(#c)"/>
-<text x="716" y="296" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">findClient + hasActiveCard</text>
-
-<!-- 4. DB → Service: client + card=true -->
-<line x1="832" y1="356" x2="600" y2="356" stroke="#4f5d75" stroke-dasharray="5,4" marker-end="url(#r)"/>
-<text x="716" y="344" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">client + true</text>
-
-<!-- 5. Service → DB: lock products -->
-<line x1="600" y1="404" x2="832" y2="404" stroke="#2e5aa8" marker-end="url(#c)"/>
-<text x="716" y="392" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">findAllByIdInForUpdate(ids)</text>
-
-<!-- 6. DB → Service: locked rows -->
-<line x1="832" y1="452" x2="600" y2="452" stroke="#4f5d75" stroke-dasharray="5,4" marker-end="url(#r)"/>
-<text x="716" y="440" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">products (locked)</text>
-
-<!-- Self-message: validate + deduct stock + calc subtotal -->
-<line x1="608" y1="500" x2="608" y2="548" stroke="#4f5d75"/><line x1="608" y1="548" x2="624" y2="548" stroke="#4f5d75"/><line x1="624" y1="548" x2="624" y2="500" stroke="#4f5d75" marker-end="url(#r)"/>
-<text x="644" y="528" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">validate + deduct stock</text>
-
-<!-- ALT fragment: optional coupon -->
-<rect x="564" y="572" width="500" height="140" rx="4" fill="rgba(45,49,66,.02)" stroke="rgba(45,49,66,.22)"/>
-<rect x="564" y="572" width="40" height="16" rx="2" fill="#f5f5f5" stroke="rgba(45,49,66,.22)"/><text x="584" y="584" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'" letter-spacing=".12em">ALT</text>
-<text x="616" y="600" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">[cuponCode presente]</text>
-<line x1="572" y1="648" x2="1056" y2="648" stroke="rgba(45,49,66,.20)" stroke-dasharray="4,3"/>
-<text x="616" y="684" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">[sin cupón]</text>
-<!-- Coupon resolve -->
-<line x1="600" y1="628" x2="832" y2="628" stroke="#2e5aa8" marker-end="url(#c)"/>
-<text x="716" y="616" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">resolveForCart + redeem</text>
-
-<!-- 7. Service → DB: save sales + items -->
-<line x1="600" y1="740" x2="832" y2="740" stroke="#2e5aa8" marker-end="url(#c)"/>
-<text x="716" y="728" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">saveAll(sales + saleItems)</text>
-
-<!-- 8. DB → Service: saved -->
-<line x1="832" y1="788" x2="600" y2="788" stroke="#4f5d75" stroke-dasharray="5,4" marker-end="url(#r)"/>
-<text x="716" y="776" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">ids generated</text>
-
-<!-- 9. Service → Notification: push VENTA_NUEVA -->
-<line x1="600" y1="836" x2="1064" y2="836" stroke="#2e5aa8" marker-end="url(#c)"/>
-<text x="832" y="824" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">push(VENTA_NUEVA)</text>
-
-<!-- 10. Service → Notification: push STOCK_BAJO (if stock <= 5) -->
-<line x1="600" y1="884" x2="1064" y2="884" stroke="#2e5aa8" stroke-dasharray="4,3" marker-end="url(#c)"/>
-<text x="832" y="872" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">push(STOCK_BAJO) si ≤5</text>
-
-<!-- Self: evict caches -->
-<line x1="608" y1="916" x2="608" y2="940" stroke="#4f5d75"/><line x1="608" y1="940" x2="624" y2="940" stroke="#4f5d75"/><line x1="624" y1="940" x2="624" y2="916" stroke="#4f5d75" marker-end="url(#r)"/>
-<text x="644" y="932" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">evict DASHBOARD + SALES</text>
-
-<!-- 11. Service → Controller: PurchaseResponseDTO -->
-<line x1="600" y1="972" x2="368" y2="972" stroke="#4f5d75" stroke-dasharray="5,4" marker-end="url(#r)"/>
-<text x="484" y="960" text-anchor="middle" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">PurchaseResponseDTO</text>
-
-<!-- 12. Controller → Client: 200 OK -->
-<line x1="368" y1="1004" x2="136" y2="1004" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#s)"/>
-<text x="252" y="992" text-anchor="middle" font-size="8" fill="#eb6c36" font-family="'Geist Mono'">200 OK · saleId + items</text>
-
-<!-- Legend -->
-<line x1="48" y1="1060" x2="1232" y2="1060" stroke="rgba(45,49,66,.16)"/>
-<text x="48" y="1088" font-size="8" fill="#7a8399" font-family="'Geist Mono'" letter-spacing=".12em">LEGEND</text>
-<line x1="120" y1="1084" x2="160" y2="1084" stroke="#2e5aa8" marker-end="url(#c)"/><text x="172" y="1088" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">CALL</text>
-<line x1="240" y1="1084" x2="280" y2="1084" stroke="#4f5d75" stroke-dasharray="5,4" marker-end="url(#r)"/><text x="292" y="1088" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">RETURN</text>
-<rect x="376" y="1076" width="12" height="12" rx="2" fill="rgba(235,108,54,.08)" stroke="#eb6c36"/><text x="400" y="1088" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">FOCAL</text>
-<line x1="472" y1="1084" x2="512" y2="1084" stroke="#2e5aa8" stroke-dasharray="4,3" marker-end="url(#c)"/><text x="524" y="1088" font-size="8" fill="#4f5d75" font-family="'Geist Mono'">OPTIONAL</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 720" role="img" aria-labelledby="purchase-title purchase-desc">
+<title id="purchase-title">Secuencia de compra de productos</title><desc id="purchase-desc">El cliente solicita una compra; SaleService valida, bloquea stock, aplica un cupón opcional y guarda la venta.</desc>
+<defs><style>.h{font:600 14px Arial;fill:#172033}.s{font:11px Arial;fill:#52617a}.m{font:11px Arial;fill:#334155}.l{stroke:#cbd5e1;stroke-dasharray:4 5}.a{stroke:#2563eb;stroke-width:1.6;fill:none}.r{stroke:#64748b;stroke-width:1.3;stroke-dasharray:5 4;fill:none}.x{stroke:#c2410c;stroke-width:1.8;fill:none}.b{fill:#eff6ff;stroke:#2563eb;stroke-width:1.2}.d{fill:#ecfdf5;stroke:#0f766e;stroke-width:1.2}.c{fill:#fff7ed;stroke:#c2410c;stroke-width:1.2}</style><marker id="a" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0 0L9 3.5L0 7Z" fill="#2563eb"/></marker><marker id="r" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0 0L9 3.5L0 7Z" fill="#64748b"/></marker><marker id="x" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0 0L9 3.5L0 7Z" fill="#c2410c"/></marker></defs>
+<rect width="920" height="720" fill="#fff"/><text x="40" y="36" class="s" letter-spacing="1.6">SECUENCIA · COMPRA</text><text x="40" y="68" class="h" font-size="22">Compra de productos</text><text x="40" y="90" class="s">POST /api/sale/purchase · transacción, bloqueo de stock y cupón opcional</text>
+<g class="l"><line x1="100" y1="158" x2="100" y2="640"/><line x1="270" y1="158" x2="270" y2="640"/><line x1="440" y1="158" x2="440" y2="640"/><line x1="610" y1="158" x2="610" y2="640"/><line x1="780" y1="158" x2="780" y2="640"/></g>
+<g fill="#dbeafe" stroke="#2563eb"><rect x="266" y="204" width="8" height="376"/><rect x="436" y="244" width="8" height="304"/></g><rect x="606" y="284" width="8" height="72" fill="#d1fae5" stroke="#0f766e"/><rect x="776" y="404" width="8" height="52" fill="#ffedd5" stroke="#c2410c"/>
+<line x1="100" y1="216" x2="270" y2="216" class="a" marker-end="url(#a)"/><text x="185" y="202" text-anchor="middle" class="m">POST /purchase + JWT</text>
+<line x1="270" y1="256" x2="440" y2="256" class="a" marker-end="url(#a)"/><text x="355" y="242" text-anchor="middle" class="m">purchase(request, clientId)</text>
+<line x1="440" y1="296" x2="610" y2="296" class="a" marker-end="url(#a)"/><text x="525" y="282" text-anchor="middle" class="m">tarjeta activa + FOR UPDATE</text>
+<line x1="610" y1="336" x2="440" y2="336" class="r" marker-end="url(#r)"/><text x="525" y="322" text-anchor="middle" class="m">cliente y productos bloqueados</text>
+<path d="M444 370h24v28h-24" class="r" marker-end="url(#r)"/><text x="478" y="388" class="m">validar stock y calcular subtotal</text>
+<rect x="420" y="408" width="380" height="72" rx="6" fill="#f8fafc" stroke="#cbd5e1"/><rect x="420" y="408" width="48" height="20" rx="4" fill="#fff" stroke="#cbd5e1"/><text x="444" y="422" text-anchor="middle" class="s" font-weight="700">OPT</text><text x="480" y="422" class="s">[cupón enviado]</text>
+<line x1="440" y1="436" x2="780" y2="436" class="a" marker-end="url(#a)"/><text x="610" y="434" text-anchor="middle" class="m">resolveForCart(cupón, carrito)</text><line x1="780" y1="464" x2="440" y2="464" class="r" marker-end="url(#r)"/><text x="610" y="458" text-anchor="middle" class="m">productos elegibles y descuento</text>
+<line x1="440" y1="508" x2="610" y2="508" class="a" marker-end="url(#a)"/><text x="525" y="494" text-anchor="middle" class="m">guardar ventas e ítems en lote</text><line x1="610" y1="536" x2="440" y2="536" class="r" marker-end="url(#r)"/><text x="525" y="526" text-anchor="middle" class="m">IDs de venta generados</text>
+<line x1="440" y1="572" x2="270" y2="572" class="r" marker-end="url(#r)"/><text x="355" y="560" text-anchor="middle" class="m">PurchaseResponseDTO</text><line x1="270" y1="604" x2="100" y2="604" class="x" marker-end="url(#x)"/><text x="185" y="592" text-anchor="middle" class="m">200 OK · venta, totales e ítems</text>
+<g><rect x="40" y="116" width="120" height="42" rx="7" class="b"/><text x="100" y="140" text-anchor="middle" class="h">Cliente</text><text x="100" y="153" text-anchor="middle" class="s">frontend</text><rect x="210" y="116" width="120" height="42" rx="7" class="b"/><text x="270" y="140" text-anchor="middle" class="h">SaleController</text><text x="270" y="153" text-anchor="middle" class="s">/sale/purchase</text><rect x="380" y="116" width="120" height="42" rx="7" class="b"/><text x="440" y="140" text-anchor="middle" class="h">SaleService</text><text x="440" y="153" text-anchor="middle" class="s">@Transactional</text><rect x="550" y="116" width="120" height="42" rx="7" class="d"/><text x="610" y="140" text-anchor="middle" class="h">Persistencia</text><text x="610" y="153" text-anchor="middle" class="s">repositorios + DB</text><rect x="720" y="116" width="120" height="42" rx="7" class="c"/><text x="780" y="140" text-anchor="middle" class="h">CuponService</text><text x="780" y="153" text-anchor="middle" class="s">opcional</text></g>
+<line x1="40" y1="664" x2="880" y2="664" stroke="#e2e8f0"/><text x="40" y="690" class="s">Basado en SaleController.purchase y SaleService.purchase. No incluye SSE: el servicio actual no publica notificaciones.</text></svg>

@@ -1,0 +1,75 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundCorner 10
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 13
+skinparam defaultFontColor #0F172A
+skinparam ArrowColor #64748B
+skinparam ArrowFontColor #475569
+skinparam ArrowFontSize 12
+skinparam ArrowThickness 1.1
+skinparam TitleFontColor #0F172A
+skinparam TitleFontSize 20
+skinparam TitleFontStyle bold
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+skinparam maxMessageSize 54
+skinparam sequence {
+  ArrowColor #64748B
+  ArrowFontColor #475569
+  LifeLineBorderColor #CBD5E1
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBackgroundColor #EFF6FF
+  ParticipantBorderColor #2563EB
+  ParticipantFontColor #1E3A8A
+  ActorBackgroundColor #EFF6FF
+  ActorBorderColor #2563EB
+  ActorFontColor #1E3A8A
+  GroupBackgroundColor #F8FAFC
+  GroupBorderColor #CBD5E1
+  GroupHeaderFontColor #334155
+}
+
+title Compra de productos
+
+actor "Cliente" as client
+participant "SaleController\n/api/sale/purchase" as controller
+participant "SaleService\n@Transactional" as service
+participant "Repositorios\ny PostgreSQL" as persistence
+participant "CuponService" as coupon
+
+client -> controller : POST /purchase\n(body + JWT)
+activate controller
+controller -> service : purchase(request, clientId)
+activate service
+service -> persistence : Buscar cliente y tarjeta activa\nBloquear productos (FOR UPDATE)
+activate persistence
+persistence --> service : Cliente, tarjeta y productos bloqueados
+deactivate persistence
+service -> service : Validar stock, descontar\ny calcular subtotales
+
+opt cupón enviado
+  service -> coupon : resolveForCart(código, carrito)
+  activate coupon
+  coupon --> service : Productos elegibles y descuento
+  deactivate coupon
+  service -> service : Aplicar descuento elegible
+end
+
+service -> persistence : Guardar ventas e ítems en lote
+activate persistence
+persistence --> service : IDs de venta generados
+deactivate persistence
+service -> service : Invalidar cachés de venta\ny dashboard
+service --> controller : PurchaseResponseDTO
+deactivate service
+controller --> client #C2410C : 200 OK\nventa, totales e ítems
+deactivate controller
+
+legend right
+  Flujo basado en SaleController.purchase y SaleService.purchase.
+  El cupón es opcional; el bloqueo pesimista evita sobreventa de stock.
+endlegend
+@enduml

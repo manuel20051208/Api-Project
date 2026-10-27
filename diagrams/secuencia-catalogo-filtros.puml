@@ -1,0 +1,78 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundCorner 10
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 13
+skinparam defaultFontColor #0F172A
+skinparam ArrowColor #64748B
+skinparam ArrowFontColor #475569
+skinparam ArrowFontSize 12
+skinparam ArrowThickness 1.1
+skinparam TitleFontColor #0F172A
+skinparam TitleFontSize 20
+skinparam TitleFontStyle bold
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+skinparam maxMessageSize 56
+skinparam sequence {
+  ArrowColor #64748B
+  ArrowFontColor #475569
+  LifeLineBorderColor #CBD5E1
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBackgroundColor #EFF6FF
+  ParticipantBorderColor #2563EB
+  ParticipantFontColor #1E3A8A
+  ActorBackgroundColor #EFF6FF
+  ActorBorderColor #2563EB
+  ActorFontColor #1E3A8A
+  GroupBackgroundColor #F8FAFC
+  GroupBorderColor #CBD5E1
+  GroupHeaderFontColor #334155
+}
+
+title Catálogo y búsqueda de productos
+
+actor "Cliente" as client
+participant "ProductController\n/api/product" as controller
+participant "ProductService" as service
+participant "Caché Spring\n@Cacheable" as cache
+participant "ProductRepository\ny PostgreSQL" as persistence
+
+client -> controller : GET /activeProducts\no /search/category/{category}\no /search/name/{name}
+activate controller
+controller -> service : Despachar consulta y parámetros
+activate service
+service -> cache : Consultar clave de caché
+activate cache
+
+alt resultado en caché
+  cache --> service : ProductResponseDTO / Page
+else caché vacía
+  cache --> service : Cache miss
+  deactivate cache
+  service -> persistence : Consultar productos con imágenes
+  activate persistence
+  note right
+    activeProducts: IDs paginados
+    y después carga imágenes
+  end note
+  persistence --> service : Productos e imágenes
+  deactivate persistence
+  service -> cache : Guardar respuesta
+  activate cache
+  cache --> service : Respuesta almacenada
+end
+deactivate cache
+
+service --> controller : ProductResponseDTO / Page
+deactivate service
+controller --> client #C2410C : 200 OK\nproductos + imágenes
+deactivate controller
+
+legend right
+  El servicio usa una clave distinta por consulta.
+  Escrituras de productos invalidan estas cachés.
+endlegend
+@enduml

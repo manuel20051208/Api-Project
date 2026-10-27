@@ -195,7 +195,7 @@ El endpoint `POST /api/sale/purchase` gestiona la compra completa de un cliente:
 
 ![Flujo de compra de productos](diagrams/secuencia-compra.svg)
 
-Diagrama interactivo: [secuencia-compra.html](diagrams/secuencia-compra.html)
+Fuente editable: [secuencia-compra.puml](diagrams/secuencia-compra.puml)
 
 ## Catálogo y búsqueda de productos
 
@@ -215,7 +215,7 @@ Las escrituras (crear, actualizar, borrado suave) invalidan todas las claves de 
 
 ![Catálogo y búsqueda de productos](diagrams/secuencia-catalogo-filtros.svg)
 
-Diagrama interactivo: [secuencia-catalogo-filtros.html](diagrams/secuencia-catalogo-filtros.html)
+Fuente editable: [secuencia-catalogo-filtros.puml](diagrams/secuencia-catalogo-filtros.puml)
 
 ## Reportes
 
@@ -279,8 +279,8 @@ src/main/resources/
 - [Configuración](docs/Configuración.md)
 - [Esquema de base de datos](docs/Esquema%20de%20Base%20de%20Datos.md)
 - [Diagrama de autenticación](diagrams/authentication.html) · [SVG](diagrams/authentication.svg)
-- [Diagrama de flujo de compra](diagrams/secuencia-compra.html) · [SVG](diagrams/secuencia-compra.svg)
-- [Diagrama de catálogo y filtros](diagrams/secuencia-catalogo-filtros.html) · [SVG](diagrams/secuencia-catalogo-filtros.svg)
+- [Diagrama de secuencia de compra](diagrams/secuencia-compra.puml) · [SVG](diagrams/secuencia-compra.svg)
+- [Diagrama de secuencia de catálogo y filtros](diagrams/secuencia-catalogo-filtros.puml) · [SVG](diagrams/secuencia-catalogo-filtros.svg)
 - [Diagrama de reportes con Factory](diagrams/secuencia-reportes-factory.html) · [SVG](diagrams/secuencia-reportes-factory.svg)
 
 ## Seguridad

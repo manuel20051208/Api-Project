@@ -285,6 +285,14 @@ src/main/resources/
 
 ## Seguridad
 
+### Autenticación y autorización
+
+El acceso combina credenciales locales con JWT y OAuth2 de Google; las rutas protegidas resuelven el usuario y su rol desde el token Bearer.
+
+![Flujo de autenticación y autorización](diagrams/authentication.svg)
+
+Diagrama interactivo: [authentication.html](diagrams/authentication.html)
+
 - Las contraseñas se almacenan usando BCrypt.
 - Las rutas se protegen mediante JWT y roles.
 - CORS está restringido al frontend local `http://localhost:3000`.

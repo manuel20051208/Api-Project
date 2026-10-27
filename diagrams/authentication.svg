@@ -7,7 +7,7 @@
           <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#eb6c36"/></marker>
           <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#2e5aa8"/></marker>
         </defs>
-        <rect width="1200" height="940" fill="#f5f5f5"/>
+        <rect width="1200" height="940" fill="#ffffff"/>
 
         <!-- Lifelines -->
         <line x1="120" y1="188" x2="120" y2="860" stroke="rgba(45,49,66,.20)" stroke-width="1" stroke-dasharray="3,3"/>

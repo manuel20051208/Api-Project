@@ -234,8 +234,9 @@ El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones ver
 ## 8. Configuración
 
 - `application.properties` es la única fuente de config (sin perfiles adicionales versionados).
+- **Dev local**: `spring.config.import=optional:file:./.env[.properties]` carga el `.env` de la raíz (sin spring-dotenv). En Docker/CI/VM el archivo no existe y la línea se ignora (`optional:`), ahí las variables llegan inyectadas por entorno.
 - Datasource: `jdbc:postgresql://localhost:5432/apiproject` (en contenedor se inyecta `DB_URL`); JPA show-sql + batch 50 + **`ddl-auto=validate`**; **Flyway** (`locations=classpath:db/migration`, `baseline-on-migrate=true`, `baseline-version=0`); multipart 30MB, OAuth2 Google (admin/client), Swagger on.
-- Variables de entorno (locales: `.env` la lee `docker-compose`/shell; en CI y VM se inyectan directo; ya no hay spring-dotenv): `DB_URL` (`DB_HOST`+`DB_PORT`+`DB_NAME`), `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET_KEY`, `JWT_EXPIRATION_MS`, `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET`, `BASIC_AUTH_USERNAME/PASSWORD`, `GOOGLE_CLIENT_ID/SECRET`, `URL_FOR_REQUESTING_AND_RESPONSIVES` (CORS), `DB_SSLMODE`.
+- Variables de entorno (locales: las toma del `.env` importado; en CI y VM se inyectan directo): `DB_URL` (`DB_HOST`+`DB_PORT`+`DB_NAME`), `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET_KEY`, `JWT_EXPIRATION_MS`, `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `URL_FOR_REQUESTING_AND_RESPONSIVES` (CORS), `DB_SSLMODE`. (`BASIC_AUTH_USERNAME/PASSWORD` ya no se leen: `spring.security.user.*` se eliminó porque httpBasic/formLogin están deshabilitados.)
 
 ## 9. Docker
 

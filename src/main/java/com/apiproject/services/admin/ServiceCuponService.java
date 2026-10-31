@@ -161,6 +161,8 @@ public class ServiceCuponService {
         ServiceCupon cupon = serviceCuponRepository.lockById(request.cuponId()) // LOCK contra duplicados
                 .orElseThrow(() -> new ResourceNotFoundException("Service cupon not found: " + request.cuponId()));
         requireOwner(cupon, adminId);
+        // El limite por cliente no puede superar los usos definidos al crear el cupon
+        CouponUsageLimitValidator.validate(cupon.getQuantity(), request.usageLimit());
 
         // Los servicios objetivo son los del propio admin (no hay vínculo por producto)
         List<ServiceOffered> services = serviceOfferedRepository.findAll().stream()
@@ -248,6 +250,7 @@ public class ServiceCuponService {
         ServiceCuponToAClient assignment = serviceCuponToAClientRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentId));
         requireOwner(assignment.getServiceCupon(), adminId);
+        CouponUsageLimitValidator.validate(assignment.getServiceCupon().getQuantity(), request.usageLimit());
         assignment.setUsageLimit(request.usageLimit());
         serviceCuponToAClientRepository.save(assignment);
         return toAssignmentDto(serviceCuponToAClientRepository.findByAdminAndClientAndService(
@@ -262,6 +265,7 @@ public class ServiceCuponService {
         ServiceCupon cupon = serviceCuponRepository.lockById(cuponId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service cupon not found: " + cuponId));
         requireOwner(cupon, adminId);
+        CouponUsageLimitValidator.validate(cupon.getQuantity(), request.usageLimit());
         serviceCuponToAClientRepository.updateUsageLimitByCupon(cuponId, request.usageLimit());
         return findAssignmentsByCupon(adminId, cuponId);
     }

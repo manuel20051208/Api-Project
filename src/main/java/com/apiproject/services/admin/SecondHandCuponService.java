@@ -309,6 +309,8 @@ public class SecondHandCuponService {
         SecondHandCupon cupon = secondHandCuponRepository.lockById(request.cuponId()) // LOCK contra duplicados
                 .orElseThrow(() -> new ResourceNotFoundException("Second hand cupon not found: " + request.cuponId()));
         requireOwner(cupon, adminId);
+        // El limite por cliente no puede superar los usos definidos al crear el cupon
+        CouponUsageLimitValidator.validate(cupon.getQuantity(), request.usageLimit());
 
         // El cupón debe tener productos SH vinculados para asignarlo
         List<Long> productIds = secondHandProductCuponRepository.findShProductIdsByCuponId(cupon.getId());
@@ -403,6 +405,7 @@ public class SecondHandCuponService {
         ShProductCuponToAClient assignment = shProductCuponToAClientRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentId));
         requireOwner(assignment.getCupon(), adminId);
+        CouponUsageLimitValidator.validate(assignment.getCupon().getQuantity(), request.usageLimit());
         assignment.setUsageLimit(request.usageLimit());
         shProductCuponToAClientRepository.save(assignment);
         return toAssignmentDto(shProductCuponToAClientRepository.findByAdminAndClientAndShProduct(
@@ -417,6 +420,7 @@ public class SecondHandCuponService {
         SecondHandCupon cupon = secondHandCuponRepository.lockById(cuponId)
                 .orElseThrow(() -> new ResourceNotFoundException("Second hand cupon not found: " + cuponId));
         requireOwner(cupon, adminId);
+        CouponUsageLimitValidator.validate(cupon.getQuantity(), request.usageLimit());
         shProductCuponToAClientRepository.updateUsageLimitByCupon(cuponId, request.usageLimit());
         return findAssignmentsByCupon(adminId, cuponId);
     }

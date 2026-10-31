@@ -31,7 +31,12 @@ COPY --chown=app:app docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 USER app
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:MaxMetaspaceSize=160m"
+# Heap relativo al limite de memoria del contenedor (mem_limit del compose):
+# 50% de 576m ~= 288m de heap. Metaspace medido en arranque: ~105 MB, por eso
+# el tope de 128m (con 96m el contexto muere con OutOfMemoryError: Metaspace).
+# -XX:+ExitOnOutOfMemoryError reinicia el contenedor en vez de dejarlo colgado;
+# SerialGC conviene en VMs de 1 vCPU con heap chico.
+ENV JAVA_OPTS="-XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
 
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \

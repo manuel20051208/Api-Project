@@ -13,7 +13,7 @@ API REST de **inventario y ventas** (`ApiJuegoInventario`) para una tienda con:
 - Compra con **tarjetas simuladas**.
 - **Dashboard de métricas** y **reportes Excel/PDF** por admin.
 - Autenticación **JWT** + **OAuth2 con Google**.
-- Caché de cupones y productos (SSE/notificaciones retirado temporalmente; se planea un servicio de notificaciones aparte).
+- Caché de cupones y productos, **acotado con Caffeine** (`maximumSize` + TTL, ver §8) (SSE/notificaciones retirado temporalmente; se planea un servicio de notificaciones aparte).
 
 ## 2. Stack técnico
 
@@ -235,13 +235,14 @@ El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones ver
 
 - `application.properties` es la única fuente de config (sin perfiles adicionales versionados).
 - **Dev local**: `spring.config.import=optional:file:./.env[.properties]` carga el `.env` de la raíz (sin spring-dotenv). En Docker/CI/VM el archivo no existe y la línea se ignora (`optional:`), ahí las variables llegan inyectadas por entorno.
-- Datasource: `jdbc:postgresql://localhost:5432/apiproject` (en contenedor se inyecta `DB_URL`); JPA show-sql + batch 50 + **`ddl-auto=validate`**; **Flyway** (`locations=classpath:db/migration`, `baseline-on-migrate=true`, `baseline-version=0`); multipart 30MB, OAuth2 Google (admin/client), Swagger on.
+- Datasource: `jdbc:postgresql://localhost:5432/apiproject` (en contenedor se inyecta `DB_URL`); JPA show-sql + batch 50 + **`ddl-auto=validate`**; **Flyway** (`locations=classpath:db/migration`, `baseline-on-migrate=true`, `baseline-version=0`); multipart 30MB, OAuth2 Google (admin/client), Swagger on. Pool Hikari acotado (`maximum-pool-size=6`, `minimum-idle=2`) por la VM de 1 GB.
+- **Caché acotado**: `spring.cache.type=caffeine` + `spring.cache.caffeine.spec=maximumSize=100,expireAfterWrite=10m`. Sin esto Spring usaba `ConcurrentMapCacheManager` (sin límite ni expiración) y las keys paginadas (historial, dashboard, ventas) crecían hasta llenar la RAM del contenedor.
 - Variables de entorno (locales: las toma del `.env` importado; en CI y VM se inyectan directo): `DB_URL` (`DB_HOST`+`DB_PORT`+`DB_NAME`), `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET_KEY`, `JWT_EXPIRATION_MS`, `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `URL_FOR_REQUESTING_AND_RESPONSIVES` (CORS), `DB_SSLMODE`. (`BASIC_AUTH_USERNAME/PASSWORD` ya no se leen: `spring.security.user.*` se eliminó porque httpBasic/formLogin están deshabilitados.)
 
 ## 9. Docker
 
-- **docker-compose**: `db` postgres:16-alpine en `5433:5432` + `app` en `8080` (espera healthcheck de la DB, env desde `.env`). El esquema lo crea **Flyway** al arrancar la app (ya no hay initdb.d ni entrypoint con SQL).
-- **Dockerfile**: build `maven:3-eclipse-temurin-25` (`mvn package -DskipTests`) → runtime `eclipse-temurin:25-jre-alpine`. Las migraciones viajan dentro del jar (`db/migration`).
+- **docker-compose**: `db` postgres:16-alpine en `5433:5432` + `app` en `8080` (espera healthcheck de la DB, env desde `.env`). El esquema lo crea **Flyway** al arrancar la app (ya no hay initdb.d ni entrypoint con SQL). **Límites de RAM** para VM de 1 GB: `app` 576m (`API_MEM_LIMIT`), `db` 160m (`DB_MEM_LIMIT`), `memswap_limit` igual a `mem_limit` (sin swap) y logs `json-file` rotados a 10m×3. Postgres corre con `shared_buffers=32MB`, `max_connections=30`, `work_mem=2MB`, `maintenance_work_mem=32MB`, `effective_cache_size=96MB`.
+- **Dockerfile**: build `maven:3-eclipse-temurin-25` (`mvn package -DskipTests`) → runtime `eclipse-temurin:25-jre-alpine`. Las migraciones viajan dentro del jar (`db/migration`). `JAVA_OPTS` = `-XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError` (heap = 50% del `mem_limit`; el Metaspace real en arranque es ~105 MB, con 96m el contexto muere).
 - **entrypoint.sh**: espera a PostgreSQL, construye `DB_URL` y arranca la app (con comentarios en español).
 - **Despliegue real (VM)**: el workflow `.github/workflows/api-project.yml` corre en cada push a `main`: tests (Java 25) → `mvn package` → imagen Docker → GHCR → SSH a la EC2 (`git reset --hard origin/main` + `docker compose pull/up`). `render.yaml` es la segunda opción (nube Render) y ya no se usa.
 

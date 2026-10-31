@@ -16,7 +16,7 @@ set -eu
 # ---- Valores por defecto ----
 DB_PORT="${DB_PORT:-5432}"
 DB_SSLMODE="${DB_SSLMODE:-}"
-JAVA_OPTS="${JAVA_OPTS:--Xms256m -Xmx512m}"
+JAVA_OPTS="${JAVA_OPTS:--XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=128m}"
 
 # ---- Variables requeridas ----
 DB_HOST="${DB_HOST:?Variable DB_HOST requerida (host de PostgreSQL)}"

@@ -123,6 +123,27 @@ Detener los servicios:
 docker compose down
 ```
 
+### Límites de memoria (VM de 1 GB)
+
+El `docker-compose.yml` acota la RAM de cada contenedor para que la API y Postgres
+convivan en una VM de 1 GB sin ahogar al sistema operativo:
+
+| Servicio | Límite por defecto | Variable para cambiarlo |
+|---|---|---|
+| `app` (API) | `576m` | `API_MEM_LIMIT` |
+| `db` (Postgres) | `160m` | `DB_MEM_LIMIT` |
+
+El JVM toma el 50% del límite como heap (`-XX:MaxRAMPercentage=50` en el `Dockerfile`),
+el pool de conexiones está acotado (`spring.datasource.hikari.maximum-pool-size=6`) y el
+caché en memoria usa Caffeine con `maximumSize=100,expireAfterWrite=10m`
+(antes era un mapa sin límite que podía llenar la RAM). Para cambiarlos sin editar el
+compose, agregá en `.env`:
+
+```properties
+API_MEM_LIMIT=576m
+DB_MEM_LIMIT=160m
+```
+
 Para eliminar también el volumen local de PostgreSQL:
 
 ```bash

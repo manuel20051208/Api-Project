@@ -16,6 +16,10 @@ public final class CacheConstants {
     public static final String PRODUCTS_BY_CATEGORY = "productsByCategory";
     public static final String PRODUCTS_ACTIVE_PAGE = "productsActivePage";
     public static final String PRODUCT_ADMIN = "productAdmin";
+    public static final String PRODUCT_REVIEWS_BY_PRODUCT = "productReviewsByProduct";
+    public static final String PRODUCT_REVIEWS_BY_CLIENT = "productReviewsByClient";
+    public static final String PRODUCT_REVIEW_BY_ID = "productReviewById";
+    public static final String PRODUCT_REVIEW_SUMMARY = "productReviewSummary";
     public static final String CLIENTS   = "clients";
     public static final String CLIENT_HISTORY = "ClientHistory";
     public static final String CLIENT_RESPONSE = "clientResponse";

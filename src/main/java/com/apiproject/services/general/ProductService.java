@@ -10,6 +10,8 @@ import com.apiproject.repositories.admin.UserRepository;
 import com.apiproject.repositories.general.ProductRepository;
 import io.micrometer.common.lang.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -18,10 +20,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,6 +37,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 public class ProductService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final CacheManager cacheManager;
 
     @Transactional(readOnly = true)
     @Cacheable(value = CacheConstants.PRODUCTS_BY_ADMIN, key = "#adminId", sync = true)
@@ -169,6 +175,73 @@ public class ProductService {
             throw new org.springframework.web.server.ResponseStatusException(
                     FORBIDDEN,
                     "No puedes modificar productos de otro usuario admin");
+        }
+    }
+
+    // ================= Caché compartida fuera del CRUD =================
+
+    /**
+     * Refresca las caches de producto después de una compra (el stock cambió).
+     * <p>
+     * {@code productById} se reescribe con el DTO actualizado (equivale a {@code @CachePut}) y
+     * {@code productByName} se evicta por nombre; las listas/paginados se evictan para que se
+     * recarguen desde la base de datos y no queden datos fantasmas.
+     */
+    public void refreshCachesAfterStockChange(Collection<Product> products) {
+        if (products == null || products.isEmpty()) {return;}
+
+        Cache byId = cacheManager.getCache(CacheConstants.PRODUCT_BY_ID);
+        Cache byName = cacheManager.getCache(CacheConstants.PRODUCT_BY_NAME);
+
+        for (Product product : products) {
+            if (product == null || product.getId() == null) {continue;}
+            if (byId != null) {
+                byId.put(product.getId(), List.of(ProductResponseDTO.fromEntity(product)));
+            }
+            if (byName != null && product.getName() != null) {
+                byName.evict(product.getName().toLowerCase());
+            }
+        }
+
+        Set<Long> adminIds = products.stream()
+                .map(product -> product != null && product.getUserAdmin() != null
+                        ? product.getUserAdmin().getId()
+                        : null)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        evictCollectionCaches(adminIds);
+    }
+
+    /** Invalida las caches de producto cuando cambian sus imágenes (subida o borrado). */
+    public void evictProductCaches(Long productId, Long adminId) {
+        evictKey(CacheConstants.PRODUCT_BY_ID, productId);
+        evictAll(CacheConstants.PRODUCT_BY_NAME);
+        evictCollectionCaches(adminId == null ? Set.of() : Set.of(adminId));
+    }
+
+    private void evictCollectionCaches(Set<Long> adminIds) {
+        adminIds.forEach(adminId -> {
+            evictKey(CacheConstants.PRODUCTS_BY_ADMIN, adminId);
+            evictKey(CacheConstants.PRODUCTS_WITH_IMAGES_BY_ADMIN, adminId);
+        });
+        evictAll(CacheConstants.PRODUCTS_ACTIVE_WITH_IMAGES);
+        evictAll(CacheConstants.PRODUCTS_BY_CATEGORY);
+        evictAll(CacheConstants.PRODUCTS_ACTIVE_PAGE);
+    }
+
+    private void evictKey(String cacheName, Object key) {
+        if (key == null) {return;}
+        Cache cache = cacheManager.getCache(cacheName);
+        if (cache != null) {
+            cache.evict(key);
+        }
+    }
+
+    private void evictAll(String cacheName) {
+        Cache cache = cacheManager.getCache(cacheName);
+        if (cache != null) {
+            cache.clear();
         }
     }
 

@@ -44,7 +44,7 @@ public class SalesItemViewController {
     }
 
     @Operation(summary = "Search sales history by product name")
-    @GetMapping("/product/")
+    @GetMapping("/product")
     public List<SaleItemViewProjection> searchAllByProductName(
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @RequestParam("productName") String productName) {

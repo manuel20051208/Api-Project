@@ -3,7 +3,6 @@ package com.apiproject.entities.general;
 import com.apiproject.entities.admin.Cupon;
 import com.apiproject.entities.admin.UserAdmin;
 import com.apiproject.entities.client.UserClient;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -41,7 +40,6 @@ public class Sale {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cupon_id")
-    @JsonIgnore
     private Cupon cupon;
 
     @Column(name = "created_at")

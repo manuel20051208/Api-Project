@@ -45,6 +45,7 @@ public class SaleService {
     private final SaleRepository saleRepository;
     private final CuponService cuponService;
     private final CuponRepository cuponRepository;
+    private final ProductService productService;
 
     @Transactional
     @Caching(evict = {
@@ -169,6 +170,8 @@ public class SaleService {
 
         // Limpia las caches de cada admin afectado al final de la compra.
         affectedAdminIds.forEach(this::evictAdminCaches);
+        // Refresca las caches de producto: el stock cambió con la compra.
+        productService.refreshCachesAfterStockChange(productsById.values());
 
         // Devuelve todos los ids de ventas creadas para que el front conozca las ventas internas.
         List<Long> saleIds = savedSales.stream()
@@ -321,6 +324,7 @@ public class SaleService {
 
         product.setStock(product.getStock() - amount);
         productRepository.save(product);
+        productService.refreshCachesAfterStockChange(List.of(product));
 
         return ProductResponseDTO.fromEntity(product);
     }

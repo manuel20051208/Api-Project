@@ -53,6 +53,7 @@ public class ProductImageService {
         image.setUserAdmin(product.getUserAdmin());
 
         ProductImage productImage = productImageRepository.save(image);
+        productService.evictProductCaches(productId, adminId);
         return ProductImageDTO.fromEntity(productImage);
     }
 
@@ -74,5 +75,6 @@ public class ProductImageService {
         cloudinary.uploader().destroy(image.getFilePath(), ObjectUtils.emptyMap());
 
         productImageRepository.deleteByImageId(imageId);
+        productService.evictProductCaches(image.getProduct() != null ? image.getProduct().getId() : null, adminId);
     }
 }

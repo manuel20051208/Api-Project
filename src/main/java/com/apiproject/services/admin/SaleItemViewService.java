@@ -1,5 +1,6 @@
 package com.apiproject.services.admin;
 
+import com.apiproject.config.CacheConstants;
 import com.apiproject.repositories.admin.SaleItemViewRepository;
 import com.apiproject.repositories.projection.SaleItemViewProjection;
 import lombok.RequiredArgsConstructor;
@@ -19,27 +20,27 @@ public class SaleItemViewService {
     private final SaleItemViewRepository saleItemViewRepository;
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "saleSummary" , key = "#userId")
+    @Cacheable(value = CacheConstants.SALE_SUMMARY, key = "'limit-' + #userId + '-' + #pageSize")
     public Page<SaleItemViewProjection> showEverythingWithLimits(Long userId, int pageSize){
         Pageable limitTen = PageRequest.of(0, pageSize, latestSalesSort());
         return saleItemViewRepository.findAll(userId,limitTen);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "saleSummary" , key = "#userId")
+    @Cacheable(value = CacheConstants.SALE_SUMMARY, key = "'all-' + #userId")
     public Page<SaleItemViewProjection> showEverythingWithNoRestriction(Long userId){
         Pageable limitTen = PageRequest.of(0, 200, latestSalesSort());
         return saleItemViewRepository.findAll(userId,limitTen);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "saleSummary" , key = "#userId")
+    @Cacheable(value = CacheConstants.SALE_SUMMARY, key = "'client-' + #userId + '-' + #clientName")
     public List<SaleItemViewProjection> showClientByName(Long userId,String clientName){
         return saleItemViewRepository.findAllByClientName(userId, clientName);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "saleSummary" , key = "#userId")
+    @Cacheable(value = CacheConstants.SALE_SUMMARY, key = "'product-' + #userId + '-' + #productName")
     public List<SaleItemViewProjection> showProductByName(Long userId,String productName){
         return saleItemViewRepository.findALlByProductName(userId,productName);
     }

@@ -45,11 +45,14 @@ public class SaleService {
     private final SaleRepository saleRepository;
     private final CuponService cuponService;
     private final CuponRepository cuponRepository;
+    private final ProductService productService;
 
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = CacheConstants.CLIENT_HISTORY, allEntries = true),
-            @CacheEvict(value = CacheConstants.DASHBOARD, allEntries = true)
+            @CacheEvict(value = CacheConstants.DASHBOARD, allEntries = true),
+            @CacheEvict(value = CacheConstants.SALES, allEntries = true),
+            @CacheEvict(value = CacheConstants.SALE_SUMMARY, allEntries = true)
     })
     public PurchaseResponseDTO purchase(PurchaseRequestDTO requestDTO, Long authenticatedClientId) {
         // Validamos el cuerpo del request de la venta
@@ -169,6 +172,8 @@ public class SaleService {
 
         // Limpia las caches de cada admin afectado al final de la compra.
         affectedAdminIds.forEach(this::evictAdminCaches);
+        // Refresca las caches de producto: el stock cambió con la compra.
+        productService.refreshCachesAfterStockChange(productsById.values());
 
         // Devuelve todos los ids de ventas creadas para que el front conozca las ventas internas.
         List<Long> saleIds = savedSales.stream()
@@ -215,8 +220,17 @@ public class SaleService {
         if (adminId == null) return;
         evictIfPresent(CacheConstants.DASHBOARD, adminId);
         evictIfPresent(CacheConstants.DASHBOARD_CLIENTS, adminId);
-        evictIfPresent(CacheConstants.SALES, adminId);
+        // SALES ahora usa keys con prefijo y paginación ('sales-'/'dashboard-' + userId + page + size),
+        // por eso se limpia la cache completa y no una key puntual.
+        clearIfPresent(CacheConstants.SALES);
         evictIfPresent(CacheConstants.CLIENTS, adminId);
+    }
+
+    private void clearIfPresent(String cacheName) {
+        var cache = cacheManager.getCache(cacheName);
+        if (cache != null) {
+            cache.clear();
+        }
     }
 
     // Evict caché si ya hay datos almacenados en el cache
@@ -321,6 +335,7 @@ public class SaleService {
 
         product.setStock(product.getStock() - amount);
         productRepository.save(product);
+        productService.refreshCachesAfterStockChange(List.of(product));
 
         return ProductResponseDTO.fromEntity(product);
     }

@@ -7,6 +7,7 @@ public final class CacheConstants {
     public static final String DASHBOARD = "dashboard";
     public static final String DASHBOARD_CLIENTS = "dashboard-clients";
     public static final String SALES     = "sales";
+    public static final String SALE_SUMMARY = "saleSummary";
     public static final String USER_RESPONSE = "users";
     public static final String PRODUCTS_BY_ADMIN = "productsByAdmin";
     public static final String PRODUCTS_WITH_IMAGES_BY_ADMIN = "productsWithImagesByAdmin";
@@ -16,6 +17,10 @@ public final class CacheConstants {
     public static final String PRODUCTS_BY_CATEGORY = "productsByCategory";
     public static final String PRODUCTS_ACTIVE_PAGE = "productsActivePage";
     public static final String PRODUCT_ADMIN = "productAdmin";
+    public static final String PRODUCT_REVIEWS_BY_PRODUCT = "productReviewsByProduct";
+    public static final String PRODUCT_REVIEWS_BY_CLIENT = "productReviewsByClient";
+    public static final String PRODUCT_REVIEW_BY_ID = "productReviewById";
+    public static final String PRODUCT_REVIEW_SUMMARY = "productReviewSummary";
     public static final String CLIENTS   = "clients";
     public static final String CLIENT_HISTORY = "ClientHistory";
     public static final String CLIENT_RESPONSE = "clientResponse";

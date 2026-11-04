@@ -13,7 +13,7 @@ API REST de **inventario y ventas** (`ApiJuegoInventario`) para una tienda con:
 - Compra con **tarjetas simuladas**.
 - **Dashboard de métricas** y **reportes Excel/PDF** por admin.
 - Autenticación **JWT** + **OAuth2 con Google**.
-- Caché de cupones y productos (SSE/notificaciones retirado temporalmente; se planea un servicio de notificaciones aparte).
+- Caché de cupones y productos, **acotado con Caffeine** (`maximumSize` + TTL, ver §8) (SSE/notificaciones retirado temporalmente; se planea un servicio de notificaciones aparte).
 
 ## 2. Stack técnico
 
@@ -88,21 +88,21 @@ ApiProject/
 ### controllers/
 - **admin/**: `DashboardController` (métricas + excel/pdf), `UserController` (login/register/admin/modify/upload-profile), `ProductImageController` (upload/list/delete imágenes), `ClientsSummaryViewController`, `SalesItemViewController`, `CuponController` (CRUD + validate + assign + **send** cupones), `SecondHandCuponController` (CRUD + validate cupones SH), `ServiceOfferedController` (CRUD servicios), `ServiceCuponController` (CRUD cupones de servicios), `SecondHandProductImageController` (imágenes segunda mano).
 - **client/**: `ClientControllers` (login/register/modify/fotos/tarjetas/user-data/history).
-- **general/**: `ProductController` (catálogo + CRUD), `SaleController` (purchase con `cuponCode` opcional, refresh), `ShProductController` (catálogo + CRUD segunda mano), `ShSaleController` (purchase segunda mano + historiales client/admin).
+- **general/**: `ProductController` (catálogo + CRUD), `ProductReviewController` (reseñas: listar por producto/cliente, resumen de estrellas, crear/editar/borrar), `SaleController` (purchase con `cuponCode` opcional, refresh), `ShProductController` (catálogo + CRUD segunda mano), `ShSaleController` (purchase segunda mano + historiales client/admin).
 
 ### services/
 - **admin/**: `UserServiceTest`, `DashboardService`, `ProductImageService`, `ClientsSummaryViewService`, `SaleItemViewService`, `ReportServiceFactory`, `CuponService` (CRUD + `resolveForCart`/`redeem`/`registerUsage` + asignación y **send a cliente**), `SecondHandCuponService` (espejo SH), `ServiceOfferedService`, `ServiceCuponService`, `SecondHandProductImageService`.
 - **client/**: `ClientService`.
-- **general/**: `ProductService`, `SaleService`, `SaleItemService`, `SecondHandProductService`, `ShSaleService`.
+- **general/**: `ProductService`, `ProductReviewService` (CRUD de reseñas + promedio con caché), `SaleService`, `SaleItemService`, `SecondHandProductService`, `ShSaleService`.
 - **reportGenerator/**: `ReportService` (interfaz), `ExcelService`, `PdfService`.
 
 ### entities/
 - **admin/**: `UserAdmin` → tabla `users`; `ProductImage` → `product_image`; `ReportDashboard` (vista `report_view_dashboard`); `Cupon` → `cupons`; `ProductCuponApplied` → `product_cupons_applied`; `CuponUsedByClients` → `cupons_used_by_clients`; `SecondHandCupon` → `secondhand_cupons`; `SecondHandProductCuponsApplied` → `secondhand_product_cupons_applied`; `ShCuponUsedByClients` → `sh_cupons_used_by_clients`; `ServiceCuponUsedByClients` → `services_cupons_used_by_clients`; `SecondHandProductImage` → `secondhand_product_images`; `ServiceOffered` → `services_offered`; `ServiceCupon` → `services_cupon`.
 - **client/**: `UserClient` → `clients`; `PaymentCard` → `payment_cards`.
-- **general/**: `Product` → `products`; `Sale` → `sales`; `SalesItem` → `sale_items`; `SecondHandProduct` → `secondhand_product`; `ShSale` → `sh_sales`; `ShSalesItem` → `sh_sales_item`.
+- **general/**: `Product` → `products`; `ProductReviews` → `product_reviews` (reseña 1×cliente×producto, `stars` 1..5); `Sale` → `sales`; `SalesItem` → `sale_items`; `SecondHandProduct` → `secondhand_product`; `ShSale` → `sh_sales`; `ShSalesItem` → `sh_sales_item`.
 
 ### repositories/ · projection/
-Repos estándar JPA por entidad. **Todas las consultas nuevas usan `nativeQuery = true`** (incluye `FOR UPDATE` para cupones y stock SH). Proyecciones para vistas: `ClientLoginProjection`, `ClientSummaryProjection`, `ClientHistoryProjection`, `DashboardProjection`, `ReportDashboardProjection`, `PaymentCardDetailsProjection`, `SaleItemViewProjection`. Proyecciones nuevas: `CuponAdminProjection` (cupón + productos aplicados agregados con `string_agg`), `CuponUsageProjection` (id+discount de cupón válido), `ShProductCardProjection` (tarjeta SH con owner y primera imagen vía `LATERAL`), `ShSaleHistoryProjection` (historial segunda mano client/admin). Asignaciones de cupones a clientes: `ProductCuponAssignmentProjection`, `ShProductCuponAssignmentProjection` y `ServiceCuponAssignmentProjection` (tres proyecciones de interfaz; devuelven fila `id, client_id, full_name, email, cupon, discount, cupon_date_limit, producto/servicio` y reemplazaron a los `List<Object[]>` + casteo manual en `CuponService`/`SecondHandCuponService`/`ServiceCuponService`).
+Repos estándar JPA por entidad. **Todas las consultas nuevas usan `nativeQuery = true`** (incluye `FOR UPDATE` para cupones y stock SH). Proyecciones para vistas: `ClientLoginProjection`, `ClientSummaryProjection`, `ClientHistoryProjection`, `DashboardProjection`, `ReportDashboardProjection`, `PaymentCardDetailsProjection`, `SaleItemViewProjection`. Proyecciones nuevas: `CuponAdminProjection` (cupón + productos aplicados agregados con `string_agg`), `CuponUsageProjection` (id+discount de cupón válido), `ShProductCardProjection` (tarjeta SH con owner y primera imagen vía `LATERAL`), `ShSaleHistoryProjection` (historial segunda mano client/admin), `ProductReviewProjection` (reseña + nombre de producto/cliente) y `ProductReviewSummaryProjection` (promedio + total de estrellas). Asignaciones de cupones a clientes: `ProductCuponAssignmentProjection`, `ShProductCuponAssignmentProjection` y `ServiceCuponAssignmentProjection` (tres proyecciones de interfaz; devuelven fila `id, client_id, full_name, email, cupon, discount, cupon_date_limit, producto/servicio` y reemplazaron a los `List<Object[]>` + casteo manual en `CuponService`/`SecondHandCuponService`/`ServiceCuponService`).
 
 ### security/
 - `JwtService`: firma/valida JWT (clave `JWT_SECRET_KEY`, expiración `JWT_EXPIRATION_MS`).
@@ -148,14 +148,19 @@ Base `/api` (salvo dashboard). Auth: `Authorization: Bearer <token>`.
 | `GET /client-show-summary/getNames/{userId}` · `/name/{userId}` · `/email/{userId}` | ADMIN | Resumen clientes |
 | `GET /notification/stream` ~~SSE~~ | Retirado (se reemplazará por servicio de notificaciones) |
 | `POST/GET/PUT/DELETE /cupons` + `/cupons/my` | ADMIN | CRUD cupones (request: `{cuponCode, cuponDateLimit, discount, quantity, productIds[]}`) |
-| `POST /cupons/assign` | ADMIN | Asignar cupón a clientes o a todos (`{cuponId, clientIds[], assignToAll, usageLimit}`; `usageLimit` obligatorio > 0) |
-| `POST /cupons/send` | ADMIN | Enviar cupón ya creado a **un** cliente (`{clientId, cuponId, usageLimit}`); crea la asignación cupón×producto×cliente |
+| `POST /cupons/assign` | ADMIN | Asignar cupón a clientes o a todos (`{cuponId, clientIds[], assignToAll, usageLimit}`; `usageLimit` obligatorio > 0 y ≤ `quantity` del cupón) |
+| `POST /cupons/send` | ADMIN | Enviar cupón ya creado a **un** cliente (`{clientId, cuponId, usageLimit}`); crea la asignación cupón×producto×cliente y exige `usageLimit` ≤ `quantity` |
 | `GET /cupons/validate?code=&productId=` | Auth | Validar cupón para un producto |
 | `POST/GET/PUT/DELETE /sh-cupons` + `validate?code=&productId=` | ADMIN/Auth | Ídem para segunda mano (`shCuponCode`, `shProductIds[]`) |
 | `POST /services` · `/services/my` · `PUT/DELETE /services/{id}` | ADMIN | CRUD servicios ofrecidos (`{nameOfService, valueOfService, descriptionOfService}`) |
 | `GET /services/catalog/{ownerId}?search=` | Auth | Catálogo público de servicios de una tienda |
 | `POST/GET/PUT/DELETE /services-cupons` + `GET /services-cupons/validate/{ownerId}?code=` + `GET /services-cupons/{cuponId}/assignments` | ADMIN/Auth | Cupones de servicio (`serviceCuponCode`); asignaciones con usageLimit+usedCount |
 | `GET /sh-product/search/active?category=&search=` | Público | Catálogo SH (tarjetas con ownerName + primera imagen) |
+| `GET /product-reviews/product/{productId}?page=&size=` | Auth | Reseñas paginadas de un producto |
+| `GET /product-reviews/product/{productId}/summary` | Auth | Promedio de estrellas + total de reseñas |
+| `GET /product-reviews/my?page=&size=` | CLIENT | Reseñas del cliente autenticado |
+| `POST /product-reviews` | CLIENT | Crear reseña `{productId, stars, reviews}` (solo si compró el producto, 1 por producto) |
+| `PUT /product-reviews/{reviewId}` · `DELETE /product-reviews/{reviewId}` | CLIENT | Editar / borrar su propia reseña |
 | `GET /sh-product/my` · `GET /sh-product/{id}` | ADMIN | Productos SH propios |
 | `POST /sh-product/saveShProduct` · `/deleteSafe` · `PUT /update/{id}` | ADMIN | CRUD SH (body = entidad; response DTO) |
 | `POST /sh-product-images/upload/{productId}` · `GET /{productId}` · `DELETE /{imageId}` | ADMIN/Público | Imágenes SH (Cloudinary folder `secondhand`) |
@@ -187,7 +192,7 @@ response: `{ saleId, saleIds, clientId, totalAmount, createdAt, items:[{ product
 
 ## 7. Base de datos (PostgreSQL)
 
-El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones versionadas en `src/main/resources/db/migration/` (V1__schema_inicial.sql = tablas+índices+vistas; V2__add_color_config.sql = enum `color_types` + `color_config` en `users`/`clients`; V4__add_discount_and_coupon_on_sales.sql = `discount`+`cupon_id` FK en `sales`/`sh_sales`, `usage_limit` en tablas de asignación de cupones, recrea `view_of_client_history`; V5__add_discount_columns_to_clients_summary.sql = `clients_summary` con `total_discount` + `total_spent_discount`; V6__rebuild_client_history_from_sales.sql = `view_of_client_history` desde `sales` con `subtotal`, `total_amount` real, `discount` y `cupon_code`; V7__add_usage_count_on_cupons_used.sql = `usage_count` en `cupons_used_by_clients`/`sh_cupons_used_by_clients` (contador acumulado) + tabla espejo `services_cupons_used_by_clients`). Modelo visual en `db/schema.dbml` (solo referencia, no ejecutable).
+El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones versionadas en `src/main/resources/db/migration/` (V1__schema_inicial.sql = tablas+índices+vistas; V2__add_color_config.sql = enum `color_types` + `color_config` en `users`/`clients`; V4__add_discount_and_coupon_on_sales.sql = `discount`+`cupon_id` FK en `sales`/`sh_sales`, `usage_limit` en tablas de asignación de cupones, recrea `view_of_client_history`; V5__add_discount_columns_to_clients_summary.sql = `clients_summary` con `total_discount` + `total_spent_discount`; V6__rebuild_client_history_from_sales.sql = `view_of_client_history` desde `sales` con `subtotal`, `total_amount` real, `discount` y `cupon_code`; V7__add_usage_count_on_cupons_used.sql = `usage_count` en `cupons_used_by_clients`/`sh_cupons_used_by_clients` (contador acumulado) + tabla espejo `services_cupons_used_by_clients`; V8__add_product_reviews.sql = tabla `product_reviews` (1 reseña por cliente×producto, `stars` 1..5, FK CASCADE a `products`/`clients` + índices por producto/cliente y fecha)). Modelo visual en `db/schema.dbml` (solo referencia, no ejecutable).
 
 - `spring.jpa.hibernate.ddl-auto=validate` — Hibernate solo valida; cualquier cambio se hace con una migración nueva (nunca tocar migraciones ya aplicadas).
 - En BD ya existente (p.ej. la de Render): `baseline-on-migrate=true` + `baseline-version=0` hace que Flyway cree `flyway_schema_history` y ejecute **todas** las migraciones pendientes (V1 es idempotente/no destructivo).
@@ -234,13 +239,15 @@ El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones ver
 ## 8. Configuración
 
 - `application.properties` es la única fuente de config (sin perfiles adicionales versionados).
-- Datasource: `jdbc:postgresql://localhost:5432/apiproject` (en contenedor se inyecta `DB_URL`); JPA show-sql + batch 50 + **`ddl-auto=validate`**; **Flyway** (`locations=classpath:db/migration`, `baseline-on-migrate=true`, `baseline-version=0`); multipart 30MB, OAuth2 Google (admin/client), Swagger on.
-- Variables de entorno (locales: `.env` la lee `docker-compose`/shell; en CI y VM se inyectan directo; ya no hay spring-dotenv): `DB_URL` (`DB_HOST`+`DB_PORT`+`DB_NAME`), `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET_KEY`, `JWT_EXPIRATION_MS`, `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET`, `BASIC_AUTH_USERNAME/PASSWORD`, `GOOGLE_CLIENT_ID/SECRET`, `URL_FOR_REQUESTING_AND_RESPONSIVES` (CORS), `DB_SSLMODE`.
+- **Dev local**: `spring.config.import=optional:file:./.env[.properties]` carga el `.env` de la raíz (sin spring-dotenv). En Docker/CI/VM el archivo no existe y la línea se ignora (`optional:`), ahí las variables llegan inyectadas por entorno.
+- Datasource: `jdbc:postgresql://localhost:5432/apiproject` (en contenedor se inyecta `DB_URL`); JPA show-sql + batch 50 + **`ddl-auto=validate`**; **Flyway** (`locations=classpath:db/migration`, `baseline-on-migrate=true`, `baseline-version=0`); multipart 30MB, OAuth2 Google (admin/client), Swagger on. Pool Hikari acotado (`maximum-pool-size=6`, `minimum-idle=2`) por la VM de 1 GB.
+- **Caché acotado**: `spring.cache.type=caffeine` + `spring.cache.caffeine.spec=maximumSize=100,expireAfterWrite=10m`. Sin esto Spring usaba `ConcurrentMapCacheManager` (sin límite ni expiración) y las keys paginadas (historial, dashboard, ventas) crecían hasta llenar la RAM del contenedor.
+- Variables de entorno (locales: las toma del `.env` importado; en CI y VM se inyectan directo): `DB_URL` (`DB_HOST`+`DB_PORT`+`DB_NAME`), `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET_KEY`, `JWT_EXPIRATION_MS`, `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `URL_FOR_REQUESTING_AND_RESPONSIVES` (CORS), `DB_SSLMODE`. (`BASIC_AUTH_USERNAME/PASSWORD` ya no se leen: `spring.security.user.*` se eliminó porque httpBasic/formLogin están deshabilitados.)
 
 ## 9. Docker
 
-- **docker-compose**: `db` postgres:16-alpine en `5433:5432` + `app` en `8080` (espera healthcheck de la DB, env desde `.env`). El esquema lo crea **Flyway** al arrancar la app (ya no hay initdb.d ni entrypoint con SQL).
-- **Dockerfile**: build `maven:3-eclipse-temurin-25` (`mvn package -DskipTests`) → runtime `eclipse-temurin:25-jre-alpine`. Las migraciones viajan dentro del jar (`db/migration`).
+- **docker-compose**: `db` postgres:16-alpine en `5433:5432` + `app` en `8080` (espera healthcheck de la DB, env desde `.env`). El esquema lo crea **Flyway** al arrancar la app (ya no hay initdb.d ni entrypoint con SQL). **Límites de RAM** para VM de 1 GB: `app` 576m (`API_MEM_LIMIT`), `db` 160m (`DB_MEM_LIMIT`), `memswap_limit` igual a `mem_limit` (sin swap) y logs `json-file` rotados a 10m×3. Postgres corre con `shared_buffers=32MB`, `max_connections=30`, `work_mem=2MB`, `maintenance_work_mem=32MB`, `effective_cache_size=96MB`.
+- **Dockerfile**: build `maven:3-eclipse-temurin-25` (`mvn package -DskipTests`) → runtime `eclipse-temurin:25-jre-alpine`. Las migraciones viajan dentro del jar (`db/migration`). `JAVA_OPTS` = `-XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError` (heap = 50% del `mem_limit`; el Metaspace real en arranque es ~105 MB, con 96m el contexto muere).
 - **entrypoint.sh**: espera a PostgreSQL, construye `DB_URL` y arranca la app (con comentarios en español).
 - **Despliegue real (VM)**: el workflow `.github/workflows/api-project.yml` corre en cada push a `main`: tests (Java 25) → `mvn package` → imagen Docker → GHCR → SSH a la EC2 (`git reset --hard origin/main` + `docker compose pull/up`). `render.yaml` es la segunda opción (nube Render) y ya no se usa.
 
@@ -257,6 +264,7 @@ El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones ver
 - `deleteSafe` es **borrado suave** (pone `active=false`).
 - `PurchaseRequestDTO` tiene `clientId`, `userId` (lista, sin uso actual), `items` y `cuponCode` (opcional).
 - **Regla de cupones en compra** (normal y SH): si se envía `cuponCode`, el cupón debe estar vigente (`cupon_date_limit`) y tener usos disponibles (`quantity`, `NULL` = ilimitado). El cupón pertenece a un **solo admin** y aplica descuento **únicamente a los productos del carrito de ese admin** que estén vinculados al cupón (`product_cupons_applied`); se **permite carrito multi-vendedor** (los productos de otros admins se cobran completos). `quantity` es el **nº de productos que cubre por compra**; si el carrito trae más elegibles que `quantity`, solo se descuentan los primeros `quantity`. Se bloquea con `FOR UPDATE`, se descuenta 1 uso por compra (`redeem`) y se registra la fila en `*_used_by_clients`. El descuento es un porcentaje sobre cada subtotal elegible.
+- **Regla de asignación de cupones** (normal, SH y servicios): el `usageLimit` por cliente no puede superar el `quantity` del cupón (usos definidos al crearlo); si `quantity` es `NULL` (ilimitado) no hay tope. Se valida en asignar (`/assign`), enviar (`/send`) y en las dos ediciones de asignaciones (una / todas) con `CouponUsageLimitValidator` → 400 si se excede.
 - **Consultas nuevas siempre native query**; respuestas con DTO o projection (nunca `Object[]` — las asignaciones de cupones usan proyecciones de interfaz). Bloqueos de stock/cupones SH con `FOR UPDATE`.
 - **BD real vs migraciones**: en la BD desplegada las FKs de normales `product_cupon_to_a_client` (`fk_product_client_cupon`) y `cupons_used_by_clients` (`fk_used_cupon`) **no tienen `ON DELETE CASCADE`** (constraints legacy de un esquema previo; el V1 sí lo declara). Por eso `CuponService.delete` borra explícitamente asignaciones (`deleteByCuponId`), usos (`CuponUsedByClientsRepository.deleteByCuponId`) y enlaces N:M antes de borrar el cupón. SH y servicios sí cascadean en la BD real.
 - **Flyway como única fuente de verdad del esquema**. Nunca editar una migración ya aplicada; añadir una nueva `V<n>__descripcion.sql`. `color_config` en `users`/`clients` es enum nativo `color_types` (`@JdbcTypeCode(SqlTypes.NAMED_ENUM)`).

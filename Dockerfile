@@ -22,10 +22,7 @@ RUN apk add --no-cache curl postgresql-client \
 
 WORKDIR /app
 
-COPY --from=extract --chown=app:app /workspace/extracted/dependencies/ ./
-COPY --from=extract --chown=app:app /workspace/extracted/spring-boot-loader/ ./
-COPY --from=extract --chown=app:app /workspace/extracted/snapshot-dependencies/ ./
-COPY --from=extract --chown=app:app /workspace/extracted/application/ ./
+COPY --from=build --chown=app:app /build/target/ApiProject-0.0.1-SNAPSHOT.jar app.jar
 
 # Las migraciones de BD viajan dentro del jar (src/main/resources/db/migration)
 # y las aplica Flyway al arrancar la aplicacion.
@@ -34,7 +31,12 @@ COPY --chown=app:app docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 USER app
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:MaxMetaspaceSize=160m"
+# Heap relativo al limite de memoria del contenedor (mem_limit del compose):
+# 50% de 576m ~= 288m de heap. Metaspace medido en arranque: ~105 MB, por eso
+# el tope de 128m (con 96m el contexto muere con OutOfMemoryError: Metaspace).
+# -XX:+ExitOnOutOfMemoryError reinicia el contenedor en vez de dejarlo colgado;
+# SerialGC conviene en VMs de 1 vCPU con heap chico.
+ENV JAVA_OPTS="-XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
 
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \

@@ -21,7 +21,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/product")
-@PreAuthorize("isAuthenticated()")
 public class ProductController {
     public final ProductService productService;
 

@@ -10,6 +10,28 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:5433:5432"
+    # --- Limites de RAM (VM de 1 GB: API + Postgres + SO) ---
+    mem_limit: ${DB_MEM_LIMIT:-160m}
+    memswap_limit: ${DB_MEM_LIMIT:-160m}
+    restart: unless-stopped
+    # Postgres con buffers chicos para entrar en 160 MB (default: shared_buffers=128MB)
+    command:
+      - postgres
+      - -c
+      - shared_buffers=32MB
+      - -c
+      - max_connections=30
+      - -c
+      - work_mem=2MB
+      - -c
+      - maintenance_work_mem=32MB
+      - -c
+      - effective_cache_size=96MB
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d apiproject" ]
       interval: 5s
@@ -40,7 +62,17 @@ services:
       CORS_ALLOWED_ORIGIN: ${URL_FOR_REQUESTING_AND_RESPONSIVES}
     ports:
       - "0.0.0.0:8080:8080"
+    # --- Limites de RAM (VM de 1 GB: API + Postgres + SO) ---
+    # El JVM toma el 50% del limite como heap (-XX:MaxRAMPercentage en el Dockerfile).
+    # Subilo/bajalo desde .env (API_MEM_LIMIT / DB_MEM_LIMIT) sin tocar este archivo.
+    mem_limit: ${API_MEM_LIMIT:-576m}
+    memswap_limit: ${API_MEM_LIMIT:-576m}
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   db_data:

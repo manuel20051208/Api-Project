@@ -15,32 +15,41 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ClientsSummaryViewService {
+    private static final int MAX_PAGE_SIZE = 100;
+
     public final ClientsSummaryViewRepository clientsSummaryViewRepository;
 
     @Transactional(readOnly = true)
-    public Page<ClientSummaryProjection> showClientsSummaryByName(Long userId, String clientName, int page) {
-        Pageable pageable = PageRequest.of(0, page, latestClientsSort());
-        return clientsSummaryViewRepository.findByAdminAndName(userId, clientName, pageable);
+    public Page<ClientSummaryProjection> showClientsSummaryByName(Long userId, String clientName, int page, int size) {
+        return clientsSummaryViewRepository.findByAdminAndName(userId, clientName, pageable(page, size));
     }
 
     @Transactional(readOnly = true)
-    public Page<ClientSummaryProjection> showClientsSummaryByEmail(Long userId, String clientEmail, int page) {
-        Pageable pageable = PageRequest.of(0, page, latestClientsSort());
-        return clientsSummaryViewRepository.findByAdminAndEmail(userId, clientEmail, pageable);
+    public Page<ClientSummaryProjection> showClientsSummaryByEmail(Long userId, String clientEmail, int page, int size) {
+        return clientsSummaryViewRepository.findByAdminAndEmail(userId, clientEmail, pageable(page, size));
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConstants.SALES, key = "#userIdAll")
-    public Page<ClientSummaryProjection> showAllForSales(Long userIdAll) {
-        Pageable pageable = PageRequest.of(0, 100, latestClientsSort());
-        return clientsSummaryViewRepository.findAllByAdmin(userIdAll, pageable);
+    @Cacheable(value = CacheConstants.SALES, key = "'sales-' + #userId + '-' + #page + '-' + #size")
+    public Page<ClientSummaryProjection> showAllForSales(Long userId, int page, int size) {
+        return clientsSummaryViewRepository.findAllByAdmin(userId, pageable(page, size));
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConstants.SALES, key = "#userId")
+    @Cacheable(value = CacheConstants.SALES, key = "'dashboard-' + #userId")
     public Page<ClientSummaryProjection> showAllForDashBoard(Long userId) {
         Pageable pageable = PageRequest.of(0, 5, latestClientsSort());
         return clientsSummaryViewRepository.findAllByAdmin(userId, pageable);
+    }
+
+    /**
+     * `page` es base 0 y `size` queda acotado a [1, 100] para evitar páginas de tamaño 0 (400)
+     * o respuestas gigantes.
+     */
+    private Pageable pageable(int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        return PageRequest.of(safePage, safeSize, latestClientsSort());
     }
 
     private Sort latestClientsSort() {

@@ -50,7 +50,9 @@ public class SaleService {
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = CacheConstants.CLIENT_HISTORY, allEntries = true),
-            @CacheEvict(value = CacheConstants.DASHBOARD, allEntries = true)
+            @CacheEvict(value = CacheConstants.DASHBOARD, allEntries = true),
+            @CacheEvict(value = CacheConstants.SALES, allEntries = true),
+            @CacheEvict(value = CacheConstants.SALE_SUMMARY, allEntries = true)
     })
     public PurchaseResponseDTO purchase(PurchaseRequestDTO requestDTO, Long authenticatedClientId) {
         // Validamos el cuerpo del request de la venta
@@ -218,8 +220,17 @@ public class SaleService {
         if (adminId == null) return;
         evictIfPresent(CacheConstants.DASHBOARD, adminId);
         evictIfPresent(CacheConstants.DASHBOARD_CLIENTS, adminId);
-        evictIfPresent(CacheConstants.SALES, adminId);
+        // SALES ahora usa keys con prefijo y paginación ('sales-'/'dashboard-' + userId + page + size),
+        // por eso se limpia la cache completa y no una key puntual.
+        clearIfPresent(CacheConstants.SALES);
         evictIfPresent(CacheConstants.CLIENTS, adminId);
+    }
+
+    private void clearIfPresent(String cacheName) {
+        var cache = cacheManager.getCache(cacheName);
+        if (cache != null) {
+            cache.clear();
+        }
     }
 
     // Evict caché si ya hay datos almacenados en el cache

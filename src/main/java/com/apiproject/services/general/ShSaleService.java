@@ -1,6 +1,7 @@
 package com.apiproject.services.general;
 
 import com.apiproject.DTOs.General.*;
+import com.apiproject.config.CacheConstants;
 import com.apiproject.entities.admin.SecondHandCupon;
 import com.apiproject.entities.admin.ShCuponUsedByClients;
 import com.apiproject.entities.client.UserClient;
@@ -17,6 +18,7 @@ import com.apiproject.repositories.general.ShSaleRepository;
 import com.apiproject.repositories.general.SecondHandProductRepository;
 import com.apiproject.services.admin.SecondHandCuponService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -42,6 +44,7 @@ public class ShSaleService {
     private final SecondHandCuponRepository secondHandCuponRepository;
 
     @Transactional
+    @CacheEvict(value = CacheConstants.SALE_SUMMARY, allEntries = true)
     public ShPurchaseResponseDTO purchase(ShPurchaseRequestDTO requestDTO, Long authenticatedClientId) {
         validatePurchaseRequest(requestDTO, authenticatedClientId);
 

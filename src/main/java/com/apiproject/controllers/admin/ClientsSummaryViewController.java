@@ -18,29 +18,33 @@ import org.springframework.web.bind.annotation.*;
 public class ClientsSummaryViewController {
     public final ClientsSummaryViewService clientsSummaryViewService;
 
-    @Operation(summary = "Get all clients summaries")
+    @Operation(summary = "Get all clients summaries (paginated, page is 0-based)")
     @GetMapping("/getNames")
     public Page<ClientSummaryProjection> showAll(
-            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size
     ){
-        return clientsSummaryViewService.showAllForSales(authenticatedUser.id());
+        return clientsSummaryViewService.showAllForSales(authenticatedUser.id(), page, size);
     }
 
-    @Operation(summary = "Search client summaries by exact name")
+    @Operation(summary = "Search client summaries by name (paginated, page is 0-based)")
     @GetMapping("/name")
     public Page<ClientSummaryProjection> showByName(
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @RequestParam(required = false) String name,
-            @RequestParam(defaultValue = "10") int page){
-        return clientsSummaryViewService.showClientsSummaryByName(authenticatedUser.id(),name, page);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        return clientsSummaryViewService.showClientsSummaryByName(authenticatedUser.id(),name, page, size);
     }
 
-    @Operation(summary = "Search client summaries by exact email")
+    @Operation(summary = "Search client summaries by email (paginated, page is 0-based)")
     @GetMapping("/email")
     public Page<ClientSummaryProjection> showByEmail(
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
             @RequestParam(required = false) String email,
-            @RequestParam(defaultValue = "10") int page){
-        return clientsSummaryViewService.showClientsSummaryByEmail(authenticatedUser.id(),email, page);
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        return clientsSummaryViewService.showClientsSummaryByEmail(authenticatedUser.id(),email, page, size);
     }
 }

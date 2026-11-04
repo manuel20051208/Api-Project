@@ -79,7 +79,8 @@ public class SecurityConfig {
                                         "/api/client/login",
                                         "/api/client/register"
                                 ).permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/user/*/admin").permitAll()
+                                // Ficha pública de la tienda (el catálogo es público)
+                                .requestMatchers(HttpMethod.GET, "/api/client/*/admin").permitAll()
                                 .requestMatchers(HttpMethod.GET,
                                         "/api/product/search/active-with-images",
                                         "/api/product/search/id/**",

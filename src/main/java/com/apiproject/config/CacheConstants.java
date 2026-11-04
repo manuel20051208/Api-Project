@@ -7,6 +7,7 @@ public final class CacheConstants {
     public static final String DASHBOARD = "dashboard";
     public static final String DASHBOARD_CLIENTS = "dashboard-clients";
     public static final String SALES     = "sales";
+    public static final String SALE_SUMMARY = "saleSummary";
     public static final String USER_RESPONSE = "users";
     public static final String PRODUCTS_BY_ADMIN = "productsByAdmin";
     public static final String PRODUCTS_WITH_IMAGES_BY_ADMIN = "productsWithImagesByAdmin";

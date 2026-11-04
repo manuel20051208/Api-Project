@@ -90,7 +90,14 @@ public class SecurityConfig {
                                         "/api/product/*/admin"
                                 ).authenticated()
                                 .requestMatchers(HttpMethod.GET, "/api/product-images/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/product-reviews/**").authenticated()
+                                // ===== Reseñas de productos: lectura pública, escritura CLIENT =====
+                                // "Mis reseñas" exige sesión porque necesita el cliente del JWT (va primero: gana la primera regla).
+                                .requestMatchers(HttpMethod.GET, "/api/product-reviews/my").hasRole("CLIENT")
+                                // Público: reseñas de un producto (+ /summary) y una reseña individual.
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/product-reviews/product/**",
+                                        "/api/product-reviews/*"
+                                ).permitAll()
                                 .requestMatchers(HttpMethod.PATCH, "/api/user/upload-profile").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PATCH, "/api/client/upload-profile").hasRole("CLIENT")
                                 .requestMatchers(HttpMethod.GET, "/api/client/profile-photo").hasRole("CLIENT")
@@ -115,7 +122,7 @@ public class SecurityConfig {
                                 ).hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/api/product/update/**").hasRole("ADMIN")
                                 .requestMatchers("/api/product/**").hasRole("ADMIN")
-                                // ===== Reseñas de productos (lectura autenticada, escritura CLIENT) =====
+                                // ===== Reseñas de productos (lectura publica arriba, escritura CLIENT) =====
                                 .requestMatchers("/api/product-reviews/**").hasRole("CLIENT")
                                 .requestMatchers("/api/sale/**").hasRole("ADMIN")
                                 // ===== Cupones (validaciones accesibles a clientes, gestion solo ADMIN) =====

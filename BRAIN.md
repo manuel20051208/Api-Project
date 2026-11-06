@@ -28,7 +28,7 @@ API REST de **inventario y ventas** (`ApiJuegoInventario`) para una tienda con:
 | Reportes | Apache POI (Excel) + OpenPDF (PDF) vía `ReportServiceFactory` |
 | Extras | Lombok, caché (`@EnableCaching`), `spring-boot-properties-migrator` (runtime) |
 | Build | Maven (enforcer: **Java 25+**, Maven >= 3.8; perfil `security` con dependency-check) |
-| Deploy | Docker multi-stage (Java 25) + **GitHub Actions** (test → imagen GHCR → deploy en EC2/VM). `render.yaml` = segunda opción (nube Render, ya no activo) |
+| Deploy | Docker multi-stage (Java 25) + **GitHub Actions** (test → imagen GHCR → deploy en EC2/VM). `render.yaml` = segunda opción (nube Render, ya no activo; gitignored, solo local) |
 
 ## 3. Estructura de carpetas
 
@@ -55,6 +55,8 @@ ApiProject/
 ├── graphify-out/      # Knowledge graph (graph.json, GRAPH_REPORT.md) — SOLO LOCAL, no versionado
 ├── docs/              # Notas Obsidian ([[]]) — SOLO LOCAL, no versionado
 ├── diagrams/          # Diagramas HTML/SVG versionados (antes en docs/diagrams/)
+├── render.yaml        # Blueprint Render (2ª opción) — SOLO LOCAL, no versionado
+├── .agents/           # Skills de agentes (PlantUML) — SOLO LOCAL, no versionado
 ├── docker-compose.yml # Postgres (5433) + app (8080)
 ├── Dockerfile         # maven (Java 25) build → temurin 25 jre
 ├── pom.xml            # Dependencias y build
@@ -249,7 +251,7 @@ El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones ver
 - **docker-compose**: `db` postgres:16-alpine en `5433:5432` + `app` en `8080` (espera healthcheck de la DB, env desde `.env`). El esquema lo crea **Flyway** al arrancar la app (ya no hay initdb.d ni entrypoint con SQL). **Límites de RAM** para VM de 1 GB: `app` 576m (`API_MEM_LIMIT`), `db` 160m (`DB_MEM_LIMIT`), `memswap_limit` igual a `mem_limit` (sin swap) y logs `json-file` rotados a 10m×3. Postgres corre con `shared_buffers=32MB`, `max_connections=30`, `work_mem=2MB`, `maintenance_work_mem=32MB`, `effective_cache_size=96MB`.
 - **Dockerfile**: build `maven:3-eclipse-temurin-25` (`mvn package -DskipTests`) → runtime `eclipse-temurin:25-jre-alpine`. Las migraciones viajan dentro del jar (`db/migration`). `JAVA_OPTS` = `-XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError` (heap = 50% del `mem_limit`; el Metaspace real en arranque es ~105 MB, con 96m el contexto muere).
 - **entrypoint.sh**: espera a PostgreSQL, construye `DB_URL` y arranca la app (con comentarios en español).
-- **Despliegue real (VM)**: el workflow `.github/workflows/api-project.yml` corre en cada push a `main`: tests (Java 25) → `mvn package` → imagen Docker → GHCR → SSH a la EC2 (`git reset --hard origin/main` + `docker compose pull/up`). `render.yaml` es la segunda opción (nube Render) y ya no se usa.
+- **Despliegue real (VM)**: el workflow `.github/workflows/api-project.yml` corre en cada push a `main`: tests (Java 25) → imagen Docker (el JAR lo compila el stage `build` del Dockerfile, no el runner) → GHCR → SSH a la EC2 (`git reset --hard origin/main` + `docker compose pull/up`). `render.yaml` es la segunda opción (nube Render; gitignored, solo local) y ya no se usa.
 
 ## 10. Tests
 
@@ -272,7 +274,7 @@ El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones ver
 - CORS solo para localhost:3000.
 - Mantén el grafo **local** actualizado tras cambios de código: `graphify update .` (`graphify-out/` NO se versiona).
 - `docs/` y `API_FRONTEND_CONSUMPTION.txt` están **gitignored** (solo local). Los **diagramas** sí se versionan, en `diagrams/` (ver `.gitattributes`).
-- El deploy activo es la VM vía GitHub Actions; `render.yaml` es referencia (segunda opción, nube Render).
+- El deploy activo es la VM vía GitHub Actions; `render.yaml` es referencia (segunda opción, nube Render; gitignored, solo local).
 
 ## 12. Referencias
 

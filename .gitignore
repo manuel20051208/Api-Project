@@ -50,3 +50,14 @@ qodana.yaml
 ### Documentacion local (vault Obsidian; no versionar) ###
 docs/
 API_FRONTEND_CONSUMPTION.txt
+
+### Artefactos temporales y logs (no versionar) ###
+.tmp-layer-check-*/
+*.log
+
+### Herramientas de agentes (solo local) ###
+.agents/
+skills-lock.json
+
+### Referencia de despliegue alternativo (solo local) ###
+render.yaml

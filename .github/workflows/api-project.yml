@@ -1,29 +1,40 @@
+# =====================================================================
+# CI/CD de ApiProject
+# Flujo: push a main -> tests -> imagen Docker a GHCR -> deploy por SSH a la EC2.
+# Un pull_request solo corre tests (no publica imagen ni despliega).
+# =====================================================================
 name: api-project.yml
+
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ]      # push a main = pipeline completo (test + build + deploy)
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches: [ "main" ]      # PR a main = solo test (build/deploy se saltean por sus "if")
+  workflow_dispatch:          # boton "Run workflow" en la pestaña Actions para dispararlo a mano
 
 jobs:
+  # -------------------------------------------------------------------
+  # JOB 1: tests. Runner Linux limpio + un Postgres real como servicio.
+  # -------------------------------------------------------------------
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    # maquina virtual efimera que GitHub presta por ejecucion
     services:
-      postgres:
+      postgres:               # contenedor auxiliar que corre al lado del runner
         image: postgres:16-alpine
         env:
           POSTGRES_DB: apiproject
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
-          - 5432:5432
+          - 5432:5432         # publica el Postgres del servicio en localhost:5432 del runner
+        # healthcheck: el runner espera a que Postgres responda antes de seguir
         options: >-
           --health-cmd "pg_isready -U postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
     env:
+      # Variables dummy: los tests no deben pegarle a servicios externos reales
       DB_URL: jdbc:postgresql://localhost:5432/apiproject
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
@@ -38,81 +49,91 @@ jobs:
       CLOUDINARY_API_SECRET: test
       URL_FOR_REQUESTING_AND_RESPONSIVES: http://localhost:3000
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4          # clona el repo dentro del runner
       - name: Configurar java 25
         uses: actions/setup-java@v4
         with:
-          java-version: 25
-          distribution: 'temurin'
-          cache: 'maven'
+          java-version: 25                 # el enforcer del pom exige [25,)
+          distribution: 'temurin'          # misma distribucion que usa el Dockerfile
+          cache: 'maven'                   # cachea ~/.m2 entre runs para no re-descargar deps
       - name: Correr tests
-        run: mvn test
+        run: mvn test                      # gate: si falla, build-docker y deploy-vm no corren
 
+  # -------------------------------------------------------------------
+  # JOB 2: construir la imagen y subirla a GitHub Container Registry.
+  # Solo en push/manual: en un PR no tiene sentido publicar una imagen.
+  # -------------------------------------------------------------------
   build-docker:
-    needs: test
+    needs: test                            # espera a que el job test termine OK
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' # Solo crea imagen en merge a main o disparo manual
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: write # Necesario para subir a GHCR
+      contents: read                       # puede leer el repo
+      packages: write                      # puede escribir paquetes en GHCR (push de la imagen)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4          # trae el codigo que se va a empaquetar
 
-      - name: Configurar Java 25
-        uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Construir el JAR
-        run: mvn clean package -DskipTests
+      # El JAR NO se compila aca: el Dockerfile lo construye en su stage "build"
+      # (maven:3-eclipse-temurin-25), asi que el runner no necesita Java ni Maven.
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v3 # BuildKit: habilita cache de capas y builds multi-stage
 
       - name: Login a GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }} # Token automático de GitHub
+          username: ${{ github.actor }}     # usuario que disparo el run
+          password: ${{ secrets.GITHUB_TOKEN }} # Token automatico de GitHub (no hay que crearlo)
 
       - name: Convertir nombre del repo a minúsculas
-        run: echo "REPO_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+        run: echo "REPO_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV # GHCR rechaza mayusculas; ,, pasa a minusculas
 
       - name: Build y push de imagen Docker
         uses: docker/build-push-action@v6
         with:
-          context: .
-          push: true
+          context: .                        # usa el Dockerfile de la raiz
+          push: true                        # sube la imagen al registry
+          # :latest = tag movil que consume el deploy; :<sha> = inmutable, trazabilidad/rollback
           tags: |
             ghcr.io/${{ env.REPO_NAME }}:latest
             ghcr.io/${{ env.REPO_NAME }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max # Usa tu usuario/repo automáticamente
+          cache-from: type=gha              # lee capas cacheadas en GitHub Actions
+          cache-to: type=gha,mode=max       # guarda TODAS las capas (mas lento de subir, builds mas rapidos)
 
+  # -------------------------------------------------------------------
+  # JOB 3: deploy en la VM. Entra por SSH y opera Docker ahi adentro.
+  # La VM es IaaS (EC2), no un PaaS: nadie levanta la app sola.
+  # -------------------------------------------------------------------
   deploy-vm:
-    needs: build-docker
+    needs: build-docker                    # solo despliega si la imagen se construyo y subio bien
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Desplegar en AWS EC2 (Ubuntu)
-        uses: appleboy/ssh-action@v1.2.2
+        uses: appleboy/ssh-action@v1.2.2   # abre una sesion SSH y ejecuta el script remoto
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.VM_HOST }}     # IP/DNS de la EC2
+          username: ${{ secrets.VM_USER }} # usuario ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }} # clave privada para autenticar
           script: |
-            set -e
-            cd /home/ubuntu/Api-Project
+            set -e                         # si un comando falla, corta todo (no despliega a medias)
+
+            cd /home/ubuntu/Api-Project    # checkout del repo que vive en la VM
 
             # La VM es un deploy point estatico: sincroniza forzado contra main.
             # .env y uploads/ estan gitignored y no se tocan con reset --hard.
-            git fetch origin
-            git reset --hard origin/main
+            git fetch origin               # trae las referencias nuevas de GitHub
+            git reset --hard origin/main   # fuerza el working tree al ultimo commit de main
 
+            # Login en GHCR con el token efimero del run (vence cuando termina el job)
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            docker compose pull
-            docker compose up -d --build
+            docker compose pull            # baja imagenes del compose (hoy: solo postgres, ver nota abajo)
+            docker compose up -d --build   # -d = segundo plano, --build = construye "app" EN LA VM
+
+            # NOTA: el servicio "app" del compose no declara "image:", solo "build: .".
+            # Por eso el pull no baja la app y el --build la compila en la VM (Maven dentro
+            # de una maquina de 1 GB). Para usar la imagen de GHCR habria que agregar
+            # "image: ghcr.io/<repo>:<tag>" al servicio y cambiar esto por:
+            #   docker compose pull app && docker compose up -d --no-build app

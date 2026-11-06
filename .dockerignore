@@ -10,3 +10,10 @@ mvnw
 mvnw.cmd
 HELP.md
 *.iml
+
+# Artefactos temporales / logs / herramientas locales
+.tmp-layer-check-*/
+*.log
+.agents/
+skills-lock.json
+docs/

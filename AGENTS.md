@@ -109,5 +109,5 @@ Nota: OJO con nombre real `SaleItemViewRepository` y `SaleItemViewService` (NO S
 - Siempre ejecutar los tests antes de commitear. Requieren **Java 25+** (el enforcer del `pom.xml` exige `[25,)`); local hay JDK 26 (`mvn -B test`). El CI los corre con temurin 25 + Postgres 16 de servicio.
 - Si los tests pasan: hacer commit en `main` y hacer `git push origin main` automáticamente.
 - No commitear ni pushear si los tests fallan.
-- Push a `main` dispara **CI/CD**: GitHub Actions testea → construye la imagen Docker → GHCR → SSH a la VM (EC2) (`git reset --hard origin/main` + `docker compose pull/up`). `render.yaml` es la **segunda opción** (deploy en nube Render, ya no activo).
+- Push a `main` dispara **CI/CD**: GitHub Actions testea → construye la imagen Docker → GHCR → SSH a la VM (EC2) (`git reset --hard origin/main` + `docker compose pull/up`). `render.yaml` es la **segunda opción** (deploy en nube Render, ya no activo; gitignored, solo local).
 - `graphify-out/`, `docs/` y `API_FRONTEND_CONSUMPTION.txt` están en `.gitignore`: NO se commitean. `diagrams/` SÍ se versiona.

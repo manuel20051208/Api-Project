@@ -30,6 +30,7 @@ public class JwtService {
     }
 
     public String generateAdminToken(Long userId, String email, String accountType) {
+        validateCredential(userId, email, accountType);
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationMs);
 
@@ -44,6 +45,7 @@ public class JwtService {
     }
 
     public String generateClientToken(Long userId, String email, String accountType) {
+        validateCredential(userId, email, accountType);
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationMs);
 
@@ -84,5 +86,13 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    private void validateCredential(Long userId, String email, String accountType) {
+        if (userId == null || email == null || accountType == null)
+            throw new JwtException("Invalid credential, try again");
+
+        if (userId <= 0 || email.isBlank() || accountType.isBlank())
+            throw new JwtException("Invalid credential, try again");
     }
 }

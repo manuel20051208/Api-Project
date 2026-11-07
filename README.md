@@ -21,19 +21,11 @@ Construido con Java 25, Spring Boot 4.1.0 y PostgreSQL 16.
 
 ## Arquitectura
 
-El proyecto sigue una arquitectura por capas:
+El proyecto sigue una arquitectura por capas. Cada petición entra por seguridad, pasa por controller → service → repository y vuelve como DTO:
 
-```mermaid
-%%{init: {"theme": "base", "themeVariables": {"background": "#ffffff", "primaryColor": "#ffffff", "secondaryColor": "#f5f5f5", "tertiaryColor": "#ffffff", "lineColor": "#2d3142", "textColor": "#2d3142"}}}%%
-flowchart LR
-    Client[Frontend / Cliente] --> Security[JWT / OAuth2]
-    Security --> Controller[Controllers]
-    Controller --> Service[Services]
-    Service --> Repository[Repositories]
-    Repository --> Views[(PostgreSQL<br/>tablas y vistas SQL)]
-    Service --> DTO[DTOs]
-    DTO --> Client
-```
+![Arquitectura por capas](diagrams/secuencia-arquitectura-capas.svg)
+
+Diagrama interactivo: [secuencia-arquitectura-capas.html](diagrams/secuencia-arquitectura-capas.html) · Fuente editable: [secuencia-arquitectura-capas.puml](diagrams/secuencia-arquitectura-capas.puml)
 
 ### Patrón Factory para reportes
 
@@ -300,6 +292,7 @@ src/main/resources/
 - [Configuración](docs/Configuración.md)
 - [Esquema de base de datos](docs/Esquema%20de%20Base%20de%20Datos.md)
 - [Diagrama de autenticación](diagrams/authentication.html) · [SVG](diagrams/authentication.svg)
+- [Diagrama de arquitectura por capas](diagrams/secuencia-arquitectura-capas.html) · [SVG](diagrams/secuencia-arquitectura-capas.svg)
 - [Diagrama de secuencia de compra](diagrams/secuencia-compra.puml) · [SVG](diagrams/secuencia-compra.svg)
 - [Diagrama de secuencia de catálogo y filtros](diagrams/secuencia-catalogo-filtros.puml) · [SVG](diagrams/secuencia-catalogo-filtros.svg)
 - [Diagrama de reportes con Factory](diagrams/secuencia-reportes-factory.html) · [SVG](diagrams/secuencia-reportes-factory.svg)

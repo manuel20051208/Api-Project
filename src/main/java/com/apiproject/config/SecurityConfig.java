@@ -125,11 +125,14 @@ public class SecurityConfig {
                                 // ===== Reseñas de productos (lectura publica arriba, escritura CLIENT) =====
                                 .requestMatchers("/api/product-reviews/**").hasRole("CLIENT")
                                 .requestMatchers("/api/sale/**").hasRole("ADMIN")
-                                // ===== Cupones (validaciones accesibles a clientes, gestion solo ADMIN) =====
+                                // ===== Cupones (validaciones y "mis cupones" para clientes; gestion solo ADMIN) =====
                                 .requestMatchers(HttpMethod.GET,
                                         "/api/cupons/validate",
                                         "/api/cupons/assignments/my",
-                                        "/api/sh-cupons/validate"
+                                        "/api/sh-cupons/validate",
+                                        "/api/sh-cupons/assignments/my",
+                                        "/api/services-cupons/validate/**",
+                                        "/api/services-cupons/assignments/my"
                                 ).authenticated()
                                 .requestMatchers(
                                         "/api/cupons/**",

@@ -119,6 +119,14 @@ public class SecondHandCuponController {
         return secondHandCuponService.findAssignmentsByClient(authenticatedUser.id(), clientId);
     }
 
+    @Operation(summary = "Listar cupones SH asignados al cliente autenticado (CLIENT)")
+    @GetMapping("/assignments/my")
+    public List<ShProductCuponToClientResponseDTO> findMyAssignments(
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return secondHandCuponService.findMyAssignments(authenticatedUser.id());
+    }
+
     @Operation(summary = "Eliminar una asignación SH específica")
     @DeleteMapping("/assignments/{assignmentId}")
     public ResponseEntity<Void> removeAssignment(

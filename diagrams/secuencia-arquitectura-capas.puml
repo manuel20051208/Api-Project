@@ -1,0 +1,79 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundCorner 10
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 13
+skinparam defaultFontColor #0F172A
+skinparam ArrowColor #64748B
+skinparam ArrowFontColor #475569
+skinparam ArrowFontSize 12
+skinparam ArrowThickness 1.1
+skinparam TitleFontColor #0F172A
+skinparam TitleFontSize 20
+skinparam TitleFontStyle bold
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+skinparam maxMessageSize 54
+skinparam sequence {
+  ArrowColor #64748B
+  ArrowFontColor #475569
+  LifeLineBorderColor #CBD5E1
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBackgroundColor #EFF6FF
+  ParticipantBorderColor #2563EB
+  ParticipantFontColor #1E3A8A
+  ActorBackgroundColor #EFF6FF
+  ActorBorderColor #2563EB
+  ActorFontColor #1E3A8A
+  GroupBackgroundColor #F8FAFC
+  GroupBorderColor #CBD5E1
+  GroupHeaderFontColor #334155
+}
+
+title Arquitectura por capas · ciclo de una petición
+
+actor "Frontend / Cliente" as client
+participant "Security\nJWT + OAuth2" as security
+participant "Controllers\nREST" as controller
+participant "Services\nlógica de negocio" as service
+participant "DTOs\nrecords de salida" as dto
+participant "Repositories\nSpring Data JPA" as repository
+database "PostgreSQL\ntablas + vistas SQL" as db
+
+client -> security : HTTP request\nAuthorization: Bearer <JWT>
+activate security
+security -> security : Validar firma y rol\n(CLIENT / ADMIN)
+security -> controller : AuthenticatedUser\n+ ruta permitida
+deactivate security
+activate controller
+controller -> service : Método de negocio\n(request, userId)
+activate service
+
+service -> repository : Consulta o comando
+activate repository
+repository -> db : SQL nativo\n(vistas · FOR UPDATE)
+activate db
+db --> repository : Filas o proyección
+deactivate db
+repository --> service : Entidad o Projection
+deactivate repository
+
+service -> dto : Mapear entidad → DTO
+activate dto
+dto --> service : DTO listo
+deactivate dto
+
+service --> controller : DTO de respuesta
+deactivate service
+controller --> client #C2410C : 200 OK · JSON
+deactivate controller
+
+legend right
+  Cada capa solo conoce a la siguiente: Controller → Service → Repository → PostgreSQL.
+  config/ aporta seguridad, caché, Cloudinary y Swagger; entities/ mapea las tablas
+  y repositories/projection/ expone las vistas como interfaces. Los errores de
+  negocio pasan por GlobalExceptionHandler y vuelven como ApiError (4xx / 5xx).
+endlegend
+@enduml

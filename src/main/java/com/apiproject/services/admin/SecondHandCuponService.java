@@ -364,6 +364,14 @@ public class SecondHandCuponService {
                 .toList();
     }
 
+    /** Cupones SH asignados al cliente autenticado (para la app del cliente). */
+    @Transactional(readOnly = true)
+    public List<ShProductCuponToClientResponseDTO> findMyAssignments(Long clientId) {
+        return shProductCuponToAClientRepository.findAllByClient(clientId).stream()
+                .map(this::toAssignmentDto)
+                .toList();
+    }
+
     /** Asignaciones SH de un cupón concreto del admin. */
     @Transactional(readOnly = true)
     public List<ShProductCuponToClientResponseDTO> findAssignmentsByCupon(Long adminId, Long cuponId) {

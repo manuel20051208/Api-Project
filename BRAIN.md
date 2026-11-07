@@ -153,10 +153,10 @@ Base `/api` (salvo dashboard). Auth: `Authorization: Bearer <token>`.
 | `POST /cupons/assign` | ADMIN | Asignar cupón a clientes o a todos (`{cuponId, clientIds[], assignToAll, usageLimit}`; `usageLimit` obligatorio > 0 y ≤ `quantity` del cupón) |
 | `POST /cupons/send` | ADMIN | Enviar cupón ya creado a **un** cliente (`{clientId, cuponId, usageLimit}`); crea la asignación cupón×producto×cliente y exige `usageLimit` ≤ `quantity` |
 | `GET /cupons/validate?code=&productId=` | Auth | Validar cupón para un producto |
-| `POST/GET/PUT/DELETE /sh-cupons` + `validate?code=&productId=` | ADMIN/Auth | Ídem para segunda mano (`shCuponCode`, `shProductIds[]`) |
+| `POST/GET/PUT/DELETE /sh-cupons` + `validate?code=&productId=` + `GET /sh-cupons/assignments/my` | ADMIN/Auth | Ídem para segunda mano (`shCuponCode`, `shProductIds[]`); `/assignments/my` devuelve los cupones SH del cliente autenticado |
 | `POST /services` · `/services/my` · `PUT/DELETE /services/{id}` | ADMIN | CRUD servicios ofrecidos (`{nameOfService, valueOfService, descriptionOfService}`) |
 | `GET /services/catalog/{ownerId}?search=` | Auth | Catálogo público de servicios de una tienda |
-| `POST/GET/PUT/DELETE /services-cupons` + `GET /services-cupons/validate/{ownerId}?code=` + `GET /services-cupons/{cuponId}/assignments` | ADMIN/Auth | Cupones de servicio (`serviceCuponCode`); asignaciones con usageLimit+usedCount |
+| `POST/GET/PUT/DELETE /services-cupons` + `GET /services-cupons/validate/{ownerId}?code=` + `GET /services-cupons/{cuponId}/assignments` + `GET /services-cupons/assignments/my` + `POST /services-cupons/send` | ADMIN/Auth | Cupones de servicio (`serviceCuponCode`); asignaciones con usageLimit+usedCount; `/assignments/my` (CLIENT) y `/send` (ADMIN, `{clientId, cuponId, usageLimit}`) |
 | `GET /sh-product/search/active?category=&search=` | Público | Catálogo SH (tarjetas con ownerName + primera imagen) |
 | `GET /product-reviews/product/{productId}?page=&size=` | Auth | Reseñas paginadas de un producto |
 | `GET /product-reviews/product/{productId}/summary` | Auth | Promedio de estrellas + total de reseñas |
@@ -187,7 +187,7 @@ response: `{ saleId, saleIds, clientId, totalAmount, createdAt, items:[{ product
 ### Reglas de seguridad (resumen)
 - Públicos: Swagger, `/actuator/health`, `/oauth2/**`, login/register, `GET /api/product-images/**`, `GET /api/user/{id}/admin`.
 - `/api/client/**` → CLIENT. `/api/user/**`, `/dashboard-controller/**`, `/api/sales-items/**`, `/api/client-show-summary/**`, `/api/cupons/**`, `/api/sh-cupons/**`, `/api/services/**`, `/api/services-cupons/**`, `/api/sh-product/**`, `/api/sh-sale/**` → ADMIN (salvo excepciones listadas antes).
-- Validaciones de cupones (`/cupons/validate`, `/sh-cupons/validate`, `/services/catalog/*`, `/sh-product/search/active`) → autenticado. `/sh-sale/purchase` y `/sh-sale/client` → CLIENT. `GET /sh-product-images/**` → público; POST/DELETE → ADMIN.
+- Validaciones de cupones (`/cupons/validate`, `/sh-cupons/validate`, `/services/catalog/*`, `/services-cupons/validate/*`), `*/assignments/my` de cupones y `/sh-product/search/active` → autenticado. `/sh-sale/purchase` y `/sh-sale/client` → CLIENT. `GET /sh-product-images/**` → público; POST/DELETE → ADMIN.
 - Catálogo de lectura → autenticado. Escritura de productos/imágenes → ADMIN.
 - `POST /api/sale/purchase` → CLIENT; resto `/api/sale/**` → ADMIN.
 - CORS: solo `http://localhost:3000`.

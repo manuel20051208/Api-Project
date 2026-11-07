@@ -45,6 +45,21 @@ public interface ServiceCuponToAClientRepository extends JpaRepository<ServiceCu
             """, nativeQuery = true)
     List<ServiceCuponAssignmentProjection> findByAdminAndClient(@Param("adminId") Long adminId, @Param("clientId") Long clientId);
 
+    /** Asignaciones de cualquier admin hacia el cliente (para la app del cliente). */
+    @Query(value = """
+            SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,
+                   sct.service_cupon_id, sc.service_cupon_code, sc.discount, sc.cupon_date_limit,
+                   sct.usage_limit AS usage_limit,
+                   sct.service_id, so.name_of_service AS service_name
+            FROM service_cupon_to_a_client sct
+                     JOIN clients c ON c.id = sct.client_id
+                     JOIN services_cupon sc ON sc.id = sct.service_cupon_id
+                     JOIN services_offered so ON so.id = sct.service_id
+            WHERE sct.client_id = :clientId
+            ORDER BY sct.id DESC
+            """, nativeQuery = true)
+    List<ServiceCuponAssignmentProjection> findAllByClient(@Param("clientId") Long clientId);
+
     /** Asignaciones de un cupón de servicio concreto del admin. */
     @Query(value = """
             SELECT sct.id, sct.client_id, c.full_name AS client_name, c.email AS client_email,

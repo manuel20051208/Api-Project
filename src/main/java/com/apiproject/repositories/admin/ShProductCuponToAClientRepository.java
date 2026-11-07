@@ -45,6 +45,21 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
             """, nativeQuery = true)
     List<ShProductCuponAssignmentProjection> findByAdminAndClient(@Param("adminId") Long adminId, @Param("clientId") Long clientId);
 
+    /** Asignaciones de cualquier admin hacia el cliente (para la app del cliente). */
+    @Query(value = """
+            SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,
+                   spct.sh_cupons_id, sc.sh_cupon_code, sc.discount, sc.cupon_date_limit,
+                   spct.usage_limit AS usage_limit,
+                   spct.sh_product_id, sp.name AS product_name
+            FROM sh_product_cupo_to_a_client spct
+                     JOIN clients c ON c.id = spct.client_id
+                     JOIN secondhand_cupons sc ON sc.id = spct.sh_cupons_id
+                     JOIN secondhand_product sp ON sp.id = spct.sh_product_id
+            WHERE spct.client_id = :clientId
+            ORDER BY spct.id DESC
+            """, nativeQuery = true)
+    List<ShProductCuponAssignmentProjection> findAllByClient(@Param("clientId") Long clientId);
+
     /** Asignaciones de un cupón SH concreto del admin. */
     @Query(value = """
             SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,

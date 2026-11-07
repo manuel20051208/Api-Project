@@ -3,6 +3,7 @@ package com.apiproject.controllers.admin;
 import com.apiproject.DTOs.Admin.CouponAssignmentResponseDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentRequestDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentUpdateRequestDTO;
+import com.apiproject.DTOs.Admin.CuponSendRequestDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponRequestDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponResponseDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponToClientResponseDTO;
@@ -110,6 +111,23 @@ public class ServiceCuponController {
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
         return serviceCuponService.findAssignmentsByClient(authenticatedUser.id(), clientId);
+    }
+
+    @Operation(summary = "Listar cupones de servicio asignados al cliente autenticado (CLIENT)")
+    @GetMapping("/assignments/my")
+    public List<ServiceCuponToClientResponseDTO> findMyAssignments(
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return serviceCuponService.findMyAssignments(authenticatedUser.id());
+    }
+
+    @Operation(summary = "Enviar un cupon de servicio ya creado a un cliente especifico (ADMIN)")
+    @PostMapping("/send")
+    public List<ServiceCuponToClientResponseDTO> send(
+            @RequestBody CuponSendRequestDTO request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        return serviceCuponService.sendToClient(request, authenticatedUser.id());
     }
 
     @Operation(summary = "Asignaciones de un cupón de servicio con usageLimit y usedCount (diálogo Clientes)")

@@ -3,6 +3,7 @@ package com.apiproject.services.admin;
 import com.apiproject.DTOs.Admin.CouponAssignmentResponseDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentRequestDTO;
 import com.apiproject.DTOs.Admin.CuponAssignmentUpdateRequestDTO;
+import com.apiproject.DTOs.Admin.CuponSendRequestDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponRequestDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponResponseDTO;
 import com.apiproject.DTOs.Admin.ServiceCuponToClientResponseDTO;
@@ -213,6 +214,72 @@ public class ServiceCuponService {
     @Transactional(readOnly = true)
     public List<ServiceCuponToClientResponseDTO> findAssignmentsByClient(Long adminId, Long clientId) {
         return serviceCuponToAClientRepository.findByAdminAndClient(adminId, clientId).stream()
+                .map(this::toAssignmentDto)
+                .toList();
+    }
+
+    /** Cupones de servicio asignados al cliente autenticado (para la app del cliente). */
+    @Transactional(readOnly = true)
+    public List<ServiceCuponToClientResponseDTO> findMyAssignments(Long clientId) {
+        return serviceCuponToAClientRepository.findAllByClient(clientId).stream()
+                .map(this::toAssignmentDto)
+                .toList();
+    }
+
+    /**
+     * Botón "enviar cupón": el admin manda un cupón de servicio ya creado a un cliente
+     * concreto. Crea la asignación cupón x servicio x cliente solo para ese cliente y
+     * evita duplicados reutilizando las filas existentes de ese mismo cupón.
+     */
+    @Transactional
+    public List<ServiceCuponToClientResponseDTO> sendToClient(CuponSendRequestDTO requestDTO, Long adminId) {
+        if (requestDTO == null || requestDTO.clientId() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "El cliente es obligatorio para enviar el cupon");
+        }
+        if (requestDTO.cuponId() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "El cupon es obligatorio para enviarlo");
+        }
+        if (requestDTO.usageLimit() == null || requestDTO.usageLimit() <= 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "usageLimit es obligatorio y debe ser mayor a cero");
+        }
+
+        ServiceCupon cupon = serviceCuponRepository.lockById(requestDTO.cuponId())
+                .orElseThrow(() -> new ResourceNotFoundException("Service cupon not found: " + requestDTO.cuponId()));
+        requireOwner(cupon, adminId);
+        // El limite por cliente no puede superar los usos definidos al crear el cupon
+        CouponUsageLimitValidator.validate(cupon.getQuantity(), requestDTO.usageLimit());
+
+        // Los servicios objetivo son los del propio admin (no hay vínculo por producto)
+        List<ServiceOffered> services = serviceOfferedRepository.findAll().stream()
+                .filter(s -> s.getUserAdmin() != null && s.getUserAdmin().getId().equals(adminId))
+                .toList();
+        if (services.isEmpty()) {
+            throw new ResponseStatusException(CONFLICT, "El admin no tiene servicios ofrecidos");
+        }
+
+        UserClient client = clientRepository.getReferenceById(requestDTO.clientId());
+
+        // Servicios que ya tienen este cupón asignado para el cliente (evita duplicados)
+        List<Long> assignedServiceIds = serviceCuponToAClientRepository
+                .findByAdminAndClient(adminId, client.getId()).stream()
+                .filter(p -> p.getServiceCuponId().equals(cupon.getId()))
+                .map(ServiceCuponAssignmentProjection::getServiceId)
+                .toList();
+
+        for (ServiceOffered service : services) {
+            if (assignedServiceIds.contains(service.getId())) {
+                continue;
+            }
+            ServiceCuponToAClient assignment = new ServiceCuponToAClient();
+            assignment.setClient(client);
+            assignment.setServiceCupon(cupon);
+            assignment.setService(service);
+            assignment.setUsageLimit(requestDTO.usageLimit());
+            serviceCuponToAClientRepository.save(assignment);
+        }
+
+        return serviceCuponToAClientRepository.findByAdminAndClient(adminId, client.getId()).stream()
+                .filter(p -> p.getServiceCuponId().equals(cupon.getId()))
                 .map(this::toAssignmentDto)
                 .toList();
     }

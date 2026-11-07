@@ -4,6 +4,9 @@ import com.apiproject.entities.admin.UserAdmin;
 import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,6 +17,11 @@ public class JwtServicesTest {
     @BeforeEach
     void setUp() {
         jwtService = new JwtService();
+        // Inyección manual: el test no levanta el contexto de Spring
+        ReflectionTestUtils.setField(jwtService, "secretKey",
+                Base64.getEncoder().encodeToString(
+                        "mi-llave-secreta-de-32-bytes-minimo!!".getBytes()));
+        ReflectionTestUtils.setField(jwtService, "expirationMs", 3600000L);
     }
 
     @Test

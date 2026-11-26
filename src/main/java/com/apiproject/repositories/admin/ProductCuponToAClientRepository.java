@@ -179,4 +179,16 @@ public interface ProductCuponToAClientRepository extends JpaRepository<ProductCu
     java.util.Optional<Integer> findUsageLimitByClientAndCupon(
             @Param("clientId") Long clientId,
             @Param("cuponId") Long cuponId);
+
+    /** true si el cupon esta asignado a algun cliente: deja de ser publico y pasa a exclusivo. */
+    @Query(value = "SELECT EXISTS (SELECT 1 FROM product_cupon_to_a_client WHERE cupon_id = :cuponId)",
+            nativeQuery = true)
+    boolean existsAnyAssignment(@Param("cuponId") Long cuponId);
+
+    /** true si el cupon esta asignado a este cliente (independiente de que usage_limit sea NULL). */
+    @Query(value = """
+            SELECT EXISTS (SELECT 1 FROM product_cupon_to_a_client
+                           WHERE cupon_id = :cuponId AND client_id = :clientId)
+            """, nativeQuery = true)
+    boolean existsAssignment(@Param("clientId") Long clientId, @Param("cuponId") Long cuponId);
 }

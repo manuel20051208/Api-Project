@@ -145,6 +145,18 @@ public interface ShProductCuponToAClientRepository extends JpaRepository<ShProdu
             @Param("clientId") Long clientId,
             @Param("cuponId") Long cuponId);
 
+    /** true si el cupon SH esta asignado a algun cliente: deja de ser publico y pasa a exclusivo. */
+    @Query(value = "SELECT EXISTS (SELECT 1 FROM sh_product_cupo_to_a_client WHERE sh_cupons_id = :cuponId)",
+            nativeQuery = true)
+    boolean existsAnyAssignment(@Param("cuponId") Long cuponId);
+
+    /** true si el cupon SH esta asignado a este cliente (independiente de que usage_limit sea NULL). */
+    @Query(value = """
+            SELECT EXISTS (SELECT 1 FROM sh_product_cupo_to_a_client
+                           WHERE sh_cupons_id = :cuponId AND client_id = :clientId)
+            """, nativeQuery = true)
+    boolean existsAssignment(@Param("clientId") Long clientId, @Param("cuponId") Long cuponId);
+
     /** Fila de asignación SH de un cupón a un cliente y producto SH concreto (evita duplicados). */
     @Query(value = """
             SELECT spct.id, spct.client_id, c.full_name AS client_name, c.email AS client_email,

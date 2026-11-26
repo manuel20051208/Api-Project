@@ -186,12 +186,22 @@ public class SecondHandCuponService {
             elegibles = elegibles.subList(0, quantity);
         }
 
-        // 4) Limite de usos por cliente: la asignacion puede limitar cuantas veces lo usa el cliente
-        shProductCuponToAClientRepository.findUsageLimitByClientAndCupon(clientId, cupon.getId())
-                .filter(limit -> shCuponUsedByClientsRepository.countByCuponIdAndClientId(cupon.getId(), clientId) >= limit)
-                .ifPresent(limit -> {
-                    throw new ResponseStatusException(CONFLICT, "El cliente agoto sus usos del cupon");
-                });
+        // 4) Quien puede usarlo (modelo hibrido, igual que CuponService):
+        //    - sin asignaciones -> publico: cualquiera con el codigo, 1 uso por cliente.
+        //    - con asignaciones -> exclusivo: solo clientes asignados, hasta su usage_limit (NULL = ilimitado).
+        long usedByClient = shCuponUsedByClientsRepository.countByCuponIdAndClientId(cupon.getId(), clientId);
+        if (shProductCuponToAClientRepository.existsAnyAssignment(cupon.getId())) {
+            if (!shProductCuponToAClientRepository.existsAssignment(clientId, cupon.getId())) {
+                throw new ResponseStatusException(FORBIDDEN, "Este cupon es exclusivo y no esta asignado a tu cuenta");
+            }
+            shProductCuponToAClientRepository.findUsageLimitByClientAndCupon(clientId, cupon.getId())
+                    .filter(limit -> usedByClient >= limit)
+                    .ifPresent(limit -> {
+                        throw new ResponseStatusException(CONFLICT, "El cliente agoto sus usos del cupon");
+                    });
+        } else if (usedByClient >= 1) {
+            throw new ResponseStatusException(CONFLICT, "Ya usaste este cupon");
+        }
 
         return new CouponResolution(cupon.getId(), cupon.getDiscount(), cuponOwnerId, elegibles);
     }

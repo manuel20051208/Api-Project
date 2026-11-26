@@ -35,7 +35,12 @@ public class JwtServicesTest {
 
         String token = jwtService.generateAdminToken(userId, usuarioFalso.getEmail(), "ADMIN");
         assertInstanceOf(String.class, token);
-        assertEquals(token, jwtService.generateAdminToken(5L, "manuel@example.com", "ADMIN"));
+        // No comparar dos tokens entre si: llevan iat/exp en segundos y difieren si el reloj
+        // cambia de segundo entre llamadas (test flaky). Se valida el contenido del token.
+        AuthenticatedUser parsed = jwtService.parseAuthenticatedUser(token).orElseThrow();
+        assertEquals(userId, parsed.id());
+        assertEquals("manuel@example.com", parsed.subject());
+        assertEquals("ADMIN", parsed.accountType());
     }
 
     @Test

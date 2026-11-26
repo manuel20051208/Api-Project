@@ -36,7 +36,10 @@ USER app
 # el tope de 128m (con 96m el contexto muere con OutOfMemoryError: Metaspace).
 # -XX:+ExitOnOutOfMemoryError reinicia el contenedor en vez de dejarlo colgado;
 # SerialGC conviene en VMs de 1 vCPU con heap chico.
-ENV JAVA_OPTS="-XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
+# Perfil de RAM baja (VM de 1 GB compartida con otra API): medido con mem_limit=384m ->
+# ~267 MB al arrancar y ~290 MB de pico con carga. C1 solo (TieredStopAtLevel=1) + code cache
+# chico + stacks de 512k recortan ~60 MB a cambio de algo menos de rendimiento pico.
+ENV JAVA_OPTS="-XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=45 -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=40m -XX:TieredStopAtLevel=1 -XX:CICompilerCount=1 -Xss512k -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
 
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \

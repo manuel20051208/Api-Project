@@ -39,6 +39,9 @@ services:
       retries: 10
 
   app:
+    # En la VM se usa la imagen ya construida en CI (GHCR): "pull" + "up --no-build",
+    # asi la VM no compila con Maven. En local, "docker compose up --build" usa build.
+    image: ghcr.io/manuel20051208/api-project:${APP_TAG:-latest}
     build: .
     container_name: apiproject-api
     depends_on:
@@ -61,12 +64,15 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       CORS_ALLOWED_ORIGIN: ${URL_FOR_REQUESTING_AND_RESPONSIVES}
     ports:
-      - "0.0.0.0:8080:8080"
+      # 8081 en el host: el 8080 lo usa horizontal-api en la misma VM. Solo localhost:
+      # el trafico publico entra por nginx (bizadmin.duckdns.org -> 127.0.0.1:8081).
+      - "127.0.0.1:${API_HOST_PORT:-8081}:8080"
     # --- Limites de RAM (VM de 1 GB: API + Postgres + SO) ---
     # El JVM toma el 50% del limite como heap (-XX:MaxRAMPercentage en el Dockerfile).
     # Subilo/bajalo desde .env (API_MEM_LIMIT / DB_MEM_LIMIT) sin tocar este archivo.
-    mem_limit: ${API_MEM_LIMIT:-576m}
-    memswap_limit: ${API_MEM_LIMIT:-576m}
+    # 384m: medido ~290 MB de pico con carga (ver JAVA_OPTS en el Dockerfile).
+    mem_limit: ${API_MEM_LIMIT:-384m}
+    memswap_limit: ${API_MEM_LIMIT:-384m}
     restart: unless-stopped
     logging:
       driver: json-file

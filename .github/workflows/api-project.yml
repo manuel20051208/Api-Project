@@ -109,6 +109,9 @@ jobs:
     needs: build-docker                    # solo despliega si la imagen se construyo y subio bien
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read                       # el token del run puede bajar la imagen de GHCR
     steps:
       - name: Desplegar en AWS EC2 (Ubuntu)
         uses: appleboy/ssh-action@v1.2.2   # abre una sesion SSH y ejecuta el script remoto
@@ -129,11 +132,8 @@ jobs:
             # Login en GHCR con el token efimero del run (vence cuando termina el job)
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            docker compose pull            # baja imagenes del compose (hoy: solo postgres, ver nota abajo)
-            docker compose up -d --build   # -d = segundo plano, --build = construye "app" EN LA VM
-
-            # NOTA: el servicio "app" del compose no declara "image:", solo "build: .".
-            # Por eso el pull no baja la app y el --build la compila en la VM (Maven dentro
-            # de una maquina de 1 GB). Para usar la imagen de GHCR habria que agregar
-            # "image: ghcr.io/<repo>:<tag>" al servicio y cambiar esto por:
-            #   docker compose pull app && docker compose up -d --no-build app
+            # La imagen la construye el job build-docker: la VM solo la baja (sin Maven en 1 GB).
+            export APP_TAG=${{ github.sha }}   # tag inmutable de este commit
+            docker compose pull                # baja postgres + la app de GHCR
+            docker compose up -d --no-build --remove-orphans
+            docker image prune -f              # borra imagenes viejas (disco chico)

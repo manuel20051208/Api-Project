@@ -15,6 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.Cache;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -137,5 +139,21 @@ class UserServiceTest {
 
         // Confirmo que NUNCA se guardó nada, porque falló antes
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void login_pegandoElHashComoContrasena_debeRechazarYNoTocarLaBD() {
+        String hash = "$2a$10$abcdefghijklmnopqrstuuJ0123456789abcdefghijklmnopqrstu";
+        UserAdmin admin = UserAdmin.builder().id(1L).email("admin@test.com").password(hash).build();
+
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
+        when(passwordEncoder.matches(hash, hash)).thenReturn(false);
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> userService.login("admin@test.com", hash));
+
+        assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
+        verify(userRepository, never()).updatePasswordById(anyLong(), anyString());
+        verify(jwtService, never()).generateAdminToken(anyLong(), anyString(), anyString());
     }
 }

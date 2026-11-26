@@ -253,16 +253,8 @@ public class ClientService {
             return false;
         }
 
-        if (passwordEncoder.matches(rawPassword, storedPassword)) {
-            return true;
-        }
-
-        if (storedPassword.equals(rawPassword)) {
-            clientRepository.updatePasswordById(userClient.getId(), passwordEncoder.encode(rawPassword));
-            return true;
-        }
-
-        return false;
+        // Solo BCrypt (legacy en texto plano cifradas en V9).
+        return passwordEncoder.matches(rawPassword, storedPassword);
     }
 
     private ClientResponseDTO toClientResponse(UserClient userClient) {

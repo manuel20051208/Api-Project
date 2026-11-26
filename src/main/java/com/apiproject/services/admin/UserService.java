@@ -22,8 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.Map;
 import java.util.Optional;
 
@@ -155,25 +153,9 @@ public class UserService {
             return false;
         }
 
-        // Verificamos si la contraseña del request es exacta a la del usuario
-        if (passwordEncoder.matches(rawPassword, storedPassword)) {
-            return true;
-        }
-
-        // TODO: eliminar este fallback una vez confirmada la migración completa de usuarios legacy
-        // En caso de que el usuario haya creado su contraseña cuando el servidor era inseguro
-        // y guardaba la contraseña en texto plano en la BD y no habia sido sifrada, entonces
-        // actualizamos la contraseña en la base de datos cifrandola y le damos pase
-        if (MessageDigest.isEqual(
-                storedPassword.getBytes(StandardCharsets.UTF_8),
-                rawPassword.getBytes(StandardCharsets.UTF_8)
-        )) {
-            userRepository.updatePasswordById(userAdmin.getId(), passwordEncoder.encode(rawPassword));
-            return true;
-        }
-
-        // Otro caso extraño, invalidar por seguridad
-        return false;
+        // Solo BCrypt. Las contraseñas legacy en texto plano se cifraron en la migración V9;
+        // nunca comparar contra el valor guardado tal cual (permitiría entrar pegando el hash).
+        return passwordEncoder.matches(rawPassword, storedPassword);
     }
 
     private UserResponseDTO toUserResponse(UserAdmin userAdmin) {

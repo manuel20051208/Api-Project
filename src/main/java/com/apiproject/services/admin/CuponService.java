@@ -234,6 +234,11 @@ public class CuponService {
 
     /** Descuenta 1 uso de forma atómica (UPDATE ... WHERE quantity > 0); si no toca filas es que se agotó. */
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CUPONS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CUPON_ASSIGNMENTS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CLIENT_CUPONS, allEntries = true)
+    })
     public void redeem(CouponResolution resolution) {
         int updatedRows = cuponRepository.decrementQuantity(resolution.cuponId());
         if (updatedRows == 0) {

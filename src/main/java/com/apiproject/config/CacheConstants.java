@@ -26,6 +26,7 @@ public final class CacheConstants {
     public static final String CLIENT_RESPONSE = "clientResponse";
     public static final String CLIENT_PROFILE_PHOTO = "clientProfilePhoto";
     public static final String PAYMENT_CARDS = "Payment";
+    public static final String CLIENT_DESCRIPTIONS = "clientDescriptions";
     public static final String BEST_CLIENTS = "best_clients";
     public static final String BEST_PRODUCTS = "best_products";
     public static final String CUPONS = "cupons";

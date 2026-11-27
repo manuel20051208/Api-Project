@@ -39,6 +39,7 @@ public class UserService {
     private final CacheManager cacheManager;
 
     @CachePut(value = CacheConstants.USER_RESPONSE, key = "#userId")
+    @CacheEvict(value = CacheConstants.CLIENT_DESCRIPTIONS, key = "#userId")
     public UserResponseDTO subirFotoPerfil(Long userId, MultipartFile file) throws IOException {
         UserAdmin userAdmin = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
@@ -76,7 +77,7 @@ public class UserService {
      */
     @Transactional
     @CachePut(value = CacheConstants.USER_RESPONSE, key = "#id")
-    @CacheEvict(value = "clientDescriptions", key = "#id")
+    @CacheEvict(value = CacheConstants.CLIENT_DESCRIPTIONS, key = "#id")
     public UserResponseDTO modifyData(Long id, UpdateAdminRequestDTO request){
         if (request == null) {
             throw new ResponseStatusException(BAD_REQUEST, "El cuerpo de la solicitud es obligatorio");
@@ -137,7 +138,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
 
-    @Cacheable(value = "clientDescriptions", key = "#id")
+    @Cacheable(value = CacheConstants.CLIENT_DESCRIPTIONS, key = "#id")
     // obtenemos el usuario para la tienda
     public ClientDescriptionAboutUsersDTO getUserAdminForStore (Long id){
 

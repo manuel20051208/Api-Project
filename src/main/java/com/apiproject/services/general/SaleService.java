@@ -52,7 +52,9 @@ public class SaleService {
             @CacheEvict(value = CacheConstants.CLIENT_HISTORY, allEntries = true),
             @CacheEvict(value = CacheConstants.DASHBOARD, allEntries = true),
             @CacheEvict(value = CacheConstants.SALES, allEntries = true),
-            @CacheEvict(value = CacheConstants.SALE_SUMMARY, allEntries = true)
+            @CacheEvict(value = CacheConstants.SALE_SUMMARY, allEntries = true),
+            @CacheEvict(value = CacheConstants.BEST_CLIENTS, allEntries = true),
+            @CacheEvict(value = CacheConstants.BEST_PRODUCTS, allEntries = true)
     })
     public PurchaseResponseDTO purchase(PurchaseRequestDTO requestDTO, Long authenticatedClientId) {
         // Validamos el cuerpo del request de la venta

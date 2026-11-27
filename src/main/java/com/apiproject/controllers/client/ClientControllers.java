@@ -1,5 +1,6 @@
 package com.apiproject.controllers.client;
 
+import com.apiproject.DTOs.Auth.ChangePasswordRequestDTO;
 import com.apiproject.DTOs.Auth.LoginClientRequestDTO;
 import com.apiproject.DTOs.Auth.LoginClientResponseDTO;
 import com.apiproject.DTOs.Auth.RegisterClientRequestDTO;
@@ -7,7 +8,7 @@ import com.apiproject.DTOs.Client.ClientDescriptionAboutUsersDTO;
 import com.apiproject.DTOs.Client.ClientResponseDTO;
 import com.apiproject.DTOs.Client.PaymentCardRequestDTO;
 import com.apiproject.DTOs.Client.PaymentCardResponseDTO;
-import com.apiproject.entities.client.UserClient;
+import com.apiproject.DTOs.Client.UpdateClientRequestDTO;
 import com.apiproject.repositories.projection.ClientHistoryProjection;
 import com.apiproject.security.AuthenticatedUser;
 import com.apiproject.services.admin.UserService;
@@ -59,13 +60,23 @@ public class ClientControllers {
         return clientService.register(registerClientRequestDTO);
     }
 
-    @Operation(summary = "modify data")
+    @Operation(summary = "Modify the authenticated client profile (fullName, email, phone, address, colorTypes)")
     @PatchMapping(value = "/modify")
     public ClientResponseDTO modify(
-            @RequestBody UserClient userClient,
+            @RequestBody UpdateClientRequestDTO request,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
-        return clientService.modifyData(authenticatedUser.id(), userClient);
+        return clientService.modifyData(authenticatedUser.id(), request);
+    }
+
+    @Operation(summary = "Change the authenticated client password (requires the current one)")
+    @PatchMapping(value = "/change-password")
+    public ResponseEntity<Void> changePassword(
+            @RequestBody ChangePasswordRequestDTO request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
+    ) {
+        clientService.changePassword(authenticatedUser.id(), request);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping(value = "/upload-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

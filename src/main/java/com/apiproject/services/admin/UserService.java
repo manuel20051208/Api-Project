@@ -70,7 +70,8 @@ public class UserService {
 
     /**
      * Edita el perfil del admin autenticado. Solo campos del DTO (null = no se toca);
-     * texto no puede venir vacio, email con formato valido y no usado por otro admin (409).
+     * texto no puede venir vacio, email con formato valido y no usado por otro admin (409,
+     * sin distinguir mayusculas). Telefono negativo -> 400 (0 se acepta: el front manda 0 sin telefono).
      * Refresca el cache del perfil y evicta la ficha publica de la tienda (businessName).
      */
     @Transactional
@@ -90,7 +91,8 @@ public class UserService {
                 .map(name -> requireText(name, "businessName", 255))
                 .ifPresent(existing::setBusinessName);
         Optional.ofNullable(request.email())
-                .map(email -> requireText(email, "email", 255).toLowerCase(java.util.Locale.ROOT))
+                // Se guarda tal cual (recortado): el login busca el email exacto.
+                .map(email -> requireText(email, "email", 255))
                 .ifPresent(email -> {
                     if (!EMAIL_PATTERN.matcher(email).matches()) {
                         throw new ResponseStatusException(BAD_REQUEST, "El email no tiene un formato valido");
@@ -101,7 +103,7 @@ public class UserService {
                     existing.setEmail(email);
                 });
         Optional.ofNullable(request.phone()).ifPresent(phone -> {
-            if (phone <= 0) {
+            if (phone < 0) {
                 throw new ResponseStatusException(BAD_REQUEST, "El telefono no es valido");
             }
             existing.setPhone(phone);

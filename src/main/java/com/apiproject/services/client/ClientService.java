@@ -2,11 +2,13 @@ package com.apiproject.services.client;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.apiproject.DTOs.Auth.ChangePasswordRequestDTO;
 import com.apiproject.DTOs.Auth.LoginClientResponseDTO;
 import com.apiproject.DTOs.Auth.RegisterClientRequestDTO;
 import com.apiproject.DTOs.Client.ClientResponseDTO;
 import com.apiproject.DTOs.Client.PaymentCardRequestDTO;
 import com.apiproject.DTOs.Client.PaymentCardResponseDTO;
+import com.apiproject.DTOs.Client.UpdateClientRequestDTO;
 import com.apiproject.config.CacheConstants;
 import com.apiproject.entities.client.PaymentCard;
 import com.apiproject.entities.client.UserClient;
@@ -120,31 +122,80 @@ public class ClientService {
 
     @Transactional
     @CachePut(value = CacheConstants.CLIENT_RESPONSE, key = "#id")
-    public ClientResponseDTO modifyData(Long id, UserClient userClient) {
+    public ClientResponseDTO modifyData(Long id, UpdateClientRequestDTO request) {
         validateAuthenticatedClient(id);
-        validateModifyRequest(userClient);
+        if (request == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "El cuerpo de la solicitud es obligatorio");
+        }
 
         UserClient existing = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
-        Optional.ofNullable(userClient.getFullName()).ifPresent(existing::setFullName);
-        Optional.ofNullable(userClient.getEmail())
+        Optional.ofNullable(request.fullName())
+                .map(name -> requireText(name, "fullName", 255))
+                .ifPresent(existing::setFullName);
+        Optional.ofNullable(request.email())
                 .ifPresent(email -> {
                     validateEmailForUpdate(email);
-                    validateUniqueEmailForUpdate(email, id);
-                    existing.setEmail(email);
+                    String trimmed = email.trim();
+                    validateUniqueEmailForUpdate(trimmed, id);
+                    existing.setEmail(trimmed);
                 });
-        Optional.ofNullable(userClient.getPassword())
-                .filter(password -> !password.isBlank())
-                .map(passwordEncoder::encode)
-                .ifPresent(existing::setPassword);
-        Optional.ofNullable(userClient.getPhone()).ifPresent(existing::setPhone);
-        Optional.ofNullable(userClient.getAddress()).ifPresent(existing::setAddress);
-        Optional.ofNullable(userClient.getColorTypes()).ifPresent(existing::setColorTypes);
+        Optional.ofNullable(request.phone()).ifPresent(existing::setPhone);
+        Optional.ofNullable(request.address()).ifPresent(existing::setAddress);
+        Optional.ofNullable(request.colorTypes()).ifPresent(existing::setColorTypes);
 
         clientRepository.save(existing);
 
         return toClientResponse(existing);
+    }
+
+    /**
+     * Cambia la contrasena del cliente autenticado exigiendo la vigente.
+     * 400 (no 401, para que el front no cierre la sesion) si la actual no coincide,
+     * si la nueva tiene menos de 8 caracteres, es igual a la actual o la cuenta no tiene
+     * contrasena local (alta con Google).
+     */
+    @Transactional
+    public void changePassword(Long id, ChangePasswordRequestDTO request) {
+        validateAuthenticatedClient(id);
+        if (request == null || !StringUtils.hasText(request.currentPassword())
+                || !StringUtils.hasText(request.newPassword())) {
+            throw new ResponseStatusException(BAD_REQUEST, "currentPassword y newPassword son obligatorios");
+        }
+        if (request.newPassword().length() < MIN_PASSWORD_LENGTH) {
+            throw new ResponseStatusException(BAD_REQUEST,
+                    "La nueva contrasena debe tener al menos " + MIN_PASSWORD_LENGTH + " caracteres");
+        }
+
+        UserClient client = clientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        if (!StringUtils.hasText(client.getPassword())) {
+            throw new ResponseStatusException(BAD_REQUEST,
+                    "Tu cuenta inicia sesion con Google y no tiene contrasena local");
+        }
+        if (!passwordEncoder.matches(request.currentPassword(), client.getPassword())) {
+            throw new ResponseStatusException(BAD_REQUEST, "La contrasena actual no es correcta");
+        }
+        if (passwordEncoder.matches(request.newPassword(), client.getPassword())) {
+            throw new ResponseStatusException(BAD_REQUEST, "La nueva contrasena debe ser distinta de la actual");
+        }
+
+        clientRepository.updatePasswordById(id, passwordEncoder.encode(request.newPassword()));
+    }
+
+    private static final int MIN_PASSWORD_LENGTH = 8;
+
+    /** Recorta y exige texto no vacio con largo maximo (para campos opcionales que SI vienen). */
+    private static String requireText(String value, String field, int maxLength) {
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            throw new ResponseStatusException(BAD_REQUEST, field + " no puede estar vacio");
+        }
+        if (trimmed.length() > maxLength) {
+            throw new ResponseStatusException(BAD_REQUEST, field + " no puede superar " + maxLength + " caracteres");
+        }
+        return trimmed;
     }
 
     @Transactional
@@ -372,12 +423,6 @@ public class ClientService {
         }
         if (registerClientRequestDTO.email() == null || registerClientRequestDTO.email().isBlank()) {
             throw new ResponseStatusException(BAD_REQUEST, "El email es obligatorio");
-        }
-    }
-
-    private void validateModifyRequest(UserClient userClient) {
-        if (userClient == null) {
-            throw new ResponseStatusException(BAD_REQUEST, "El cuerpo de la solicitud es obligatorio");
         }
     }
 

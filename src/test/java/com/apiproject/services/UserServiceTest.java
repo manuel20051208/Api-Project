@@ -161,7 +161,7 @@ class UserServiceTest {
     @Test
     void modifyData_emailDeOtroAdmin_409YNoGuarda() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(adminExistente()));
-        when(userRepository.existsByEmailAndIdNot("otro@test.com", 1L)).thenReturn(true);
+        when(userRepository.existsByEmailAndIdNot("Otro@Test.com", 1L)).thenReturn(true); // la query compara con lower()
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 userService.modifyData(1L, new UpdateAdminRequestDTO(null, " Otro@Test.com ", null, null, null)));
@@ -198,7 +198,7 @@ class UserServiceTest {
 
         UserResponseDTO r = userService.modifyData(1L, new UpdateAdminRequestDTO(null, "ADMIN@test.com", null, null, null));
 
-        assertEquals("admin@test.com", r.email());
+        assertEquals("ADMIN@test.com", r.email()); // se guarda tal cual: el login busca el email exacto
         verify(userRepository, never()).existsByEmailAndIdNot(anyString(), anyLong());
     }
 

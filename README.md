@@ -222,6 +222,8 @@ Authorization: Bearer <jwt>
 | Productos | `GET /api/product/activeProducts` | Autenticado | Catálogo activo |
 | Productos | `POST /api/product/saveProduct` | ADMIN | Crear producto |
 | Productos | `PUT /api/product/update/{id}` | ADMIN | Actualizar producto |
+| Perfil | `PATCH /api/user/modify` · `PATCH /api/client/modify` | ADMIN · CLIENT | Editar perfil (DTO; no cambia la contraseña) |
+| Perfil | `PATCH /api/client/change-password` | CLIENT | Cambiar contraseña exigiendo la actual (`204`; errores `400`) |
 | Compra | `POST /api/sale/purchase` | CLIENT | Crear compra |
 | Dashboard | `GET /dashboard-controller/get-data-dashboard` | ADMIN | Métricas del dashboard |
 | Reportes | `GET /dashboard-controller/excel` | ADMIN | Descargar Excel |

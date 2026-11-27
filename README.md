@@ -90,6 +90,9 @@ CLOUDINARY_API_SECRET=tu_api_secret
 
 GOOGLE_CLIENT_ID=tu_google_client_id
 GOOGLE_CLIENT_SECRET=tu_google_client_secret
+
+# Opcional: imprime el SQL de Hibernate en consola (por defecto false; en producción no se define)
+JPA_SHOW_SQL=true
 ```
 
 Para ejecución dentro de Docker Compose, la aplicación utiliza internamente `jdbc:postgresql://db:5432/apiproject`; el puerto `5433` es el puerto publicado para conexiones desde el equipo local.

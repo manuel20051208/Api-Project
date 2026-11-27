@@ -185,11 +185,12 @@ public class ShSaleService {
         if (requestDTO == null) {
             throw new ResponseStatusException(BAD_REQUEST, "El cuerpo de la solicitud es obligatorio");
         }
-        if (!requestDTO.clientId().equals(authenticatedClientId)) {
-            throw new ResponseStatusException(FORBIDDEN, "No puedes comprar usando otro cliente");
-        }
+        // El null va antes del equals: si no, un body sin clientId daba NPE (500) en vez de 400.
         if (requestDTO.clientId() == null) {
             throw new ResponseStatusException(BAD_REQUEST, "clientId es obligatorio");
+        }
+        if (!requestDTO.clientId().equals(authenticatedClientId)) {
+            throw new ResponseStatusException(FORBIDDEN, "No puedes comprar usando otro cliente");
         }
         if (requestDTO.items() == null || requestDTO.items().isEmpty()) {
             throw new ResponseStatusException(BAD_REQUEST, "La compra debe tener al menos un producto");

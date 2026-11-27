@@ -63,6 +63,8 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       CORS_ALLOWED_ORIGIN: ${URL_FOR_REQUESTING_AND_RESPONSIVES}
+      # Logs estructurados JSON (ECS) en prod; en local (sin compose) quedan en texto.
+      LOGGING_STRUCTURED_FORMAT_CONSOLE: ${LOG_FORMAT:-ecs}
     ports:
       # 8081 en el host: el 8080 lo usa horizontal-api en la misma VM. Solo localhost:
       # el trafico publico entra por nginx (bizadmin.duckdns.org -> 127.0.0.1:8081).

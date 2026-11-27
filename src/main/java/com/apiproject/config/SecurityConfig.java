@@ -103,6 +103,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/client/profile-photo").hasRole("CLIENT")
                                 .requestMatchers(HttpMethod.POST, "/api/product-images/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/product-images/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PATCH, "/api/product-images/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/sale/purchase").hasRole("CLIENT")
                                 .requestMatchers("/api/client/**").hasRole("CLIENT")
                                 .requestMatchers(
@@ -150,6 +151,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/sh-product/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/sh-product-images/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/sh-product-images/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PATCH, "/api/sh-product-images/**").hasRole("ADMIN")
                                 // ===== Ventas de segunda mano =====
                                 .requestMatchers(HttpMethod.POST, "/api/sh-sale/purchase").hasRole("CLIENT")
                                 .requestMatchers(HttpMethod.GET, "/api/sh-sale/client").hasRole("CLIENT")

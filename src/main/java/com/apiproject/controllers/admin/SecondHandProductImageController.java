@@ -11,6 +11,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.apiproject.DTOs.Admin.ReorderImagesRequestDTO;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -43,5 +48,20 @@ public class SecondHandProductImageController {
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws IOException {
         secondHandProductImageService.deleteImage(imageId, authenticatedUser.id());
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Reordenar las imagenes de un producto",
+            description = "imageIds debe traer todas las imagenes del producto, sin repetir, en el nuevo orden (la primera es la portada).")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Imagenes en el nuevo orden"),
+            @ApiResponse(responseCode = "400", description = "Body invalido o imageIds no coincide con las imagenes del producto"),
+            @ApiResponse(responseCode = "401", description = "Token ausente o invalido"),
+            @ApiResponse(responseCode = "403", description = "El producto no es del admin autenticado")
+    })
+    @PatchMapping("/reorder")
+    public ResponseEntity<List<ShProductImageDTO>> reorder(
+            @Valid @RequestBody ReorderImagesRequestDTO request,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        return ResponseEntity.ok(secondHandProductImageService.reorder(request, authenticatedUser.id()));
     }
 }

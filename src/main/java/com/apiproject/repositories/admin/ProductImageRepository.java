@@ -16,6 +16,9 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Long
     @Query(value = "SELECT COUNT(*) FROM product_image WHERE product_id = :productId", nativeQuery = true)
     long countByProductId(@Param("productId") Long productId);
 
+    @Query(value = "SELECT COALESCE(MAX(display_order), 0) FROM product_image WHERE product_id = :productId", nativeQuery = true)
+    long findMaxDisplayOrder(@Param("productId") Long productId);
+
     @Query(value = "SELECT * FROM product_image WHERE product_id = :productId ORDER BY display_order", nativeQuery = true)
     List<ProductImage> findByProductIdOrderByDisplayOrder(@Param("productId") Long productId);
 

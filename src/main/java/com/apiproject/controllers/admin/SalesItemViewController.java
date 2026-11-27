@@ -22,10 +22,12 @@ import java.util.List;
 public class SalesItemViewController {
     private final SaleItemViewService saleItemViewService;
 
-    @Operation(summary = "Get a complete paginated list of all sales history")
+    @Operation(summary = "Get the sales history of the admin, paginated (page base 0, size 1-200)")
     @GetMapping("/show-with-no-restrinction")
-    public Page<SaleItemViewProjection> searchAll(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        return saleItemViewService.showEverythingWithNoRestriction(authenticatedUser.id());
+    public Page<SaleItemViewProjection> searchAll(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                  @RequestParam(defaultValue = "0") int page,
+                                                  @RequestParam(defaultValue = "20") int size) {
+        return saleItemViewService.showEverythingWithNoRestriction(authenticatedUser.id(), page, size);
     }
 
     @Operation(summary = "Get a limited paginated list of sales history")

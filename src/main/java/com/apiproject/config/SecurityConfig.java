@@ -88,7 +88,7 @@ public class SecurityConfig {
                                         "/api/product/search/name/**",
                                         "/api/product/activeProducts",
                                         "/api/product/*/admin"
-                                ).authenticated()
+                                ).permitAll() // catálogo público: ninguno usa el principal
                                 .requestMatchers(HttpMethod.GET, "/api/product-images/**").permitAll()
                                 // ===== Reseñas de productos: lectura pública, escritura CLIENT =====
                                 // "Mis reseñas" exige sesión porque necesita el cliente del JWT (va primero: gana la primera regla).
@@ -140,7 +140,7 @@ public class SecurityConfig {
                                         "/api/services-cupons/**"
                                 ).hasRole("ADMIN")
                                 // ===== Servicios ofrecidos =====
-                                .requestMatchers(HttpMethod.GET, "/api/services/catalog/*").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/services/catalog/*").permitAll() // catálogo público de la tienda
                                 .requestMatchers("/api/services/**").hasRole("ADMIN")
                                 // ===== Productos de segunda mano =====
                                 .requestMatchers(HttpMethod.GET,

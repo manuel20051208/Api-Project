@@ -47,8 +47,7 @@ public class ProductController {
             description = "Catalogo publico usado por el filtro de la tienda. Resuelve productos e imagenes en una sola consulta (sin N+1) y se cachea."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lista de productos activos con sus imagenes"),
-            @ApiResponse(responseCode = "401", description = "Token ausente o invalido")
+            @ApiResponse(responseCode = "200", description = "Lista de productos activos con sus imagenes")
     })
     @GetMapping("/search/active-with-images")
     public List<ProductResponseDTO> getActiveProductsWithImages() {
@@ -60,8 +59,7 @@ public class ProductController {
             description = "Devuelve una lista con el producto si existe. Si el ID no existe responde 200 con una lista vacia (no lanza 404)."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Producto encontrado, o lista vacia si no existe"),
-            @ApiResponse(responseCode = "401", description = "Token ausente o invalido")
+            @ApiResponse(responseCode = "200", description = "Producto encontrado, o lista vacia si no existe")
     })
     @GetMapping("/search/id/{id}")
     public ResponseEntity<List<ProductResponseDTO>> getProductById(@PathVariable Long id) {
@@ -74,8 +72,7 @@ public class ProductController {
             description = "Busqueda por categoria sin distinguir mayusculas/minusculas. Devuelve lista vacia si no hay coincidencias."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lista de productos de la categoria"),
-            @ApiResponse(responseCode = "401", description = "Token ausente o invalido")
+            @ApiResponse(responseCode = "200", description = "Lista de productos de la categoria")
     })
     @GetMapping("/search/category/{category}")
     public ResponseEntity<List<ProductResponseDTO>> getProductsByCategory(@PathVariable String category) {
@@ -89,7 +86,6 @@ public class ProductController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Producto encontrado"),
-            @ApiResponse(responseCode = "401", description = "Token ausente o invalido"),
             @ApiResponse(responseCode = "404", description = "No existe un producto con ese nombre")
     })
     @GetMapping("/search/name/{name}")
@@ -164,8 +160,7 @@ public class ProductController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pagina de productos activos"),
-            @ApiResponse(responseCode = "400", description = "sizePage ausente o con un valor no numerico"),
-            @ApiResponse(responseCode = "401", description = "Token ausente o invalido")
+            @ApiResponse(responseCode = "400", description = "sizePage ausente o con un valor no numerico")
     })
     @GetMapping("/activeProducts")
     public Page<ProductResponseDTO> getActiveProducts(@RequestParam(required = false) int sizePage) {
@@ -193,7 +188,6 @@ public class ProductController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Datos del admin dueno del producto"),
             @ApiResponse(responseCode = "400", description = "El producto esta inactivo"),
-            @ApiResponse(responseCode = "401", description = "Token ausente o invalido"),
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
     @GetMapping("/{productId}/admin")

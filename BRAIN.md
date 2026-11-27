@@ -143,7 +143,6 @@ Base `/api` (salvo dashboard). Auth: `Authorization: Bearer <token>`.
 | `POST /product-images/upload/{productId}` · `DELETE /product-images/{imageId}` | ADMIN | Imágenes |
 | `GET /product-images/{productId}` | Público | Imágenes de producto |
 | `POST /sale/purchase` | CLIENT | Compra (402 si sin tarjeta activa) |
-| `POST /sale/sale/refresh` | ADMIN | Recalcular venta (legado) |
 | `GET /dashboard-controller/get-data-dashboard` | ADMIN | Métricas |
 | `GET /dashboard-controller/excel` · `/pdf` | ADMIN | Reportes |
 | `GET /sales-items/show-with-no-restrinction` · `/show-with-limits` · `/client` · `/product/` | ADMIN | Historial ventas |
@@ -262,7 +261,7 @@ El esquema se gestiona con **Flyway** (única fuente de verdad): migraciones ver
 
 ## 11. Convenciones y gotchas
 
-- **DTOs en responses**, pero `saveProduct`, `deleteSafe`, `modify` y `sale/refresh` aceptan **entidades** directamente (legado; `sale/refresh` es un body combinado `Product`+`UserClient`+`amount`).
+- **DTOs en responses**, pero `saveProduct`, `deleteSafe` y `modify` aceptan **entidades** directamente (legado). `POST /api/sale/sale/refresh` se **eliminó** (2026-11-26): tenía 3 `@RequestBody` (siempre 400) y descontaba stock sin venta ni chequeo de dueño; la venta real es `/purchase` y el ajuste manual de stock es `PUT /api/product/update/{id}`.
 - `deleteSafe` es **borrado suave** (pone `active=false`).
 - `PurchaseRequestDTO` tiene `clientId`, `userId` (lista, sin uso actual), `items` y `cuponCode` (opcional).
 - **Regla de cupones en compra** (normal y SH): si se envía `cuponCode`, el cupón debe estar vigente (`cupon_date_limit`) y tener usos disponibles (`quantity`, `NULL` = ilimitado). El cupón pertenece a un **solo admin** y aplica descuento **únicamente a los productos del carrito de ese admin** que estén vinculados al cupón (`product_cupons_applied`); se **permite carrito multi-vendedor** (los productos de otros admins se cobran completos). `quantity` es el **nº de productos que cubre por compra**; si el carrito trae más elegibles que `quantity`, solo se descuentan los primeros `quantity`. Se bloquea con `FOR UPDATE`, se descuenta 1 uso por compra (`redeem`) y se registra la fila en `*_used_by_clients`. El descuento es un porcentaje sobre cada subtotal elegible.

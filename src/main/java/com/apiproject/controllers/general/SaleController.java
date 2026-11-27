@@ -1,10 +1,7 @@
 package com.apiproject.controllers.general;
 
-import com.apiproject.DTOs.General.ProductResponseDTO;
 import com.apiproject.DTOs.General.PurchaseRequestDTO;
 import com.apiproject.DTOs.General.PurchaseResponseDTO;
-import com.apiproject.entities.client.UserClient;
-import com.apiproject.entities.general.Product;
 import com.apiproject.security.AuthenticatedUser;
 import com.apiproject.services.general.SaleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,13 +27,5 @@ public class SaleController {
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
         return saleService.purchase(purchaseRequestDTO, authenticatedUser.id());
-    }
-
-    @Operation(summary = "This action make an action over sales refreshing the product data")
-    @PostMapping("/sale/refresh")
-    public ProductResponseDTO makeSale(@RequestBody Product productRequest,
-                                       @RequestBody UserClient userClient,
-                                       @RequestBody Integer amount) {
-        return saleService.makeSale(productRequest,userClient, amount);
     }
 }

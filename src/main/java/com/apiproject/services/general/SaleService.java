@@ -323,20 +323,4 @@ public class SaleService {
             Long adminId
     ) {
     }
-
-    @Transactional
-    public ProductResponseDTO makeSale(Product productRequest, UserClient userClient, Integer amount) {
-        Product product = productRepository.findById(productRequest.getId())
-                .orElseThrow(() -> new ResponseStatusException(BAD_REQUEST, "Product not found"));
-
-        if (amount > product.getStock()) {
-            throw new ResponseStatusException(CONFLICT, "There is no enough stock");
-        }
-
-        product.setStock(product.getStock() - amount);
-        productRepository.save(product);
-        productService.refreshCachesAfterStockChange(List.of(product));
-
-        return ProductResponseDTO.fromEntity(product);
-    }
 }

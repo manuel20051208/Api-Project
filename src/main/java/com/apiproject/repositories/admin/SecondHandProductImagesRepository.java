@@ -17,6 +17,9 @@ public interface SecondHandProductImagesRepository extends JpaRepository<SecondH
     @Query(value = "SELECT COUNT(*) FROM secondhand_product_images WHERE product_id = :productId", nativeQuery = true)
     long countByProductId(@Param("productId") Long productId);
 
+    @Query(value = "SELECT COALESCE(MAX(display_order), 0) FROM secondhand_product_images WHERE product_id = :productId", nativeQuery = true)
+    long findMaxDisplayOrder(@Param("productId") Long productId);
+
     @Query(value = "SELECT * FROM secondhand_product_images WHERE product_id = :productId ORDER BY display_order", nativeQuery = true)
     List<SecondHandProductImage> findByProductIdOrderByDisplayOrder(@Param("productId") Long productId);
 

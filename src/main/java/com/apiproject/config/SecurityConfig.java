@@ -87,7 +87,8 @@ public class SecurityConfig {
                                         "/api/product/search/category/**",
                                         "/api/product/search/name/**",
                                         "/api/product/activeProducts",
-                                        "/api/product/*/admin"
+                                        "/api/product/*/admin",
+                                        "/api/product/*/related"
                                 ).permitAll() // catálogo público: ninguno usa el principal
                                 .requestMatchers(HttpMethod.GET, "/api/product-images/**").permitAll()
                                 // ===== Reseñas de productos: lectura pública, escritura CLIENT =====
@@ -103,6 +104,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/client/profile-photo").hasRole("CLIENT")
                                 .requestMatchers(HttpMethod.POST, "/api/product-images/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/product-images/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PATCH, "/api/product-images/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/sale/purchase").hasRole("CLIENT")
                                 .requestMatchers("/api/client/**").hasRole("CLIENT")
                                 .requestMatchers(
@@ -150,6 +152,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/sh-product/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/sh-product-images/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/sh-product-images/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PATCH, "/api/sh-product-images/**").hasRole("ADMIN")
                                 // ===== Ventas de segunda mano =====
                                 .requestMatchers(HttpMethod.POST, "/api/sh-sale/purchase").hasRole("CLIENT")
                                 .requestMatchers(HttpMethod.GET, "/api/sh-sale/client").hasRole("CLIENT")

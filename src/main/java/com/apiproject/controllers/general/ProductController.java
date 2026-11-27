@@ -196,4 +196,21 @@ public class ProductController {
     ) {
         return productService.showUserAdmin(productId);
     }
+
+    @Operation(
+            summary = "Productos relacionados",
+            description = "Productos activos de la misma categoria y del mismo admin que el producto indicado (sin incluirlo), con imagenes, ordenados por nombre. Publico y cacheado."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de productos relacionados (puede ser vacia)"),
+            @ApiResponse(responseCode = "400", description = "limit fuera de 1..20"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
+    @GetMapping("/{productId}/related")
+    public List<ProductResponseDTO> getRelated(
+            @PathVariable Long productId,
+            @RequestParam(defaultValue = "" + ProductService.RELATED_DEFAULT_LIMIT) int limit
+    ) {
+        return productService.findRelated(productId, limit);
+    }
 }

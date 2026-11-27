@@ -15,6 +15,10 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserAdmin, Long> {
     Optional<UserAdmin> findById(Long id);
     boolean existsByEmail(String email);
+
+    /** true si otro admin (id distinto) ya usa ese email, sin distinguir mayusculas. */
+    @Query(value = "SELECT EXISTS (SELECT 1 FROM users WHERE lower(email) = lower(:email) AND id <> :id)", nativeQuery = true)
+    boolean existsByEmailAndIdNot(@Param("email") String email, @Param("id") Long id);
     Optional<UserAdmin> findByEmail(String email);
     Optional<UserAdmin> findProfileById(@Param("id") Long id);
 

@@ -1,5 +1,6 @@
 package com.apiproject.services.admin;
 
+import com.apiproject.DTOs.Admin.UpdateAdminRequestDTO;
 import com.apiproject.DTOs.Admin.UserResponseDTO;
 import com.apiproject.DTOs.Auth.LoginAdminResponseDTO;
 import com.apiproject.DTOs.Auth.RegisterAdminRequestDTO;
@@ -13,6 +14,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -66,21 +68,64 @@ public class UserService {
         return toUserResponse(userAdmin);
     }
 
+    /**
+     * Edita el perfil del admin autenticado. Solo campos del DTO (null = no se toca);
+     * texto no puede venir vacio, email con formato valido y no usado por otro admin (409).
+     * Refresca el cache del perfil y evicta la ficha publica de la tienda (businessName).
+     */
     @Transactional
     @CachePut(value = CacheConstants.USER_RESPONSE, key = "#id")
-    public UserResponseDTO modifyData(Long id, UserAdmin userAdmin){
+    @CacheEvict(value = "clientDescriptions", key = "#id")
+    public UserResponseDTO modifyData(Long id, UpdateAdminRequestDTO request){
+        if (request == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "El cuerpo de la solicitud es obligatorio");
+        }
         UserAdmin existing = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
-        Optional.ofNullable(userAdmin.getFullName()).ifPresent(existing::setFullName);
-        Optional.ofNullable(userAdmin.getEmail()).ifPresent(existing::setEmail);
-        Optional.ofNullable(userAdmin.getBusinessName()).ifPresent(existing::setBusinessName);
-        Optional.ofNullable(userAdmin.getPhone()).ifPresent(existing::setPhone);
-        Optional.ofNullable(userAdmin.getColorTypes()).ifPresent(existing::setColorTypes);
+        Optional.ofNullable(request.fullName())
+                .map(name -> requireText(name, "fullName", 255))
+                .ifPresent(existing::setFullName);
+        Optional.ofNullable(request.businessName())
+                .map(name -> requireText(name, "businessName", 255))
+                .ifPresent(existing::setBusinessName);
+        Optional.ofNullable(request.email())
+                .map(email -> requireText(email, "email", 255).toLowerCase(java.util.Locale.ROOT))
+                .ifPresent(email -> {
+                    if (!EMAIL_PATTERN.matcher(email).matches()) {
+                        throw new ResponseStatusException(BAD_REQUEST, "El email no tiene un formato valido");
+                    }
+                    if (!email.equalsIgnoreCase(existing.getEmail()) && userRepository.existsByEmailAndIdNot(email, id)) {
+                        throw new ResponseStatusException(CONFLICT, "El email ya esta registrado");
+                    }
+                    existing.setEmail(email);
+                });
+        Optional.ofNullable(request.phone()).ifPresent(phone -> {
+            if (phone <= 0) {
+                throw new ResponseStatusException(BAD_REQUEST, "El telefono no es valido");
+            }
+            existing.setPhone(phone);
+        });
+        Optional.ofNullable(request.colorTypes()).ifPresent(existing::setColorTypes);
 
         userRepository.save(existing);
 
-        return UserResponseDTO.fromEntity(existing);
+        return toUserResponse(existing);
+    }
+
+    private static final java.util.regex.Pattern EMAIL_PATTERN =
+            java.util.regex.Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+
+    /** Recorta y exige texto no vacio con largo maximo (para campos opcionales que SI vienen). */
+    private static String requireText(String value, String field, int maxLength) {
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            throw new ResponseStatusException(BAD_REQUEST, field + " no puede estar vacio");
+        }
+        if (trimmed.length() > maxLength) {
+            throw new ResponseStatusException(BAD_REQUEST, field + " no puede superar " + maxLength + " caracteres");
+        }
+        return trimmed;
     }
 
     @Cacheable(value = CacheConstants.USER_RESPONSE, key = "#id", sync = true)

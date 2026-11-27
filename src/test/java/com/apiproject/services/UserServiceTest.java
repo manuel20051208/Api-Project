@@ -1,5 +1,6 @@
 package com.apiproject.services;
 
+import com.apiproject.DTOs.Admin.UpdateAdminRequestDTO;
 import com.apiproject.DTOs.Admin.UserResponseDTO;
 import com.apiproject.entities.admin.UserAdmin;
 import com.apiproject.enums.ColorTypes;
@@ -96,13 +97,9 @@ class UserServiceTest {
                 .build();
 
         // Los datos "nuevos" que llegan a actualizar (ojo: email viene null a propósito)
-        UserAdmin datosNuevos = UserAdmin.builder()
-                .fullName("Nombre Nuevo")
-                .email(null)  // no debería cambiar el email existente
-                .businessName("Negocio Nuevo")
-                .phone(null)  // tampoco debería cambiar el teléfono
-                .colorTypes(null) // ni el color
-                .build();
+        // email, phone y colorTypes vienen null: no deberían cambiar
+        UpdateAdminRequestDTO datosNuevos = new UpdateAdminRequestDTO(
+                "Nombre Nuevo", null, null, "Negocio Nuevo", null);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(userRepository.save(any(UserAdmin.class))).thenReturn(existente);
@@ -131,7 +128,7 @@ class UserServiceTest {
     void modifyData_usuarioNoExiste_debeLanzarExcepcion() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        UserAdmin datosNuevos = UserAdmin.builder().fullName("Nombre Nuevo").build();
+        UpdateAdminRequestDTO datosNuevos = new UpdateAdminRequestDTO("Nombre Nuevo", null, null, null, null);
 
         assertThrows(ResourceNotFoundException.class, () -> {
             userService.modifyData(99L, datosNuevos);
@@ -156,4 +153,53 @@ class UserServiceTest {
         verify(userRepository, never()).updatePasswordById(anyLong(), anyString());
         verify(jwtService, never()).generateAdminToken(anyLong(), anyString(), anyString());
     }
+
+    private UserAdmin adminExistente() {
+        return UserAdmin.builder().id(1L).fullName("Admin").email("admin@test.com").build();
+    }
+
+    @Test
+    void modifyData_emailDeOtroAdmin_409YNoGuarda() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(adminExistente()));
+        when(userRepository.existsByEmailAndIdNot("otro@test.com", 1L)).thenReturn(true);
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
+                userService.modifyData(1L, new UpdateAdminRequestDTO(null, " Otro@Test.com ", null, null, null)));
+
+        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void modifyData_emailInvalido_400() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(adminExistente()));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
+                userService.modifyData(1L, new UpdateAdminRequestDTO(null, "no-es-email", null, null, null)));
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void modifyData_nombreVacio_400() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(adminExistente()));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
+                userService.modifyData(1L, new UpdateAdminRequestDTO("   ", null, null, null, null)));
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void modifyData_mismoEmailConOtrasMayusculas_noEsConflicto() {
+        UserAdmin admin = adminExistente();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(admin));
+
+        UserResponseDTO r = userService.modifyData(1L, new UpdateAdminRequestDTO(null, "ADMIN@test.com", null, null, null));
+
+        assertEquals("admin@test.com", r.email());
+        verify(userRepository, never()).existsByEmailAndIdNot(anyString(), anyLong());
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.apiproject.controllers.admin;
 
+import com.apiproject.DTOs.Admin.UpdateAdminRequestDTO;
 import com.apiproject.DTOs.Admin.UserResponseDTO;
 import com.apiproject.DTOs.Auth.LoginAdminRequestDTO;
 import com.apiproject.DTOs.Auth.LoginAdminResponseDTO;
@@ -9,7 +10,6 @@ import com.apiproject.security.AuthenticatedUser;
 import com.apiproject.services.admin.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.http.MediaType;
@@ -47,12 +47,12 @@ public class UserController {
         return userService.getUserAdmin(authenticatedUser.id());
     }
 
-    @Operation(summary = "modify data")
+    @Operation(summary = "Modify the authenticated admin profile (fullName, email, phone, businessName, colorTypes)")
     @PatchMapping(value = "/modify")
     public UserResponseDTO modify(
-            @RequestBody @Valid UserAdmin userAdmin,
+            @RequestBody UpdateAdminRequestDTO request,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser){
-        return userService.modifyData(authenticatedUser.id(), userAdmin);
+        return userService.modifyData(authenticatedUser.id(), request);
     }
 
     @Operation(summary = "Upload a profile photo")

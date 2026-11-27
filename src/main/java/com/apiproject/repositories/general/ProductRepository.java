@@ -54,6 +54,26 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.images WHERE p.id IN :ids")
     List<Product> findAllWithImagesByIdIn(@Param("ids") List<Long> ids);
 
+    /**
+     * IDs de los productos relacionados: activos, de la misma categoria (sin distinguir
+     * mayusculas/minusculas) y del mismo admin dueno, excluyendo el producto de origen.
+     * El LIMIT se aplica en la base con el {@link Pageable} (patron de {@code findActiveProductIds}),
+     * para no paginar en memoria sobre un JOIN FETCH de colecciones.
+     */
+    @Query("""
+            SELECT p.id FROM Product p
+            WHERE p.active = true
+              AND p.userAdmin.id = :adminId
+              AND p.id <> :productId
+              AND LOWER(p.category) = LOWER(:category)
+            ORDER BY p.name ASC
+            """)
+    List<Long> findRelatedProductIds(
+            @Param("category") String category,
+            @Param("adminId") Long adminId,
+            @Param("productId") Long productId,
+            Pageable pageable);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Product p WHERE p.id IN :ids")
     List<Product> findAllByIdInForUpdate(@Param("ids") List<Long> ids);

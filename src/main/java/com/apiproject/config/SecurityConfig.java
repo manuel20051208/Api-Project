@@ -87,7 +87,8 @@ public class SecurityConfig {
                                         "/api/product/search/category/**",
                                         "/api/product/search/name/**",
                                         "/api/product/activeProducts",
-                                        "/api/product/*/admin"
+                                        "/api/product/*/admin",
+                                        "/api/product/*/related"
                                 ).permitAll() // catálogo público: ninguno usa el principal
                                 .requestMatchers(HttpMethod.GET, "/api/product-images/**").permitAll()
                                 // ===== Reseñas de productos: lectura pública, escritura CLIENT =====

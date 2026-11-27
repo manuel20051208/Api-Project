@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @Service
@@ -85,7 +86,8 @@ public class ProductService {
             @CacheEvict(value = CacheConstants.PRODUCTS_WITH_IMAGES_BY_ADMIN, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_WITH_IMAGES, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_BY_CATEGORY, allEntries = true),
-            @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_PAGE, allEntries = true)
+            @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_PAGE, allEntries = true),
+            @CacheEvict(value = CacheConstants.PRODUCTS_RELATED, allEntries = true)
     })
     @Transactional
     public void save(Product product, Long adminId) {
@@ -124,7 +126,8 @@ public class ProductService {
             @CacheEvict(value = CacheConstants.PRODUCT_BY_NAME, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_WITH_IMAGES, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_BY_CATEGORY, allEntries = true),
-            @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_PAGE, allEntries = true)
+            @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_PAGE, allEntries = true),
+            @CacheEvict(value = CacheConstants.PRODUCTS_RELATED, allEntries = true)
     })
     @Transactional
     public ProductResponseDTO updateProduct(Long id, @NonNull Product product, Long adminId) {
@@ -149,7 +152,8 @@ public class ProductService {
             @CacheEvict(value = CacheConstants.PRODUCT_BY_NAME, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_WITH_IMAGES, allEntries = true),
             @CacheEvict(value = CacheConstants.PRODUCTS_BY_CATEGORY, allEntries = true),
-            @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_PAGE, allEntries = true)
+            @CacheEvict(value = CacheConstants.PRODUCTS_ACTIVE_PAGE, allEntries = true),
+            @CacheEvict(value = CacheConstants.PRODUCTS_RELATED, allEntries = true)
     })
     @Transactional
     public void deleteProductSafe(Long id, Long adminId) {
@@ -228,6 +232,7 @@ public class ProductService {
         evictAll(CacheConstants.PRODUCTS_ACTIVE_WITH_IMAGES);
         evictAll(CacheConstants.PRODUCTS_BY_CATEGORY);
         evictAll(CacheConstants.PRODUCTS_ACTIVE_PAGE);
+        evictAll(CacheConstants.PRODUCTS_RELATED);
     }
 
     private void evictKey(String cacheName, Object key) {
@@ -249,6 +254,41 @@ public class ProductService {
     @Cacheable(value = CacheConstants.PRODUCTS_WITH_IMAGES_BY_ADMIN, key = "#adminId", sync = true)
     public List<ProductResponseDTO> findAllWithImages(Long adminId) {
         return productRepository.findAllWithImagesByUserAdminId(adminId).stream()
+                .map(ProductResponseDTO::fromEntity)
+                .toList();
+    }
+
+    public static final int RELATED_DEFAULT_LIMIT = 8;
+    public static final int RELATED_MAX_LIMIT = 20;
+
+    /**
+     * Productos relacionados: activos, misma categoria y mismo admin que {@code productId},
+     * sin incluirlo. Dos pasos (ids con LIMIT en la BD + JOIN FETCH de imagenes) para no
+     * paginar en memoria sobre una coleccion, igual que {@link #findByActiveTrue(int)}.
+     */
+    @Transactional(readOnly = true)
+    @Cacheable(value = CacheConstants.PRODUCTS_RELATED, key = "#productId + '-' + #limit", sync = true)
+    public List<ProductResponseDTO> findRelated(Long productId, int limit) {
+        if (limit < 1 || limit > RELATED_MAX_LIMIT) {
+            throw new ResponseStatusException(BAD_REQUEST, "limit debe estar entre 1 y " + RELATED_MAX_LIMIT);
+        }
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        if (product.getCategory() == null || product.getUserAdmin() == null) {
+            return List.of();
+        }
+
+        List<Long> ids = productRepository.findRelatedProductIds(
+                product.getCategory(), product.getUserAdmin().getId(), productId, PageRequest.of(0, limit));
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, Product> productsById = productRepository.findAllWithImagesByIdIn(ids).stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+        return ids.stream()
+                .map(productsById::get)
+                .filter(Objects::nonNull)
                 .map(ProductResponseDTO::fromEntity)
                 .toList();
     }

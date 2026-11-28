@@ -347,6 +347,68 @@ src/main/resources/
     └── schema.dbml      Modelo visual
 ```
 
+## Diagramas UML
+
+Generados por script desde `diagrams/_fuente/` leyendo el código (notación OMG UML 2.5.1, editables en draw.io).
+
+### Casos de uso
+
+![Diagrama de casos de uso](diagrams/UML/casos-de-uso.drawio.svg)
+
+Fuente: [casos-de-uso.drawio.xml](diagrams/UML/casos-de-uso.drawio.xml) (se regenera con `python diagrams/_fuente/gen_casos_uso.py`).
+
+### Clases
+
+![Diagrama de clases de las entidades JPA](diagrams/Clases/entidades.drawio.svg)
+
+Fuente: [entidades.xml](diagrams/Clases/entidades.xml) (se regenera con `python diagrams/_fuente/gen_clases.py`).
+
+### Componentes
+
+![Diagrama de componentes del backend](diagrams/Componentes/componentes-backend.drawio.svg)
+
+Fuente: [componentes-backend.xml](diagrams/Componentes/componentes-backend.xml) (se regenera con `python diagrams/_fuente/gen_componentes.py`).
+
+### Despliegue
+
+![Diagrama de despliegue](diagrams/Despliegue/despliegue.drawio.svg)
+
+Fuente: [despliegue.xml](diagrams/Despliegue/despliegue.xml) (se regenera con `python diagrams/_fuente/gen_despliegue.py`).
+
+Para exportar un `.xml` a `.drawio.svg`: `python diagrams/_fuente/exportar_drawio_svg.py <x>.xml <x>.drawio.svg` y después `python diagrams/_fuente/fondo_claro.py`.
+
+### Secuencia
+
+- Diagramas de secuencia por caso de uso (fuente: [secuencia-casos-de-uso.xml](diagrams/_fuente/secuencia-casos-de-uso.xml), se regeneran con `python diagrams/_fuente/gen_secuencia.py --regenerar-xml`):
+
+| Caso de uso | Diagrama de secuencia | Actor |
+|---|---|---|
+| CU-001 | [Registrar cuenta](diagrams/Secuencia/cu-001-registrar-cuenta.svg) | Visitante |
+| CU-002 | [Iniciar sesión](diagrams/Secuencia/cu-002-iniciar-sesion.svg) | Visitante |
+| CU-003 | [Consultar catálogo de productos](diagrams/Secuencia/cu-003-consultar-catalogo-de-productos.svg) | Visitante |
+| CU-004 | [Consultar catálogo de segunda mano](diagrams/Secuencia/cu-004-consultar-catalogo-de-segunda-mano.svg) | Visitante |
+| CU-005 | [Consultar servicios y ficha de la tienda](diagrams/Secuencia/cu-005-consultar-servicios-y-ficha-de-la-tienda.svg) | Visitante |
+| CU-006 | [Consultar reseñas de productos](diagrams/Secuencia/cu-006-consultar-resenas-de-productos.svg) | Visitante |
+| CU-007 | [Comprar productos](diagrams/Secuencia/cu-007-comprar-productos.svg) | Cliente |
+| CU-008 | [Comprar producto de segunda mano](diagrams/Secuencia/cu-008-comprar-producto-de-segunda-mano.svg) | Cliente |
+| CU-009 | [Aplicar cupón](diagrams/Secuencia/cu-009-aplicar-cupon.svg) | Cliente |
+| CU-010 | [Consultar mis cupones](diagrams/Secuencia/cu-010-consultar-mis-cupones.svg) | Cliente |
+| CU-011 | [Gestionar reseñas](diagrams/Secuencia/cu-011-gestionar-resenas.svg) | Cliente |
+| CU-012 | [Gestionar perfil de cliente](diagrams/Secuencia/cu-012-gestionar-perfil-de-cliente.svg) | Cliente |
+| CU-013 | [Gestionar tarjetas de pago](diagrams/Secuencia/cu-013-gestionar-tarjetas-de-pago.svg) | Cliente |
+| CU-014 | [Consultar historial de compras](diagrams/Secuencia/cu-014-consultar-historial-de-compras.svg) | Cliente |
+| CU-015 | [Gestionar perfil de tienda](diagrams/Secuencia/cu-015-gestionar-perfil-de-tienda.svg) | Administrador |
+| CU-016 | [Gestionar productos](diagrams/Secuencia/cu-016-gestionar-productos.svg) | Administrador |
+| CU-017 | [Gestionar imágenes de productos](diagrams/Secuencia/cu-017-gestionar-imagenes-de-productos.svg) | Administrador |
+| CU-018 | [Gestionar productos de segunda mano](diagrams/Secuencia/cu-018-gestionar-productos-de-segunda-mano.svg) | Administrador |
+| CU-019 | [Gestionar servicios ofrecidos](diagrams/Secuencia/cu-019-gestionar-servicios-ofrecidos.svg) | Administrador |
+| CU-020 | [Gestionar cupones](diagrams/Secuencia/cu-020-gestionar-cupones.svg) | Administrador |
+| CU-021 | [Enviar cupones a clientes](diagrams/Secuencia/cu-021-enviar-cupones-a-clientes.svg) | Administrador |
+| CU-022 | [Consultar dashboard y reportes](diagrams/Secuencia/cu-022-consultar-dashboard-y-reportes.svg) | Administrador |
+| CU-023 | [Consultar rankings](diagrams/Secuencia/cu-023-consultar-rankings.svg) | Administrador |
+| CU-024 | [Consultar ventas y resumen de clientes](diagrams/Secuencia/cu-024-consultar-ventas-y-resumen-de-clientes.svg) | Administrador |
+| CU-025 | [Cancelar venta](diagrams/Secuencia/cu-025-cancelar-venta.svg) | Cliente y Administrador |
+
 ## Documentación adicional
 
 > Las notas del vault `docs/` son **locales** (no se versionan en GitHub); los diagramas sí están versionados en `diagrams/`.

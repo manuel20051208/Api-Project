@@ -1,0 +1,51 @@
+"""Lista maestra de casos de uso de ApiProject (la usan gen_casos_uso.py y gen_secuencia.py).
+
+Cada caso de uso sale de los controladores de src/main/java/com/apiproject/controllers/** y de las reglas de
+acceso de config/SecurityConfig.java. Los codigos CU-001... son estables: no los renumeres si agregas uno (ponlo al final).
+"""
+
+# (codigo, nombre, actor principal, endpoints/controladores que agrupa)
+CASOS = [
+    ("CU-001", "Registrar cuenta", "Visitante",
+     "POST /api/client/register, POST /api/user/register"),
+    ("CU-002", "Iniciar sesión", "Visitante",
+     "POST /api/client/login, POST /api/user/login, OAuth2 Google"),
+    ("CU-003", "Consultar catálogo de productos", "Visitante",
+     "GET /api/product/search/**, /activeProducts, /{id}/related, /{id}/admin, GET /api/product-images/{id}"),
+    ("CU-004", "Consultar catálogo de segunda mano", "Visitante",
+     "GET /api/sh-product/search/active, GET /api/sh-product-images/{id}"),
+    ("CU-005", "Consultar servicios y ficha de la tienda", "Visitante",
+     "GET /api/services/catalog/{ownerId}, GET /api/client/{adminId}/admin"),
+    ("CU-006", "Consultar reseñas de productos", "Visitante",
+     "GET /api/product-reviews/product/{id}, /summary, /{reviewId}"),
+    ("CU-007", "Comprar productos", "Cliente", "POST /api/sale/purchase"),
+    ("CU-008", "Comprar producto de segunda mano", "Cliente", "POST /api/sh-sale/purchase"),
+    ("CU-009", "Aplicar cupón", "Cliente", "cuponCode opcional de la compra; GET /api/cupons/validate"),
+    ("CU-010", "Consultar mis cupones", "Cliente",
+     "GET /api/cupons|sh-cupons|services-cupons/assignments/my"),
+    ("CU-011", "Gestionar reseñas", "Cliente",
+     "GET /api/product-reviews/my, POST/PUT/DELETE /api/product-reviews"),
+    ("CU-012", "Gestionar perfil de cliente", "Cliente",
+     "PATCH /api/client/modify|change-password|upload-profile, GET /user-data|profile-photo"),
+    ("CU-013", "Gestionar tarjetas de pago", "Cliente", "/api/client/payment-cards"),
+    ("CU-014", "Consultar historial de compras", "Cliente",
+     "GET /api/client/user-payments, GET /api/sh-sale/client"),
+    ("CU-015", "Gestionar perfil de tienda", "Administrador",
+     "GET /api/user/admin, PATCH /api/user/modify|upload-profile"),
+    ("CU-016", "Gestionar productos", "Administrador",
+     "POST /api/product/saveProduct|deleteSafe, PUT /update/{id}, GET /search"),
+    ("CU-017", "Gestionar imágenes de productos", "Administrador",
+     "/api/product-images, /api/sh-product-images (upload, delete, reorder)"),
+    ("CU-018", "Gestionar productos de segunda mano", "Administrador", "/api/sh-product/**"),
+    ("CU-019", "Gestionar servicios ofrecidos", "Administrador", "/api/services/**"),
+    ("CU-020", "Gestionar cupones", "Administrador",
+     "/api/cupons, /api/sh-cupons, /api/services-cupons (CRUD)"),
+    ("CU-021", "Enviar cupones a clientes", "Administrador",
+     "POST /assign y /send, GET/PATCH/DELETE /assignments/**"),
+    ("CU-022", "Consultar dashboard y reportes", "Administrador",
+     "GET /dashboard-controller/get-data-dashboard|excel|pdf"),
+    ("CU-023", "Consultar rankings", "Administrador", "GET /api/rankings/best-clients|best-products"),
+    ("CU-024", "Consultar ventas y resumen de clientes", "Administrador",
+     "/api/sales-items/**, /api/client-show-summary/**, GET /api/sh-sale/admin"),
+    ("CU-025", "Cancelar venta", "Cliente y Administrador", "PENDIENTE de implementar"),
+]

@@ -1,5 +1,10 @@
 # Agent Instructions
 
+## Reglas de Orquestación con opencode u otra IA
+- Delega tareas aisladas ejecutando: `opencode run --auto "<prompt>" > "$TEMP/opencode.log" 2>&1`
+- NUNCA leas `$TEMP/opencode.log` completo ni abras los archivos modificados salvo que fallen los tests.
+- Verifica el resultado únicamente con `git diff --stat` y ejecutando los tests/linter.
+
 ## Cerebro del proyecto
 
 Read `BRAIN.md` before answering any codebase question or making changes. It contains the full structure, how the project works, endpoints, DB schema, config, and conventions. Consult it FIRST — it saves browsing and greps.

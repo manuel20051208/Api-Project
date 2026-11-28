@@ -61,3 +61,7 @@ skills-lock.json
 
 ### Referencia de despliegue alternativo (solo local) ###
 render.yaml
+
+### Python (scripts que generan los diagramas) ###
+__pycache__/
+*.pyc

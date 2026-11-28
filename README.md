@@ -23,6 +23,9 @@ Construido con Java 25, Spring Boot 4.1.0 y PostgreSQL 16.
 
 ## Arquitectura
 
+<details>
+<summary>Mostrar / ocultar</summary>
+
 El proyecto sigue una arquitectura por capas. Cada petición entra por seguridad, pasa por controller → service → repository y vuelve como DTO:
 
 ![Diagrama de componentes del backend](diagrams/Componentes/componentes-backend.drawio.svg)
@@ -44,7 +47,12 @@ ReportServiceFactory.getService(type)
         +--> PdfService   --> reporte_usuarios.pdf
 ```
 
+</details>
+
 ## Stack tecnológico
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 | Área | Tecnología |
 |---|---|
@@ -61,14 +69,24 @@ ReportServiceFactory.getService(type)
 | Contenedores | Docker y Docker Compose |
 | Build | Maven Wrapper |
 
+</details>
+
 ## Requisitos
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 - Java 25
 - Docker Desktop, recomendado para ejecutar la base de datos y la API
 - Maven 3.8 o superior si no se usa el wrapper
 - Credenciales de Cloudinary y Google OAuth2 para activar esas integraciones
 
+</details>
+
 ## Configuración
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 Crea un archivo `.env` en la raíz del proyecto. 
 (Para el que este siguiento las instrucciones) No subas este archivo al repositorio.
@@ -97,7 +115,12 @@ JPA_SHOW_SQL=true
 
 Para ejecución dentro de Docker Compose, la aplicación utiliza internamente `jdbc:postgresql://db:5432/apiproject`; el puerto `5433` es el puerto publicado para conexiones desde el equipo local.
 
+</details>
+
 ## Ejecución con Docker
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 Levantar la base de datos y la API:
 
@@ -179,7 +202,12 @@ Para eliminar también el volumen local de PostgreSQL:
 docker compose down -v
 ```
 
+</details>
+
 ## Ejecución local
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 Si PostgreSQL ya está disponible y `DB_URL` apunta a la base correcta:
 
@@ -207,7 +235,12 @@ Ejecutar pruebas:
 
 El proyecto requiere Java 25 y Maven 3.8 o superior; estas versiones se validan automáticamente durante el build.
 
+</details>
+
 ## Endpoints principales
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 La mayoría de rutas protegidas requieren:
 
@@ -233,7 +266,12 @@ Authorization: Bearer <jwt>
 
 La lista completa de endpoints y payloads está en Swagger (y en el archivo local `API_FRONTEND_CONSUMPTION.txt`, que no se versiona).
 
+</details>
+
 ## Flujo de compra
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 El endpoint `POST /api/sale/purchase` gestiona la compra completa de un cliente:
 
@@ -249,7 +287,12 @@ El endpoint `POST /api/sale/purchase` gestiona la compra completa de un cliente:
 
 Relacionados: [CU-008 Comprar producto de segunda mano](diagrams/Secuencia/cu-008-comprar-producto-de-segunda-mano.svg) · [CU-009 Aplicar cupón](diagrams/Secuencia/cu-009-aplicar-cupon.svg) · [CU-025 Cancelar venta](diagrams/Secuencia/cu-025-cancelar-venta.svg)
 
+</details>
+
 ## Catálogo y búsqueda de productos
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 Los endpoints de lectura de productos usan caché por clave (`@Cacheable`) y devuelven siempre `ProductResponseDTO` con imágenes.
 
@@ -269,7 +312,12 @@ Las escrituras (crear, actualizar, borrado suave) invalidan todas las claves de 
 
 Relacionado: [CU-004 Consultar catálogo de segunda mano](diagrams/Secuencia/cu-004-consultar-catalogo-de-segunda-mano.svg)
 
+</details>
+
 ## Reportes
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 Los reportes consultan la vista SQL `report_view_dashboard` y comparten la interfaz `ReportService`.
 
@@ -278,7 +326,9 @@ Los reportes consultan la vista SQL `report_view_dashboard` y comparten la inter
 - `ReportServiceFactory` decide qué implementación utilizar.
 - Ambos formatos devuelven una respuesta HTTP con `Content-Disposition: attachment`.
 
-![CU-022 Consultar dashboard y reportes](diagrams/Secuencia/cu-022-consultar-dashboard-y-reportes.svg)
+<img src="assets/readme/reportes.svg" width="100%" alt="Reportes con patrón Factory: GET /dashboard-controller/excel o /pdf llega a DashboardService.downloadReport, que lee report_view_dashboard y pide a ReportServiceFactory.getService(FileTypes) la implementación: ExcelService (Apache POI) genera reporte_usuarios.xlsx y PdfService (OpenPDF) genera reporte_usuarios.pdf. Ambos responden con Content-Disposition: attachment.">
+
+Secuencia UML del caso de uso: [CU-022 Consultar dashboard y reportes](diagrams/Secuencia/cu-022-consultar-dashboard-y-reportes.svg)
 
 ### Reglas de cupones
 
@@ -306,7 +356,12 @@ globales (`quantity`), y aplicar al menos a un producto del carrito de su admin.
 Todos los errores salen con el formato `ApiError` (`timestamp`, `status`, `error`, `message`, `path`).
 Al asignar, `usageLimit` no puede superar el `quantity` del cupón (400).
 
+</details>
+
 ## Base de datos
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 El esquema se versiona con **Flyway** en [src/main/resources/db/migration](src/main/resources/db/migration) (migraciones `V1__…` → `V9__…`; `V9` cifra con bcrypt, vía `pgcrypto`, las contraseñas legacy que hubieran quedado en texto plano) y el modelo visual está en [schema.dbml](src/main/resources/db/schema.dbml). Incluye tablas y vistas para:
 
@@ -324,7 +379,12 @@ Vistas principales:
 - `view_of_client_history`
 - `report_view_dashboard`
 
+</details>
+
 ## Estructura del proyecto
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 ```text
 src/main/java/com/apiproject/
@@ -345,7 +405,12 @@ src/main/resources/
     └── schema.dbml      Modelo visual
 ```
 
+</details>
+
 ## Diagramas UML
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 Generados por script desde `diagrams/_fuente/` leyendo el código (notación OMG UML 2.5.1, editables en draw.io).
 
@@ -407,7 +472,12 @@ Para exportar un `.xml` a `.drawio.svg`: `python diagrams/_fuente/exportar_drawi
 | CU-024 | [Consultar ventas y resumen de clientes](diagrams/Secuencia/cu-024-consultar-ventas-y-resumen-de-clientes.svg) | Administrador |
 | CU-025 | [Cancelar venta](diagrams/Secuencia/cu-025-cancelar-venta.svg) | Cliente y Administrador |
 
+</details>
+
 ## Documentación adicional
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 > Las notas del vault `docs/` son **locales** (no se versionan en GitHub); los diagramas sí están versionados en `diagrams/`.
 
@@ -418,7 +488,12 @@ Para exportar un `.xml` a `.drawio.svg`: `python diagrams/_fuente/exportar_drawi
 - [Esquema de base de datos](docs/Esquema%20de%20Base%20de%20Datos.md)
 - [Diagramas UML](#diagramas-uml): casos de uso, clases, componentes, despliegue y secuencias CU-001 … CU-025
 
+</details>
+
 ## Seguridad
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 ### Autenticación y autorización
 
@@ -438,7 +513,12 @@ Relacionado: [CU-001 Registrar cuenta](diagrams/Secuencia/cu-001-registrar-cuent
 ./mvnw verify -Psecurity
 ```
 
+</details>
+
 ## Roadmap
+
+<details>
+<summary>Mostrar / ocultar</summary>
 
 - Filtros avanzados para reportes por fecha, cliente, producto y estado.
 - Reportes programados por correo electrónico.
@@ -446,6 +526,8 @@ Relacionado: [CU-001 Registrar cuenta](diagrams/Secuencia/cu-001-registrar-cuent
 - Historial de reportes generados.
 - Alertas de stock bajo y comportamiento anómalo de ventas.
 - Exportación adicional a CSV.
+
+</details>
 
 ## Estado del proyecto
 

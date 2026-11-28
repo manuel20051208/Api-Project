@@ -1,42 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-label="BizAdmin API: inventario, catálogo, ventas y cupones. Java 25, Spring Boot 4.1, PostgreSQL 16, JWT + OAuth2, Docker.">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="410" viewBox="0 0 1200 410" role="img" aria-label="Ticket de BizAdmin API (bizadmin.duckdns.org, POST /api/sale/purchase): inventario, catálogo, ventas y cupones. Java 25, Spring Boot 4.1, PostgreSQL 16, JWT + OAuth2, Cloudinary, Docker en EC2. Total: un carrito, muchos vendedores.">
   <style>
     .sans { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; }
     .mono { font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; }
-    /* Liviano: solo transform. El carrito avanza en un sentido y las ruedas giran. */
-    .cart  { animation: go 3.6s linear -1.8s infinite; }
+    .item { font-size: 13px; fill: #52525b; }
+    .val  { fill: #09090b; }
+    .lead { stroke: #c4c4c8; stroke-width: 1.4; stroke-dasharray: 1 4; stroke-linecap: round; }
+    /* Liviano: solo transform. El carrito cruza el ticket y las ruedas giran. */
+    .cart  { animation: go 7s linear -2.4s infinite; }
     .wheel { transform-box: fill-box; transform-origin: center; animation: spin 0.6s linear infinite; }
-    @keyframes go   { from { transform: translateX(-300px); } to { transform: translateX(290px); } }
+    @keyframes go   { from { transform: translateX(-310px); } to { transform: translateX(1110px); } }
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { .cart, .wheel { animation: none; } }
   </style>
-  <defs>
-    <clipPath id="track"><rect x="700" y="90" width="460" height="140"/></clipPath>
-    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="1"/>
-      <stop offset="0.12" stop-color="#ffffff" stop-opacity="0"/>
-      <stop offset="0.88" stop-color="#ffffff" stop-opacity="0"/>
-      <stop offset="1" stop-color="#ffffff" stop-opacity="1"/>
-    </linearGradient>
-  </defs>
+  <defs><clipPath id="c"><path d="M0 8 L8 0 L16 8 L24 0 L32 8 L40 0 L48 8 L56 0 L64 8 L72 0 L80 8 L88 0 L96 8 L104 0 L112 8 L120 0 L128 8 L136 0 L144 8 L152 0 L160 8 L168 0 L176 8 L184 0 L192 8 L200 0 L208 8 L216 0 L224 8 L232 0 L240 8 L248 0 L256 8 L264 0 L272 8 L280 0 L288 8 L296 0 L304 8 L312 0 L320 8 L328 0 L336 8 L344 0 L352 8 L360 0 L368 8 L376 0 L384 8 L392 0 L400 8 L408 0 L416 8 L424 0 L432 8 L440 0 L448 8 L456 0 L464 8 L472 0 L480 8 L488 0 L496 8 L504 0 L512 8 L520 0 L528 8 L536 0 L544 8 L552 0 L560 8 L568 0 L576 8 L584 0 L592 8 L600 0 L608 8 L616 0 L624 8 L632 0 L640 8 L648 0 L656 8 L664 0 L672 8 L680 0 L688 8 L696 0 L704 8 L712 0 L720 8 L728 0 L736 8 L744 0 L752 8 L760 0 L768 8 L776 0 L784 8 L792 0 L800 8 L808 0 L816 8 L824 0 L832 8 L840 0 L848 8 L856 0 L864 8 L872 0 L880 8 L888 0 L896 8 L904 0 L912 8 L920 0 L928 8 L936 0 L944 8 L952 0 L960 8 L968 0 L976 8 L984 0 L992 8 L1000 0 L1008 8 L1016 0 L1024 8 L1032 0 L1040 8 L1048 0 L1056 8 L1064 0 L1072 8 L1080 0 L1088 8 L1096 0 L1104 8 L1112 0 L1120 8 L1128 0 L1136 8 L1144 0 L1152 8 L1160 0 L1168 8 L1176 0 L1184 8 L1192 0 L1200 8 L1200 8 L1200 402 L1192 410 L1184 402 L1176 410 L1168 402 L1160 410 L1152 402 L1144 410 L1136 402 L1128 410 L1120 402 L1112 410 L1104 402 L1096 410 L1088 402 L1080 410 L1072 402 L1064 410 L1056 402 L1048 410 L1040 402 L1032 410 L1024 402 L1016 410 L1008 402 L1000 410 L992 402 L984 410 L976 402 L968 410 L960 402 L952 410 L944 402 L936 410 L928 402 L920 410 L912 402 L904 410 L896 402 L888 410 L880 402 L872 410 L864 402 L856 410 L848 402 L840 410 L832 402 L824 410 L816 402 L808 410 L800 402 L792 410 L784 402 L776 410 L768 402 L760 410 L752 402 L744 410 L736 402 L728 410 L720 402 L712 410 L704 402 L696 410 L688 402 L680 410 L672 402 L664 410 L656 402 L648 410 L640 402 L632 410 L624 402 L616 410 L608 402 L600 410 L592 402 L584 410 L576 402 L568 410 L560 402 L552 410 L544 402 L536 410 L528 402 L520 410 L512 402 L504 410 L496 402 L488 410 L480 402 L472 410 L464 402 L456 410 L448 402 L440 410 L432 402 L424 410 L416 402 L408 410 L400 402 L392 410 L384 402 L376 410 L368 402 L360 410 L352 402 L344 410 L336 402 L328 410 L320 402 L312 410 L304 402 L296 410 L288 402 L280 410 L272 402 L264 410 L256 402 L248 410 L240 402 L232 410 L224 402 L216 410 L208 402 L200 410 L192 402 L184 410 L176 402 L168 410 L160 402 L152 410 L144 402 L136 410 L128 402 L120 410 L112 402 L104 410 L96 402 L88 410 L80 402 L72 410 L64 402 L56 410 L48 402 L40 410 L32 402 L24 410 L16 402 L8 410 L0 402 Z"/></clipPath></defs>
 
-  <rect x="0.5" y="0.5" width="1199" height="259" rx="16" fill="#ffffff" stroke="#e4e4e7"/>
+  <path d="M0 8 L8 0 L16 8 L24 0 L32 8 L40 0 L48 8 L56 0 L64 8 L72 0 L80 8 L88 0 L96 8 L104 0 L112 8 L120 0 L128 8 L136 0 L144 8 L152 0 L160 8 L168 0 L176 8 L184 0 L192 8 L200 0 L208 8 L216 0 L224 8 L232 0 L240 8 L248 0 L256 8 L264 0 L272 8 L280 0 L288 8 L296 0 L304 8 L312 0 L320 8 L328 0 L336 8 L344 0 L352 8 L360 0 L368 8 L376 0 L384 8 L392 0 L400 8 L408 0 L416 8 L424 0 L432 8 L440 0 L448 8 L456 0 L464 8 L472 0 L480 8 L488 0 L496 8 L504 0 L512 8 L520 0 L528 8 L536 0 L544 8 L552 0 L560 8 L568 0 L576 8 L584 0 L592 8 L600 0 L608 8 L616 0 L624 8 L632 0 L640 8 L648 0 L656 8 L664 0 L672 8 L680 0 L688 8 L696 0 L704 8 L712 0 L720 8 L728 0 L736 8 L744 0 L752 8 L760 0 L768 8 L776 0 L784 8 L792 0 L800 8 L808 0 L816 8 L824 0 L832 8 L840 0 L848 8 L856 0 L864 8 L872 0 L880 8 L888 0 L896 8 L904 0 L912 8 L920 0 L928 8 L936 0 L944 8 L952 0 L960 8 L968 0 L976 8 L984 0 L992 8 L1000 0 L1008 8 L1016 0 L1024 8 L1032 0 L1040 8 L1048 0 L1056 8 L1064 0 L1072 8 L1080 0 L1088 8 L1096 0 L1104 8 L1112 0 L1120 8 L1128 0 L1136 8 L1144 0 L1152 8 L1160 0 L1168 8 L1176 0 L1184 8 L1192 0 L1200 8 L1200 8 L1200 402 L1192 410 L1184 402 L1176 410 L1168 402 L1160 410 L1152 402 L1144 410 L1136 402 L1128 410 L1120 402 L1112 410 L1104 402 L1096 410 L1088 402 L1080 410 L1072 402 L1064 410 L1056 402 L1048 410 L1040 402 L1032 410 L1024 402 L1016 410 L1008 402 L1000 410 L992 402 L984 410 L976 402 L968 410 L960 402 L952 410 L944 402 L936 410 L928 402 L920 410 L912 402 L904 410 L896 402 L888 410 L880 402 L872 410 L864 402 L856 410 L848 402 L840 410 L832 402 L824 410 L816 402 L808 410 L800 402 L792 410 L784 402 L776 410 L768 402 L760 410 L752 402 L744 410 L736 402 L728 410 L720 402 L712 410 L704 402 L696 410 L688 402 L680 410 L672 402 L664 410 L656 402 L648 410 L640 402 L632 410 L624 402 L616 410 L608 402 L600 410 L592 402 L584 410 L576 402 L568 410 L560 402 L552 410 L544 402 L536 410 L528 402 L520 410 L512 402 L504 410 L496 402 L488 410 L480 402 L472 410 L464 402 L456 410 L448 402 L440 410 L432 402 L424 410 L416 402 L408 410 L400 402 L392 410 L384 402 L376 410 L368 402 L360 410 L352 402 L344 410 L336 402 L328 410 L320 402 L312 410 L304 402 L296 410 L288 402 L280 410 L272 402 L264 410 L256 402 L248 410 L240 402 L232 410 L224 402 L216 410 L208 402 L200 410 L192 402 L184 410 L176 402 L168 410 L160 402 L152 410 L144 402 L136 410 L128 402 L120 410 L112 402 L104 410 L96 402 L88 410 L80 402 L72 410 L64 402 L56 410 L48 402 L40 410 L32 402 L24 410 L16 402 L8 410 L0 402 Z" fill="#ffffff" stroke="#e4e4e7"/>
 
-  <text x="60" y="72" class="mono" font-size="12" letter-spacing="3" fill="#a1a1aa">API REST  ·  INVENTARIO Y VENTAS</text>
-  <text x="57" y="136" class="sans" font-size="56" font-weight="700" letter-spacing="-1.5" fill="#7c4a2d">BizAdmin<tspan font-weight="300" fill="#b08968"> API</tspan></text>
-  <text x="60" y="174" class="sans" font-size="18" fill="#52525b">Inventario, catálogo, ventas y cupones. Un carrito, muchos vendedores.</text>
-  <text x="60" y="212" class="mono" font-size="13" fill="#71717a">Java 25  ·  Spring Boot 4.1  ·  PostgreSQL 16  ·  JWT + OAuth2  ·  Docker</text>
+  <text x="600" y="52" text-anchor="middle" class="mono" font-size="12" letter-spacing="2" fill="#a1a1aa">BIZADMIN.DUCKDNS.ORG  ·  POST /api/sale/purchase</text>
+  <text x="600" y="128" text-anchor="middle" class="sans" font-size="72" font-weight="800" letter-spacing="-2" fill="#7c4a2d">BizAdmin</text>
+  <text x="600" y="160" text-anchor="middle" class="mono" font-size="12" letter-spacing="5" fill="#b08968">API REST  ·  INVENTARIO  ·  VENTAS  ·  CUPONES</text>
 
-  <text x="1140" y="72" text-anchor="end" class="mono" font-size="12" fill="#a1a1aa">POST /api/sale/purchase</text>
-
-  <g clip-path="url(#track)">
-    <line x1="700" y1="211" x2="1160" y2="211" stroke="#d4d4d8" stroke-width="2" stroke-dasharray="2 10" stroke-linecap="round"/>
-    <g transform="translate(880 136)">
+  <g clip-path="url(#c)">
+    <line x1="0" y1="240" x2="1200" y2="240" stroke="#d4d4d8" stroke-width="2" stroke-dasharray="2 10" stroke-linecap="round"/>
+    <g transform="translate(150 180)">
       <g class="cart">
-        <g transform="scale(1.4)">
+        <g transform="scale(1.1)">
           <line x1="-34" y1="18" x2="-12" y2="18" stroke="#d4d4d8" stroke-width="2" stroke-linecap="round"/>
           <line x1="-26" y1="28" x2="-8"  y2="28" stroke="#e4e4e7" stroke-width="2" stroke-linecap="round"/>
           <rect x="24" y="14" width="13" height="13" rx="2" fill="#d4d4d8"/>
-          <rect x="39" y="8"  width="16" height="19" rx="2" fill="#09090b"/>
+          <rect x="39" y="8"  width="16" height="19" rx="2" fill="#7c4a2d"/>
           <rect x="57" y="16" width="10" height="11" rx="2" fill="#71717a"/>
           <path d="M0 4h12l10 32h40l8-24H16" fill="none" stroke="#09090b" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
           <g class="wheel"><circle cx="28" cy="47" r="4.5" fill="#ffffff" stroke="#09090b" stroke-width="2.2"/><line x1="28" y1="43.5" x2="28" y2="50.5" stroke="#09090b" stroke-width="1.4"/></g>
@@ -44,6 +36,13 @@
         </g>
       </g>
     </g>
-    <rect x="700" y="90" width="460" height="140" fill="url(#fade)"/>
   </g>
+
+    <text x="290" y="286" class="mono item">Java</text><line x1="329" y1="282" x2="546" y2="282" class="lead"/><text x="570" y="286" text-anchor="end" class="mono item val">25</text><text x="630" y="286" class="mono item">Auth</text><line x1="669" y1="282" x2="808" y2="282" class="lead"/><text x="910" y="286" text-anchor="end" class="mono item val">JWT + OAuth2</text>
+    <text x="290" y="310" class="mono item">Spring Boot</text><line x1="384" y1="306" x2="539" y2="306" class="lead"/><text x="570" y="310" text-anchor="end" class="mono item val">4.1</text><text x="630" y="310" class="mono item">Imágenes</text><line x1="700" y1="306" x2="824" y2="306" class="lead"/><text x="910" y="310" text-anchor="end" class="mono item val">Cloudinary</text>
+    <text x="290" y="334" class="mono item">PostgreSQL</text><line x1="376" y1="330" x2="546" y2="330" class="lead"/><text x="570" y="334" text-anchor="end" class="mono item val">16</text><text x="630" y="334" class="mono item">Deploy</text><line x1="685" y1="330" x2="808" y2="330" class="lead"/><text x="910" y="334" text-anchor="end" class="mono item val">Docker · EC2</text>
+
+  <line x1="290" y1="350" x2="910" y2="350" stroke="#09090b" stroke-width="1.2" stroke-dasharray="6 5"/>
+  <text x="290" y="378" class="sans" font-size="15" font-weight="800" letter-spacing="2" fill="#7c4a2d">TOTAL</text>
+  <text x="910" y="378" text-anchor="end" class="mono" font-size="14" fill="#09090b">1 carrito  ·  muchos vendedores</text>
 </svg>

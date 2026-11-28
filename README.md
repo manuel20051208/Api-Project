@@ -1,6 +1,6 @@
 # ApiJuegoInventario
 
-<img src="assets/readme/banner.svg" width="100%" alt="BizAdmin API: inventario, catálogo, ventas y cupones. Un carrito, muchos vendedores. Java 25, Spring Boot 4.1, PostgreSQL 16, JWT + OAuth2, Docker.">
+<img src="assets/readme/banner.svg" width="100%" alt="Ticket de BizAdmin API (bizadmin.duckdns.org, POST /api/sale/purchase): inventario, catálogo, ventas y cupones. Java 25, Spring Boot 4.1, PostgreSQL 16, JWT + OAuth2, Cloudinary, Docker en EC2. Total: un carrito, muchos vendedores.">
 
 API REST para gestionar el inventario, catálogo y ventas de una tienda. El proyecto permite administrar productos, recibir compras de clientes, consultar métricas y generar reportes en Excel o PDF.
 

@@ -1,92 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-label="BizAdmin API: inventario, catálogo, ventas y cupones. Un carrito, muchos vendedores. Java 25, Spring Boot 4.1, PostgreSQL 16, JWT + OAuth2, Docker.">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-label="BizAdmin API: inventario, catálogo, ventas y cupones. Java 25, Spring Boot 4.1, PostgreSQL 16, JWT + OAuth2, Docker.">
   <style>
     .sans { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; }
     .mono { font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; }
-    .eyebrow { font-size: 13px; letter-spacing: 3px; fill: #a5b4fc; }
-    .title { font-size: 68px; font-weight: 800; letter-spacing: -2px; fill: url(#titleGrad); }
-    .title-soft { fill: #c4b5fd; font-weight: 300; }
-    .lead { font-size: 20px; fill: #e0e7ff; }
-    .chip { font-size: 14px; fill: #f8fafc; }
     /* Animacion liviana: solo transform de un grupo chico y el dashoffset del piso. */
-    .cart { animation: roll 3.2s ease-in-out infinite alternate; }
-    .road { stroke-dasharray: 10 10; animation: run 0.9s linear infinite; }
-    @keyframes roll { from { transform: translateX(0); } to { transform: translateX(190px); } }
-    @keyframes run { to { stroke-dashoffset: -20; } }
+    .cart { animation: roll 4s ease-in-out infinite alternate; }
+    .road { stroke-dasharray: 2 10; animation: run 0.8s linear infinite; }
+    @keyframes roll { from { transform: translateX(0); } to { transform: translateX(330px); } }
+    @keyframes run { to { stroke-dashoffset: -12; } }
     @media (prefers-reduced-motion: reduce) { .cart, .road { animation: none; } }
   </style>
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1e1b4b"/>
-      <stop offset="0.55" stop-color="#312e81"/>
-      <stop offset="1" stop-color="#701a75"/>
-    </linearGradient>
-    <radialGradient id="glowA" cx="85%" cy="15%" r="45%">
-      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="glowB" cx="10%" cy="100%" r="50%">
-      <stop offset="0" stop-color="#f472b6" stop-opacity="0.30"/>
-      <stop offset="1" stop-color="#f472b6" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="titleGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#67e8f9"/>
-      <stop offset="0.5" stop-color="#a78bfa"/>
-      <stop offset="1" stop-color="#f472b6"/>
-    </linearGradient>
-    <linearGradient id="winGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0f172a" stop-opacity="0.85"/>
-      <stop offset="1" stop-color="#1e1b4b" stop-opacity="0.85"/>
-    </linearGradient>
-    <linearGradient id="roadGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#22d3ee"/>
-      <stop offset="1" stop-color="#f472b6"/>
-    </linearGradient>
-    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
-      <path d="M32 0H0V32" fill="none" stroke="#ffffff" stroke-opacity="0.05"/>
-    </pattern>
-    <clipPath id="round"><rect width="1200" height="340" rx="18"/></clipPath>
-  </defs>
 
-  <g clip-path="url(#round)">
-    <rect width="1200" height="340" fill="url(#bg)"/>
-    <rect width="1200" height="340" fill="url(#grid)"/>
-    <rect width="1200" height="340" fill="url(#glowA)"/>
-    <rect width="1200" height="340" fill="url(#glowB)"/>
-  </g>
-  <rect x="0.5" y="0.5" width="1199" height="339" rx="18" fill="none" stroke="#6366f1" stroke-opacity="0.5"/>
+  <rect x="0.5" y="0.5" width="1199" height="259" rx="16" fill="#ffffff" stroke="#e4e4e7"/>
 
-  <text x="60" y="78" class="mono eyebrow">BIZADMIN  /  API REST DE INVENTARIO Y VENTAS</text>
-  <text x="56" y="156" class="sans title">BizAdmin<tspan class="title-soft"> API</tspan></text>
-  <text x="60" y="200" class="sans lead">Inventario, catálogo, ventas y cupones.</text>
-  <text x="60" y="228" class="sans lead">Un carrito, muchos vendedores.</text>
+  <text x="60" y="72" class="mono" font-size="12" letter-spacing="3" fill="#a1a1aa">API REST  ·  INVENTARIO Y VENTAS</text>
+  <text x="57" y="136" class="sans" font-size="56" font-weight="700" letter-spacing="-1.5" fill="#09090b">BizAdmin<tspan font-weight="300" fill="#a1a1aa"> API</tspan></text>
+  <text x="60" y="174" class="sans" font-size="18" fill="#52525b">Inventario, catálogo, ventas y cupones. Un carrito, muchos vendedores.</text>
+  <text x="60" y="212" class="mono" font-size="13" fill="#71717a">Java 25  ·  Spring Boot 4.1  ·  PostgreSQL 16  ·  JWT + OAuth2  ·  Docker</text>
 
-  <g class="mono">
-    <rect x="60"  y="262" width="91"  height="34" rx="17" fill="#f97316" fill-opacity="0.18" stroke="#fb923c"/><text class="chip" x="105.5" y="284" text-anchor="middle">Java 25</text>
-    <rect x="163" y="262" width="158" height="34" rx="17" fill="#22c55e" fill-opacity="0.18" stroke="#4ade80"/><text class="chip" x="242"   y="284" text-anchor="middle">Spring Boot 4.1</text>
-    <rect x="333" y="262" width="141" height="34" rx="17" fill="#3b82f6" fill-opacity="0.20" stroke="#60a5fa"/><text class="chip" x="403.5" y="284" text-anchor="middle">PostgreSQL 16</text>
-    <rect x="486" y="262" width="133" height="34" rx="17" fill="#eab308" fill-opacity="0.18" stroke="#facc15"/><text class="chip" x="552.5" y="284" text-anchor="middle">JWT + OAuth2</text>
-    <rect x="631" y="262" width="82"  height="34" rx="17" fill="#06b6d4" fill-opacity="0.20" stroke="#22d3ee"/><text class="chip" x="672"   y="284" text-anchor="middle">Docker</text>
-  </g>
-
-  <!-- ventana con el carrito -->
-  <g transform="translate(790 60)">
-    <rect width="350" height="220" rx="14" fill="url(#winGrad)" stroke="#818cf8" stroke-opacity="0.6"/>
-    <circle cx="22" cy="22" r="5" fill="#f87171"/><circle cx="40" cy="22" r="5" fill="#fbbf24"/><circle cx="58" cy="22" r="5" fill="#34d399"/>
-    <text x="330" y="27" text-anchor="end" class="mono" font-size="11" fill="#a5b4fc">POST /api/sale/purchase</text>
-    <line x1="20" y1="44" x2="330" y2="44" stroke="#4338ca" stroke-opacity="0.6"/>
-    <text x="22" y="76" class="sans" font-size="12" fill="#c7d2fe">Carrito</text>
-    <text x="22" y="104" class="sans" font-size="26" font-weight="700" fill="#f8fafc">3 productos</text>
-    <text x="180" y="104" class="mono" font-size="12" fill="#f9a8d4">2 vendedores</text>
-
-    <line class="road" x1="20" y1="187" x2="330" y2="187" stroke="url(#roadGrad)" stroke-width="2"/>
-    <g transform="translate(34 132)">
-      <g class="cart">
-        <rect x="24" y="14" width="13" height="13" rx="2" fill="#22d3ee"/>
-        <rect x="39" y="8"  width="16" height="19" rx="2" fill="#f472b6"/>
-        <rect x="57" y="16" width="10" height="11" rx="2" fill="#a3e635"/>
-        <path d="M0 4h12l10 32h40l8-24H16" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="28" cy="47" r="5" fill="#1e1b4b" stroke="#fbbf24" stroke-width="2.5"/>
-        <circle cx="58" cy="47" r="5" fill="#1e1b4b" stroke="#fbbf24" stroke-width="2.5"/>
+  <text x="1140" y="72" text-anchor="end" class="mono" font-size="12" fill="#a1a1aa">POST /api/sale/purchase</text>
+  <line class="road" x1="760" y1="211" x2="1140" y2="211" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round"/>
+  <g transform="translate(762 136)">
+    <g class="cart">
+      <g transform="scale(1.4)">
+        <rect x="24" y="14" width="13" height="13" rx="2" fill="#d4d4d8"/>
+        <rect x="39" y="8"  width="16" height="19" rx="2" fill="#09090b"/>
+        <rect x="57" y="16" width="10" height="11" rx="2" fill="#71717a"/>
+        <path d="M0 4h12l10 32h40l8-24H16" fill="none" stroke="#09090b" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="28" cy="47" r="4.5" fill="#ffffff" stroke="#09090b" stroke-width="2.2"/>
+        <circle cx="58" cy="47" r="4.5" fill="#ffffff" stroke="#09090b" stroke-width="2.2"/>
       </g>
     </g>
   </g>

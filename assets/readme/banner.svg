@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-label="BizAdmin API: inventario, catálogo, ventas y cupones. Un carrito, muchos vendedores. Java 25, Spring Boot 4.1, PostgreSQL 16, JWT + OAuth2, Docker.">
+  <style>
+    .sans { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; }
+    .eyebrow { font-size: 13px; letter-spacing: 3px; fill: #8a8a8f; }
+    .title { font-size: 68px; font-weight: 800; fill: #fafafa; letter-spacing: -2px; }
+    .title-soft { fill: #5c5c62; font-weight: 300; }
+    .lead { font-size: 20px; fill: #c9c9ce; }
+    .chip-bg { fill: #161618; stroke: #2a2a2e; }
+    .chip { font-size: 14px; fill: #e4e4e7; }
+    /* Animacion liviana: solo transform de un grupo chico y el dashoffset del piso. */
+    .cart { animation: roll 3.2s ease-in-out infinite alternate; }
+    .road { stroke-dasharray: 10 10; animation: run 0.9s linear infinite; }
+    @keyframes roll { from { transform: translateX(0); } to { transform: translateX(190px); } }
+    @keyframes run { to { stroke-dashoffset: -20; } }
+    @media (prefers-reduced-motion: reduce) { .cart, .road { animation: none; } }
+  </style>
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#ffffff" stroke-opacity="0.04"/>
+    </pattern>
+    <radialGradient id="glow" cx="78%" cy="20%" r="60%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="round"><rect width="1200" height="340" rx="18"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="1200" height="340" fill="#0a0a0b"/>
+    <rect width="1200" height="340" fill="url(#grid)"/>
+    <rect width="1200" height="340" fill="url(#glow)"/>
+  </g>
+  <rect x="0.5" y="0.5" width="1199" height="339" rx="18" fill="none" stroke="#26262a"/>
+
+  <text x="60" y="78" class="mono eyebrow">BIZADMIN  /  API REST DE INVENTARIO Y VENTAS</text>
+  <text x="56" y="156" class="sans title">BizAdmin<tspan class="title-soft"> API</tspan></text>
+  <text x="60" y="200" class="sans lead">Inventario, catálogo, ventas y cupones.</text>
+  <text x="60" y="228" class="sans lead">Un carrito, muchos vendedores.</text>
+
+  <g class="mono">
+    <rect class="chip-bg" x="60"  y="262" width="91"  height="34" rx="17"/><text class="chip" x="105.5" y="284" text-anchor="middle">Java 25</text>
+    <rect class="chip-bg" x="163" y="262" width="158" height="34" rx="17"/><text class="chip" x="242"   y="284" text-anchor="middle">Spring Boot 4.1</text>
+    <rect class="chip-bg" x="333" y="262" width="141" height="34" rx="17"/><text class="chip" x="403.5" y="284" text-anchor="middle">PostgreSQL 16</text>
+    <rect class="chip-bg" x="486" y="262" width="133" height="34" rx="17"/><text class="chip" x="552.5" y="284" text-anchor="middle">JWT + OAuth2</text>
+    <rect class="chip-bg" x="631" y="262" width="82"  height="34" rx="17"/><text class="chip" x="672"   y="284" text-anchor="middle">Docker</text>
+  </g>
+
+  <!-- ventana con el carrito -->
+  <g transform="translate(790 60)">
+    <rect width="350" height="220" rx="14" fill="#111113" stroke="#2a2a2e"/>
+    <circle cx="22" cy="22" r="5" fill="#3f3f46"/><circle cx="40" cy="22" r="5" fill="#3f3f46"/><circle cx="58" cy="22" r="5" fill="#3f3f46"/>
+    <text x="330" y="27" text-anchor="end" class="mono" font-size="11" fill="#71717a">POST /api/sale/purchase</text>
+    <line x1="20" y1="44" x2="330" y2="44" stroke="#232326"/>
+    <text x="22" y="76" class="sans" font-size="12" fill="#8a8a8f">Carrito</text>
+    <text x="22" y="104" class="sans" font-size="26" font-weight="700" fill="#fafafa">3 productos</text>
+    <text x="180" y="104" class="mono" font-size="12" fill="#a1a1aa">2 vendedores</text>
+
+    <line class="road" x1="20" y1="187" x2="330" y2="187" stroke="#3f3f46" stroke-width="2"/>
+    <g transform="translate(34 132)">
+      <g class="cart">
+        <rect x="24" y="14" width="13" height="13" rx="2" fill="#52525b"/>
+        <rect x="39" y="8"  width="16" height="19" rx="2" fill="#fafafa"/>
+        <rect x="57" y="16" width="10" height="11" rx="2" fill="#a1a1aa"/>
+        <path d="M0 4h12l10 32h40l8-24H16" fill="none" stroke="#fafafa" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="28" cy="47" r="5" fill="#111113" stroke="#fafafa" stroke-width="2.5"/>
+        <circle cx="58" cy="47" r="5" fill="#111113" stroke="#fafafa" stroke-width="2.5"/>
+      </g>
+    </g>
+  </g>
+</svg>

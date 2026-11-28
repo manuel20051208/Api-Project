@@ -23,9 +23,9 @@ Construido con Java 25, Spring Boot 4.1.0 y PostgreSQL 16.
 
 El proyecto sigue una arquitectura por capas. Cada petición entra por seguridad, pasa por controller → service → repository y vuelve como DTO:
 
-![Arquitectura por capas](diagrams/secuencia-arquitectura-capas.svg)
+![Diagrama de componentes del backend](diagrams/Componentes/componentes-backend.drawio.svg)
 
-Diagrama interactivo: [secuencia-arquitectura-capas.html](diagrams/secuencia-arquitectura-capas.html) · Fuente editable: [secuencia-arquitectura-capas.puml](diagrams/secuencia-arquitectura-capas.puml)
+Más diagramas (casos de uso, clases, despliegue y una secuencia por caso de uso) en [Diagramas UML](#diagramas-uml).
 
 ### Patrón Factory para reportes
 
@@ -41,8 +41,6 @@ ReportServiceFactory.getService(type)
         |
         +--> PdfService   --> reporte_usuarios.pdf
 ```
-
-Diagrama completo: [secuencia-reportes-factory.html](diagrams/secuencia-reportes-factory.html)
 
 ## Stack tecnológico
 
@@ -245,9 +243,9 @@ El endpoint `POST /api/sale/purchase` gestiona la compra completa de un cliente:
 6. **Notificaciones SSE**: envía `VENTA_NUEVA` y `STOCK_BAJO` (si stock ≤ 5) al admin afectado.
 7. **Evicción de caché**: limpia las claves de dashboard, ventas y historial del cliente.
 
-![Flujo de compra de productos](diagrams/secuencia-compra.svg)
+![CU-007 Comprar productos](diagrams/Secuencia/cu-007-comprar-productos.svg)
 
-Fuente editable: [secuencia-compra.puml](diagrams/secuencia-compra.puml)
+Relacionados: [CU-008 Comprar producto de segunda mano](diagrams/Secuencia/cu-008-comprar-producto-de-segunda-mano.svg) · [CU-009 Aplicar cupón](diagrams/Secuencia/cu-009-aplicar-cupon.svg) · [CU-025 Cancelar venta](diagrams/Secuencia/cu-025-cancelar-venta.svg)
 
 ## Catálogo y búsqueda de productos
 
@@ -265,9 +263,9 @@ El endpoint paginado usa un patrón de dos pasos: primero obtiene los IDs con `P
 
 Las escrituras (crear, actualizar, borrado suave) invalidan todas las claves de caché de productos.
 
-![Catálogo y búsqueda de productos](diagrams/secuencia-catalogo-filtros.svg)
+![CU-003 Consultar catálogo de productos](diagrams/Secuencia/cu-003-consultar-catalogo-de-productos.svg)
 
-Fuente editable: [secuencia-catalogo-filtros.puml](diagrams/secuencia-catalogo-filtros.puml)
+Relacionado: [CU-004 Consultar catálogo de segunda mano](diagrams/Secuencia/cu-004-consultar-catalogo-de-segunda-mano.svg)
 
 ## Reportes
 
@@ -278,9 +276,7 @@ Los reportes consultan la vista SQL `report_view_dashboard` y comparten la inter
 - `ReportServiceFactory` decide qué implementación utilizar.
 - Ambos formatos devuelven una respuesta HTTP con `Content-Disposition: attachment`.
 
-![Secuencia de generación de reportes con ReportServiceFactory](diagrams/secuencia-reportes-factory.svg)
-
-Diagrama interactivo: [secuencia-reportes-factory.html](diagrams/secuencia-reportes-factory.html)
+![CU-022 Consultar dashboard y reportes](diagrams/Secuencia/cu-022-consultar-dashboard-y-reportes.svg)
 
 ### Reglas de cupones
 
@@ -418,11 +414,7 @@ Para exportar un `.xml` a `.drawio.svg`: `python diagrams/_fuente/exportar_drawi
 - [Endpoints de la API](docs/Endpoints%20API.md)
 - [Configuración](docs/Configuración.md)
 - [Esquema de base de datos](docs/Esquema%20de%20Base%20de%20Datos.md)
-- [Diagrama de autenticación](diagrams/authentication.html) · [SVG](diagrams/authentication.svg)
-- [Diagrama de arquitectura por capas](diagrams/secuencia-arquitectura-capas.html) · [SVG](diagrams/secuencia-arquitectura-capas.svg)
-- [Diagrama de secuencia de compra](diagrams/secuencia-compra.puml) · [SVG](diagrams/secuencia-compra.svg)
-- [Diagrama de secuencia de catálogo y filtros](diagrams/secuencia-catalogo-filtros.puml) · [SVG](diagrams/secuencia-catalogo-filtros.svg)
-- [Diagrama de reportes con Factory](diagrams/secuencia-reportes-factory.html) · [SVG](diagrams/secuencia-reportes-factory.svg)
+- [Diagramas UML](#diagramas-uml): casos de uso, clases, componentes, despliegue y secuencias CU-001 … CU-025
 
 ## Seguridad
 
@@ -430,9 +422,9 @@ Para exportar un `.xml` a `.drawio.svg`: `python diagrams/_fuente/exportar_drawi
 
 El acceso combina credenciales locales con JWT y OAuth2 de Google; las rutas protegidas resuelven el usuario y su rol desde el token Bearer.
 
-![Flujo de autenticación y autorización](diagrams/authentication.svg)
+![CU-002 Iniciar sesión](diagrams/Secuencia/cu-002-iniciar-sesion.svg)
 
-Diagrama interactivo: [authentication.html](diagrams/authentication.html)
+Relacionado: [CU-001 Registrar cuenta](diagrams/Secuencia/cu-001-registrar-cuenta.svg)
 
 - Las contraseñas se almacenan y validan **solo** con BCrypt (`passwordEncoder.matches`). No hay comparación en texto plano: antes existía un fallback "legacy" que permitía entrar pegando el hash como contraseña; se eliminó y la migración `V9` cifró las filas antiguas.
 - Las rutas se protegen mediante JWT y roles.

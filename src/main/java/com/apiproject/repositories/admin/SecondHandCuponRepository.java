@@ -68,4 +68,10 @@ public interface SecondHandCuponRepository extends JpaRepository<SecondHandCupon
     @Transactional
     @Query(value = "UPDATE secondhand_cupons SET quantity = quantity - 1 WHERE id = :id AND (quantity IS NULL OR quantity > 0)", nativeQuery = true)
     int decrementQuantity(@Param("id") Long id);
+
+    // Inverso de decrementQuantity (cancelacion total de la venta): devuelve 1 uso. Si quantity es NULL (ilimitado) no toca nada.
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE secondhand_cupons SET quantity = quantity + 1 WHERE id = :id AND quantity IS NOT NULL", nativeQuery = true)
+    int incrementQuantity(@Param("id") Long id);
 }

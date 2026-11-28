@@ -91,6 +91,7 @@ public class ProductService {
     })
     @Transactional
     public void save(Product product, Long adminId) {
+        product.setPrice(normalizePrice(product.getPrice(), true));
         UserAdmin userAdmin = userRepository.getReferenceById(adminId);
         product.setUserAdmin(userAdmin);
         productRepository.save(product);
@@ -136,7 +137,7 @@ public class ProductService {
         validateOwner(existing, adminId);
 
         Optional.ofNullable(product.getName()).ifPresent(existing::setName);
-        Optional.ofNullable(product.getPrice()).ifPresent(existing::setPrice);
+        Optional.ofNullable(normalizePrice(product.getPrice(), false)).ifPresent(existing::setPrice);
         Optional.ofNullable(product.getStock()).ifPresent(existing::setStock);
         Optional.ofNullable(product.getCategory()).ifPresent(existing::setCategory);
         existing.setDescription(product.getDescription());
@@ -191,6 +192,22 @@ public class ProductService {
      * {@code productByName} se evicta por nombre; las listas/paginados se evictan para que se
      * recarguen desde la base de datos y no queden datos fantasmas.
      */
+    /** Precio > 0 con 2 decimales (HALF_UP). Si es obligatorio y viene null responde 400. */
+    private static java.math.BigDecimal normalizePrice(java.math.BigDecimal price, boolean required) {
+        if (price == null) {
+            if (required) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "price es obligatorio");
+            }
+            return null;
+        }
+        if (price.signum() <= 0) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "price debe ser mayor a cero");
+        }
+        return price.setScale(2, java.math.RoundingMode.HALF_UP);
+    }
+
     public void refreshCachesAfterStockChange(Collection<Product> products) {
         if (products == null || products.isEmpty()) {return;}
 

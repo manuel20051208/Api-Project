@@ -1,5 +1,7 @@
 package com.apiproject.services.admin;
 
+import java.math.BigDecimal;
+
 import com.apiproject.DTOs.Admin.DashboardDTO;
 import com.apiproject.DTOs.General.TheThreeBestClients;
 import com.apiproject.DTOs.General.TheThreeBestProducts;
@@ -47,7 +49,7 @@ public class DashboardService {
 
         if (rows.isEmpty()) return new DashboardDTO();
 
-        Double totalSales = rows.getFirst().getTotalSales();
+        BigDecimal totalSales = rows.getFirst().getTotalSales();
         Long totalProducts = rows.getFirst().getTotalProducts();
         Long totalClients = rows.getFirst().getTotalClients();
 

@@ -1,5 +1,7 @@
 package com.apiproject.services.reportGenerator;
 
+import java.math.BigDecimal;
+
 import com.apiproject.enums.FileTypes;
 import com.apiproject.repositories.reportGenerator.ReportService;
 import com.apiproject.repositories.projection.ReportDashboardProjection;
@@ -106,7 +108,7 @@ public class PdfService implements ReportService {
         return value != null ? String.valueOf(value) : "";
     }
 
-    private String formatNumber(Double value) {
+    private String formatNumber(BigDecimal value) {
         return value != null ? String.format("%.2f", value) : "0.00";
     }
 

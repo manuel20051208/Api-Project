@@ -1,5 +1,7 @@
 package com.apiproject.DTOs.Admin;
 
+import java.math.BigDecimal;
+
 import com.apiproject.entities.admin.ServiceCupon;
 import com.apiproject.repositories.projection.CuponAdminProjection;
 
@@ -10,7 +12,7 @@ public record ServiceCuponResponseDTO(
         Long id,
         String serviceCuponCode,
         LocalDateTime cuponDateLimit,
-        Double discount,
+        BigDecimal discount,
         Integer quantity,
         boolean active,
         Long ownerId

@@ -8,8 +8,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface CuponUsedByClientsRepository extends JpaRepository<CuponUsedByClients, Long> {
+
+    /** Registro de uso ligado a una venta (la venta que canjeo el cupon). */
+    Optional<CuponUsedByClients> findFirstBySaleId(Long saleId);
+
+    /** Usos del cliente con un cupon, para reacomodar el contador acumulado al revertir uno. */
+    List<CuponUsedByClients> findByCuponIdAndClientUserId(Long cuponId, Long clientId);
 
     /** Veces que un cupón fue usado en compras (todas). */
     @Query(value = "SELECT COUNT(*) FROM cupons_used_by_clients WHERE cupon_id = :cuponId", nativeQuery = true)

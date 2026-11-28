@@ -69,7 +69,7 @@ public class ExcelService implements ReportService {
             c.setCellStyle(bodyStyle);
 
             c = row.createCell(4);
-            c.setCellValue(u.getTotalCalculated() != null ? u.getTotalCalculated() : 0.0);
+            c.setCellValue(u.getTotalCalculated() != null ? u.getTotalCalculated().doubleValue() : 0.0);
             c.setCellStyle(numberStyle);
 
             c = row.createCell(5);
@@ -83,7 +83,7 @@ public class ExcelService implements ReportService {
             c.setCellStyle(dateStyle);
 
             c = row.createCell(7);
-            c.setCellValue(u.getCurrentAmount() != null ? u.getCurrentAmount() : 0.0);
+            c.setCellValue(u.getCurrentAmount() != null ? u.getCurrentAmount().doubleValue() : 0.0);
             c.setCellStyle(numberStyle);
 
             rowIdx++;

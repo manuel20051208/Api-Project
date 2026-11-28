@@ -1,5 +1,7 @@
 package com.apiproject.entities.general;
 
+import java.math.BigDecimal;
+
 import com.apiproject.entities.admin.SecondHandProductImage;
 import com.apiproject.entities.admin.UserAdmin;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,8 +30,8 @@ public class SecondHandProduct {
     @Column(nullable = false, name = "name")
     private String name;
 
-    @Column(nullable = false, name = "price")
-    private Double price;
+    @Column(nullable = false, name = "price", precision = 12, scale = 2)
+    private BigDecimal price;
 
     @Column(nullable = false, name = "stock")
     private Integer stock;

@@ -1,11 +1,13 @@
 package com.apiproject.DTOs.Admin;
 
+import java.math.BigDecimal;
+
 import com.apiproject.entities.admin.ServiceOffered;
 
 public record ServiceResponseDTO(
         Long id,
         String nameOfService,
-        Double valueOfService,
+        BigDecimal valueOfService,
         String descriptionOfService,
         Long userAdminId
 ) {

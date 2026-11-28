@@ -1,5 +1,7 @@
 package com.apiproject.repositories.projection;
 
+import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 
 public interface ShSaleHistoryProjection {
@@ -8,9 +10,11 @@ public interface ShSaleHistoryProjection {
     Long getProductId();
     String getProductName();
     Integer getQuantity();
-    Double getUnitPrice();
-    Double getSubtotal();
-    Double getDiscount();
+    BigDecimal getUnitPrice();
+    BigDecimal getSubtotal();
+    BigDecimal getDiscount();
+    BigDecimal getItemDiscount();
+    String getSaleStatus();
     String getCuponCode();
     String getState();
     LocalDateTime getDate();

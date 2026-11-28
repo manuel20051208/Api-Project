@@ -1,5 +1,7 @@
 package com.apiproject.entities.admin;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -27,7 +29,7 @@ public class ReportDashboard {
     private Integer quantity;
 
     @Column(name = "total_calculated")
-    private Double totalCalculated;
+    private BigDecimal totalCalculated;
 
     @Column(name = "state")
     private String state;
@@ -36,5 +38,5 @@ public class ReportDashboard {
     private LocalDateTime date;
 
     @Column(name = "current_amount")
-    private Double currentAmount;
+    private BigDecimal currentAmount;
 }

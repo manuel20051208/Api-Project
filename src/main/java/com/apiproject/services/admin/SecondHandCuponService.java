@@ -139,7 +139,7 @@ public class SecondHandCuponService {
                 .map(usage -> new CuponValidationResponseDTO(
                         true,
                         "Cupon valido",
-                        BigDecimal.valueOf(usage.getDiscount()),
+                        usage.getDiscount(),
                         usage.getCuponId()))
                 .orElseGet(() -> CuponValidationResponseDTO.invalid(
                         "El cupon no existe, esta expirado, agoto sus usos o no aplica a este producto"));
@@ -215,8 +215,33 @@ public class SecondHandCuponService {
         }
     }
 
+    /**
+     * Revierte el canje de un cupon SH por cancelacion TOTAL de la venta (espejo de CuponService.restoreUsage):
+     * +1 uso al cupon y deshace el registro de uso del cliente ligado a la venta.
+     */
+    @Transactional
+    public boolean restoreUsage(Long cuponId, Long saleId) {
+        var usageOpt = shCuponUsedByClientsRepository.findFirstBySaleId(saleId);
+        if (usageOpt.isEmpty()) {
+            return false;
+        }
+        ShCuponUsedByClients usage = usageOpt.get();
+        int removedCount = usage.getUsageCount() == null ? 0 : usage.getUsageCount();
+        shCuponUsedByClientsRepository.delete(usage);
+        for (ShCuponUsedByClients other : shCuponUsedByClientsRepository
+                .findByCuponIdAndClientUserId(cuponId, usage.getClientUser().getId())) {
+            if (!other.getId().equals(usage.getId()) && other.getUsageCount() != null
+                    && other.getUsageCount() > removedCount) {
+                other.setUsageCount(other.getUsageCount() - 1);
+                shCuponUsedByClientsRepository.save(other);
+            }
+        }
+        secondHandCuponRepository.incrementQuantity(cuponId);
+        return true;
+    }
+
     /** Resultado de resolver un cupón SH sobre un carrito. */
-    public record CouponResolution(Long cuponId, Double discountPercent, Long ownerId, List<Long> elegibleProductIds) {
+    public record CouponResolution(Long cuponId, BigDecimal discountPercent, Long ownerId, List<Long> elegibleProductIds) {
     }
 
     // ================= Helpers =================
@@ -225,7 +250,7 @@ public class SecondHandCuponService {
     private void applyFields(SecondHandCupon cupon, SecondHandCuponRequestDTO request) {
         cupon.setShCuponCode(request.shCuponCode().trim());
         cupon.setCuponDateLimit(request.cuponDateLimit());
-        cupon.setDiscount(request.discount());
+        cupon.setDiscount(request.discount().setScale(2, java.math.RoundingMode.HALF_UP));
         cupon.setQuantity(request.quantity());
     }
 
@@ -255,7 +280,7 @@ public class SecondHandCuponService {
         if (request.cuponDateLimit() == null || request.cuponDateLimit().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(BAD_REQUEST, "cuponDateLimit debe ser una fecha futura");
         }
-        if (request.discount() == null || request.discount() <= 0 || request.discount() > 100) {
+        if (request.discount() == null || request.discount().signum() <= 0 || request.discount().compareTo(BigDecimal.valueOf(100)) > 0) {
             throw new ResponseStatusException(BAD_REQUEST, "discount debe estar entre 0 y 100 (porcentaje)");
         }
         if (request.quantity() != null && request.quantity() <= 0) {

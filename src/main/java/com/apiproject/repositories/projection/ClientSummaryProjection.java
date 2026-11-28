@@ -1,5 +1,7 @@
 package com.apiproject.repositories.projection;
 
+import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 
 public interface ClientSummaryProjection {
@@ -8,8 +10,8 @@ public interface ClientSummaryProjection {
     String getFullName();
     String getEmail();
     Long getTotalQuantity();
-    Double getTotalSpent();
-    Double getTotalDiscount();
-    Double getTotalSpentDiscount();
+    BigDecimal getTotalSpent();
+    BigDecimal getTotalDiscount();
+    BigDecimal getTotalSpentDiscount();
     LocalDateTime getLatestSale();
 }

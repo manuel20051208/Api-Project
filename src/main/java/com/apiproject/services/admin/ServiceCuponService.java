@@ -98,7 +98,7 @@ public class ServiceCuponService {
                 .map(usage -> new CuponValidationResponseDTO(
                         true,
                         "Cupon valido",
-                        BigDecimal.valueOf(usage.getDiscount()),
+                        usage.getDiscount(),
                         usage.getCuponId()))
                 .orElseGet(() -> CuponValidationResponseDTO.invalid(
                         "El cupon no existe, esta expirado o agoto sus usos"));
@@ -110,7 +110,7 @@ public class ServiceCuponService {
     private void applyFields(ServiceCupon cupon, ServiceCuponRequestDTO request) {
         cupon.setServiceCuponCode(request.serviceCuponCode().trim());
         cupon.setCuponDateLimit(request.cuponDateLimit());
-        cupon.setDiscount(request.discount());
+        cupon.setDiscount(request.discount().setScale(2, java.math.RoundingMode.HALF_UP));
         cupon.setQuantity(request.quantity());
     }
 
@@ -128,7 +128,7 @@ public class ServiceCuponService {
         if (request.cuponDateLimit() == null || request.cuponDateLimit().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(BAD_REQUEST, "cuponDateLimit debe ser una fecha futura");
         }
-        if (request.discount() == null || request.discount() <= 0 || request.discount() > 100) {
+        if (request.discount() == null || request.discount().signum() <= 0 || request.discount().compareTo(BigDecimal.valueOf(100)) > 0) {
             throw new ResponseStatusException(BAD_REQUEST, "discount debe estar entre 0 y 100 (porcentaje)");
         }
         if (request.quantity() != null && request.quantity() <= 0) {

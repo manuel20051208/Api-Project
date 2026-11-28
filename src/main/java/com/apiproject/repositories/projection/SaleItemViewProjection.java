@@ -1,5 +1,7 @@
 package com.apiproject.repositories.projection;
 
+import java.math.BigDecimal;
+
 import java.time.LocalDate;
 
 public interface SaleItemViewProjection {
@@ -8,7 +10,7 @@ public interface SaleItemViewProjection {
     String getClientName();
     String getProductName();
     Integer getQuantity();
-    Double getTotalCalculated();
+    BigDecimal getTotalCalculated();
     String getState();
     LocalDate getDate();
 }

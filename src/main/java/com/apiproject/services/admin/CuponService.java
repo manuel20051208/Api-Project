@@ -157,7 +157,7 @@ public class CuponService {
                 .map(usage -> new CuponValidationResponseDTO(
                         true,
                         "Cupon valido",
-                        BigDecimal.valueOf(usage.getDiscount()), // descuento en BigDecimal para el response
+                        usage.getDiscount(), // descuento en BigDecimal para el response
                         usage.getCuponId()))
                 .orElseGet(() -> CuponValidationResponseDTO.invalid(
                         "El cupon no existe, esta expirado, agoto sus usos o no aplica a este producto"));
@@ -246,8 +246,40 @@ public class CuponService {
         }
     }
 
+    /**
+     * Revierte el canje de un cupon por cancelacion TOTAL de la venta: devuelve 1 uso al cupon y deshace el
+     * registro de uso del cliente ligado a esa venta (los usos posteriores del cliente bajan su contador acumulado).
+     * Si la venta no tiene registro de uso (no fue la que canjeo el cupon en una compra multi-venta) no hace nada,
+     * porque el canje es uno solo por compra.
+     */
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CacheConstants.CUPONS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CUPON_ASSIGNMENTS, allEntries = true),
+            @CacheEvict(value = CacheConstants.CLIENT_CUPONS, allEntries = true)
+    })
+    public boolean restoreUsage(Long cuponId, Long saleId) {
+        var usageOpt = cuponUsedByClientsRepository.findFirstBySaleId(saleId);
+        if (usageOpt.isEmpty()) {
+            return false;
+        }
+        CuponUsedByClients usage = usageOpt.get();
+        int removedCount = usage.getUsageCount() == null ? 0 : usage.getUsageCount();
+        cuponUsedByClientsRepository.delete(usage);
+        for (CuponUsedByClients other : cuponUsedByClientsRepository
+                .findByCuponIdAndClientUserId(cuponId, usage.getClientUser().getId())) {
+            if (!other.getId().equals(usage.getId()) && other.getUsageCount() != null
+                    && other.getUsageCount() > removedCount) {
+                other.setUsageCount(other.getUsageCount() - 1);
+                cuponUsedByClientsRepository.save(other);
+            }
+        }
+        cuponRepository.incrementQuantity(cuponId);
+        return true;
+    }
+
     /** Resultado de resolver un cupón: a qué productos del carrito aplica y con qué descuento. */
-    public record CouponResolution(Long cuponId, Double discountPercent, Long ownerId, List<Long> elegibleProductIds) {
+    public record CouponResolution(Long cuponId, BigDecimal discountPercent, Long ownerId, List<Long> elegibleProductIds) {
     }
 
     // ================= Helpers =================
@@ -261,7 +293,7 @@ public class CuponService {
     private void applyFields(Cupon cupon, CuponRequestDTO request) {
         cupon.setCuponCode(request.cuponCode().trim());
         cupon.setCuponDateLimit(request.cuponDateLimit());
-        cupon.setDiscount(request.discount());
+        cupon.setDiscount(request.discount().setScale(2, java.math.RoundingMode.HALF_UP));
         cupon.setQuantity(request.quantity());
     }
 
@@ -291,7 +323,7 @@ public class CuponService {
         if (request.cuponDateLimit() == null || request.cuponDateLimit().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(BAD_REQUEST, "cuponDateLimit debe ser una fecha futura");
         }
-        if (request.discount() == null || request.discount() <= 0 || request.discount() > 100) {
+        if (request.discount() == null || request.discount().signum() <= 0 || request.discount().compareTo(BigDecimal.valueOf(100)) > 0) {
             throw new ResponseStatusException(BAD_REQUEST, "discount debe estar entre 0 y 100 (porcentaje)");
         }
         if (request.quantity() != null && request.quantity() <= 0) {

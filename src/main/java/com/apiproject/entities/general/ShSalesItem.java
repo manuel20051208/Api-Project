@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -42,4 +43,15 @@ public class ShSalesItem {
 
     @Column(name = "date")
     private LocalDateTime date;
+
+    /** Precio unitario AL MOMENTO de la venta (historico). */
+    @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
+    private BigDecimal unitPrice;
+
+    /** Parte de este item en el descuento del cupon de la venta. */
+    @Column(name = "discount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal discount = BigDecimal.ZERO;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
 }

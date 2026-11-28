@@ -52,7 +52,7 @@ class CuponServiceResolveForCartTest {
         cupon.setId(CUPON_ID);
         cupon.setCuponCode(CODE);
         cupon.setCuponDateLimit(LocalDateTime.now().plusDays(5));
-        cupon.setDiscount(10.0);
+        cupon.setDiscount(new java.math.BigDecimal("10.00"));
         cupon.setQuantity(null);
         cupon.setUserAdmin(owner);
 

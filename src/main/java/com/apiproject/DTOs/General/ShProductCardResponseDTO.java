@@ -1,5 +1,7 @@
 package com.apiproject.DTOs.General;
 
+import java.math.BigDecimal;
+
 import com.apiproject.repositories.projection.ShProductCardProjection;
 
 import java.time.LocalDateTime;
@@ -7,7 +9,7 @@ import java.time.LocalDateTime;
 public record ShProductCardResponseDTO(
         Long id,
         String name,
-        Double price,
+        BigDecimal price,
         Integer stock,
         String category,
         String description,

@@ -1,5 +1,7 @@
 package com.apiproject.DTOs.General;
 
+import java.math.BigDecimal;
+
 import com.apiproject.DTOs.Admin.ShProductImageDTO;
 import com.apiproject.entities.general.SecondHandProduct;
 
@@ -9,7 +11,7 @@ import java.util.List;
 public record ShProductResponseDTO(
         Long id,
         String name,
-        Double price,
+        BigDecimal price,
         Integer stock,
         String category,
         String description,

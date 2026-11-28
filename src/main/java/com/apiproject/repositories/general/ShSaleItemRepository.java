@@ -12,15 +12,20 @@ import java.util.List;
 @Repository
 public interface ShSaleItemRepository extends JpaRepository<ShSalesItem, Long> {
 
+    /** Items de una venta SH (para cancelaciones). */
+    List<ShSalesItem> findByShSaleId(Long saleId);
+
     @Query(value = """
             SELECT si.id,
                    s.id AS sale_id,
                    sp.id AS product_id,
                    sp.name AS product_name,
                    si.quantity,
-                   sp.price AS unit_price,
-                   (COALESCE(si.quantity, 0)::NUMERIC * COALESCE(sp.price, 0)::NUMERIC)::DOUBLE PRECISION AS subtotal,
+                   si.unit_price AS unit_price,
+                   (COALESCE(si.quantity, 0) * si.unit_price)::NUMERIC(12, 2) AS subtotal,
                    s.discount AS discount,
+                   si.discount AS item_discount,
+                   s.status AS sale_status,
                    cu.sh_cupon_code AS cupon_code,
                    si.state,
                    COALESCE(si.date, s.created_at) AS date
@@ -39,9 +44,11 @@ public interface ShSaleItemRepository extends JpaRepository<ShSalesItem, Long> {
                    sp.id AS product_id,
                    sp.name AS product_name,
                    si.quantity,
-                   sp.price AS unit_price,
-                   (COALESCE(si.quantity, 0)::NUMERIC * COALESCE(sp.price, 0)::NUMERIC)::DOUBLE PRECISION AS subtotal,
+                   si.unit_price AS unit_price,
+                   (COALESCE(si.quantity, 0) * si.unit_price)::NUMERIC(12, 2) AS subtotal,
                    s.discount AS discount,
+                   si.discount AS item_discount,
+                   s.status AS sale_status,
                    cu.sh_cupon_code AS cupon_code,
                    si.state,
                    COALESCE(si.date, s.created_at) AS date

@@ -1,5 +1,7 @@
 package com.apiproject.DTOs.General;
 
+import java.math.BigDecimal;
+
 import com.apiproject.entities.admin.Cupon;
 
 import java.time.LocalDateTime;
@@ -7,7 +9,7 @@ import java.time.LocalDateTime;
 public record CuponAppliedDTO(
         Long id,
         String code,
-        Double discount,
+        BigDecimal discount,
         LocalDateTime cuponDateLimit
 ) {
     public static CuponAppliedDTO fromEntity(Cupon cupon) {

@@ -4,6 +4,7 @@ import com.apiproject.entities.admin.SecondHandCupon;
 import com.apiproject.entities.admin.UserAdmin;
 import com.apiproject.entities.client.UserClient;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.apiproject.enums.SaleStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -46,4 +47,11 @@ public class ShSale {
 
     @Column(name = "created_at")
     private LocalDateTime hora;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private SaleStatus status = SaleStatus.COMPLETED;
+
+    @Column(name = "refunded_amount", nullable = false, precision = 10, scale = 2)
+    private BigDecimal refundedAmount = BigDecimal.ZERO;
 }

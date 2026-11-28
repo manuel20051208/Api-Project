@@ -145,13 +145,14 @@ public class ShSaleService {
             secondHandCuponService.registerUsage(usage);
         }
 
-        List<ShPurchaseItemResponseDTO> responseItems = saleDrafts.stream()
-                .map(draft -> new ShPurchaseItemResponseDTO(
-                        draft.product().getId(),
-                        draft.product().getName(),
-                        draft.quantity(),
-                        unitPrice(draft.product()),
-                        draft.subtotal()))
+        List<ShPurchaseItemResponseDTO> responseItems = saleItems.stream()
+                .map(item -> new ShPurchaseItemResponseDTO(
+                        item.getShProduct().getId(),
+                        item.getShProduct().getName(),
+                        item.getQuantity(),
+                        item.getUnitPrice(),
+                        item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())),
+                        item.getDiscount()))
                 .toList();
 
         List<Long> saleIds = savedSales.stream().map(ShSale::getId).toList();
@@ -237,6 +238,9 @@ public class ShSaleService {
         item.setQuantity(quantity);
         item.setState(Status.COMPLETED);
         item.setDate(date);
+        // Precio historico y parte del cupon (una venta = un item, descuento completo de la venta).
+        item.setUnitPrice(unitPrice(product));
+        item.setDiscount(sale.getDiscount());
         return item;
     }
 
@@ -244,14 +248,13 @@ public class ShSaleService {
         if (coupon == null) {
             return subtotal.setScale(2, RoundingMode.HALF_UP);
         }
-        BigDecimal discountFactor = BigDecimal.valueOf(coupon.discountPercent())
-                .divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
-        return subtotal.subtract(subtotal.multiply(discountFactor))
-                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal discount = subtotal.multiply(coupon.discountPercent())
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        return subtotal.subtract(discount).setScale(2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal unitPrice(SecondHandProduct product) {
-        return BigDecimal.valueOf(product.getPrice());
+        return product.getPrice();
     }
 
     private record ShSaleDraft(

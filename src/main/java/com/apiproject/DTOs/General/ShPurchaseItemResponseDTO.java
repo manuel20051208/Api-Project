@@ -7,6 +7,7 @@ public record ShPurchaseItemResponseDTO(
         String productName,
         Integer quantity,
         BigDecimal unitPrice,
-        BigDecimal subtotal
+        BigDecimal subtotal,
+        BigDecimal discount
 ) {
 }

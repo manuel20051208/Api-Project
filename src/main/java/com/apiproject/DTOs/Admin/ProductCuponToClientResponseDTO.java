@@ -1,5 +1,7 @@
 package com.apiproject.DTOs.Admin;
 
+import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 
 public record ProductCuponToClientResponseDTO(
@@ -9,7 +11,7 @@ public record ProductCuponToClientResponseDTO(
         String clientEmail,
         Long cuponId,
         String cuponCode,
-        Double discount,
+        BigDecimal discount,
         LocalDateTime cuponDateLimit,
         Long productId,
         String productName,

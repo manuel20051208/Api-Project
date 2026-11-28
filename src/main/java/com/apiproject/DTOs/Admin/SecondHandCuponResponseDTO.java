@@ -1,5 +1,7 @@
 package com.apiproject.DTOs.Admin;
 
+import java.math.BigDecimal;
+
 import com.apiproject.repositories.projection.CuponAdminProjection;
 
 import java.time.LocalDateTime;
@@ -9,7 +11,7 @@ public record SecondHandCuponResponseDTO(
         Long id,
         String shCuponCode,
         LocalDateTime cuponDateLimit,
-        Double discount,
+        BigDecimal discount,
         Integer quantity,
         boolean active,
         Long ownerId,

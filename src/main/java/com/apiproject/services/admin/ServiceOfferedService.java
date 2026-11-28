@@ -67,14 +67,14 @@ public class ServiceOfferedService {
 
     private void applyFields(ServiceOffered service, ServiceRequestDTO request) {
         service.setNameOfService(request.nameOfService());
-        service.setValueOfService(request.valueOfService());
+        service.setValueOfService(request.valueOfService().setScale(2, java.math.RoundingMode.HALF_UP));
         service.setDescriptionOfService(request.descriptionOfService());
     }
 
     private void validateRequest(ServiceRequestDTO request) {
         if (request == null
                 || request.nameOfService() == null || request.nameOfService().isBlank()
-                || request.valueOfService() == null || request.valueOfService() < 0
+                || request.valueOfService() == null || request.valueOfService().signum() <= 0
                 || request.descriptionOfService() == null || request.descriptionOfService().isBlank()) {
             throw new ResponseStatusException(BAD_REQUEST,
                     "nameOfService, valueOfService y descriptionOfService son obligatorios");

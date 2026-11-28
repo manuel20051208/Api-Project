@@ -1,5 +1,7 @@
 package com.apiproject.repositories.projection;
 
+import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 
 public interface ShProductCuponAssignmentProjection {
@@ -9,7 +11,7 @@ public interface ShProductCuponAssignmentProjection {
     String getClientEmail();
     Long getShCuponsId();
     String getShCuponCode();
-    Double getDiscount();
+    BigDecimal getDiscount();
     LocalDateTime getCuponDateLimit();
     Long getShProductId();
     String getProductName();

@@ -208,10 +208,9 @@ public class SaleService {
         if (coupon == null) {
             return subtotal.setScale(2, RoundingMode.HALF_UP);
         }
-        BigDecimal discountFactor = BigDecimal.valueOf(coupon.discountPercent())
-                .divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
-        return subtotal.subtract(subtotal.multiply(discountFactor))
-                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal discount = subtotal.multiply(coupon.discountPercent())
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        return subtotal.subtract(discount).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -296,12 +295,16 @@ public class SaleService {
         salesItem.setQuantity(quantity);
         salesItem.setState(Status.COMPLETED);
         salesItem.setDate(date);
+        // Precio historico e descuento del item: cada venta tiene un unico item, asi que su
+        // parte del cupon es el descuento completo de su venta (suma de items == descuento total).
+        salesItem.setUnitPrice(unitPrice(product));
+        salesItem.setDiscount(sale.getDiscount());
         return salesItem;
     }
 
     // Creamos un funcion para armar la repuesta al front end
     private PurchaseItemResponseDTO toPurchaseItemResponse(SalesItem salesItem) {
-        BigDecimal unitPrice = unitPrice(salesItem.getProduct());
+        BigDecimal unitPrice = salesItem.getUnitPrice();
         BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(salesItem.getQuantity()));
 
         return new PurchaseItemResponseDTO(
@@ -309,13 +312,14 @@ public class SaleService {
                 salesItem.getProduct().getName(),
                 salesItem.getQuantity(),
                 unitPrice,
-                subtotal
+                subtotal,
+                salesItem.getDiscount()
         );
     }
 
     // Creamos una funcion para cambiar la dimension de almacenamiento de un dato decimal
     private BigDecimal unitPrice(Product product) {
-        return BigDecimal.valueOf(product.getPrice());
+        return product.getPrice();
     }
 
     private record SaleDraft(

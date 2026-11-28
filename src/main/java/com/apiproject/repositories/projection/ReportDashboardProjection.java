@@ -1,5 +1,7 @@
 package com.apiproject.repositories.projection;
 
+import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 
 public interface ReportDashboardProjection {
@@ -12,12 +14,12 @@ public interface ReportDashboardProjection {
 
     Integer getQuantity();
 
-    Double getTotalCalculated();
+    BigDecimal getTotalCalculated();
 
     String getState();
 
     LocalDateTime getDate();
 
-    Double getCurrentAmount();
+    BigDecimal getCurrentAmount();
 
 }

@@ -1,5 +1,7 @@
 package com.apiproject.entities.admin;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,8 +29,8 @@ public class ServiceCupon {
     @Column(name = "cupon_date_limit", nullable = false)
     private LocalDateTime cuponDateLimit;
 
-    @Column(nullable = false)
-    private Double discount;
+    @Column(nullable = false, precision = 5, scale = 2)
+    private BigDecimal discount;
 
     private Integer quantity;
 

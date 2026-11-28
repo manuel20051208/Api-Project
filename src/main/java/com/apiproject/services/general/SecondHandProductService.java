@@ -50,6 +50,7 @@ public class SecondHandProductService {
 
     @Transactional
     public void save(@NonNull SecondHandProduct product, Long adminId) {
+        product.setPrice(normalizePrice(product.getPrice(), true));
         UserAdmin userAdmin = userRepository.getReferenceById(adminId);
         product.setUserAdmin(userAdmin);
         product.setActive(true);
@@ -63,7 +64,7 @@ public class SecondHandProductService {
         requireOwner(existing, adminId);
 
         Optional.ofNullable(productRequest.getName()).ifPresent(existing::setName);
-        Optional.ofNullable(productRequest.getPrice()).ifPresent(existing::setPrice);
+        Optional.ofNullable(normalizePrice(productRequest.getPrice(), false)).ifPresent(existing::setPrice);
         Optional.ofNullable(productRequest.getStock()).ifPresent(existing::setStock);
         Optional.ofNullable(productRequest.getCategory()).ifPresent(existing::setCategory);
         Optional.ofNullable(productRequest.getTimeOfUse()).ifPresent(existing::setTimeOfUse);
@@ -71,6 +72,20 @@ public class SecondHandProductService {
         existing.setDescription(productRequest.getDescription());
 
         return ShProductResponseDTO.fromEntity(secondHandProductRepository.save(existing));
+    }
+
+    /** Precio > 0 con 2 decimales (HALF_UP). Si es obligatorio y viene null responde 400. */
+    private static java.math.BigDecimal normalizePrice(java.math.BigDecimal price, boolean required) {
+        if (price == null) {
+            if (required) {
+                throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "price es obligatorio");
+            }
+            return null;
+        }
+        if (price.signum() <= 0) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "price debe ser mayor a cero");
+        }
+        return price.setScale(2, java.math.RoundingMode.HALF_UP);
     }
 
     /** Borrado suave: deja el producto inactivo sin perder historial de ventas. */

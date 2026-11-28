@@ -106,6 +106,8 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE, "/api/product-images/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PATCH, "/api/product-images/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/sale/purchase").hasRole("CLIENT")
+                                // Cancelar: ADMIN o CLIENT; la propiedad y la regla de 24 h las valida el service
+                                .requestMatchers(HttpMethod.POST, "/api/sale/*/cancel", "/api/sh-sale/*/cancel").hasAnyRole("ADMIN", "CLIENT")
                                 .requestMatchers("/api/client/**").hasRole("CLIENT")
                                 .requestMatchers(
                                         "/api/user/**",

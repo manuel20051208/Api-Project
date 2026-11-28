@@ -1,5 +1,7 @@
 package com.apiproject.entities.admin;
 
+import java.math.BigDecimal;
+
 import com.apiproject.entities.admin.UserAdmin;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -22,8 +24,8 @@ public class ServiceOffered {
     @Column(name = "name_of_service", length = 40, nullable = false)
     private String nameOfService;
 
-    @Column(name = "value_of_service", nullable = false)
-    private Double valueOfService;
+    @Column(name = "value_of_service", nullable = false, precision = 12, scale = 2)
+    private BigDecimal valueOfService;
 
     @Column(name = "description_of_service", length = 255, nullable = false)
     private String descriptionOfService;

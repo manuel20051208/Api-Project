@@ -1,8 +1,10 @@
 package com.apiproject.DTOs.Admin;
 
+import java.math.BigDecimal;
+
 public record ServiceRequestDTO(
         String nameOfService,
-        Double valueOfService,
+        BigDecimal valueOfService,
         String descriptionOfService
 ) {
 }

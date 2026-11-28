@@ -1,5 +1,7 @@
 package com.apiproject.DTOs.General;
 
+import java.math.BigDecimal;
+
 import com.apiproject.DTOs.Admin.ProductImageDTO;
 import com.apiproject.entities.general.Product;
 
@@ -8,7 +10,7 @@ import java.util.List;
 public record ProductResponseDTO(
         Long id,
         String name,
-        Double price,
+        BigDecimal price,
         Integer stock,
         String category,
         String description,
